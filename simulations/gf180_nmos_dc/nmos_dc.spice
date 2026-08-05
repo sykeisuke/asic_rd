@@ -1,0 +1,18 @@
+* GF180MCU 3.3 V NMOS output-characteristic sweep
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+VGS g 0 0
+VDS d 0 0
+XMN d g 0 0 nfet_03v3 L=0.28u W=1u nf=1 m=1
+
+.control
+set wr_singlescale
+set wr_vecnames
+dc VDS 0 3.3 0.05 VGS 0 3.3 0.3
+wrdata work/nmos_id_vds.csv -i(VDS)
+quit
+.endc
+
+.end
+

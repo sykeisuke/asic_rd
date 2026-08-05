@@ -36,6 +36,21 @@ system-wide CLI symlink:
 ./scripts/docker.sh --version
 ```
 
+Verify the pinned EDA environment and run the first GF180 simulation:
+
+```sh
+make check
+make nmos-dc
+```
+
+Start the browser-based analog design desktop:
+
+```sh
+make vnc
+```
+
+Then open <http://localhost:8080/?password=abc123>. Stop it with `make stop`.
+
 The reference environment will use a version-pinned Linux container on macOS.
 Do not install or copy a PDK into Git; record its source and exact revision in
 `docs/decisions/` instead.
