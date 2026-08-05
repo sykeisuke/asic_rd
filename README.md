@@ -29,7 +29,13 @@ Run the host check:
 ./scripts/check-host.sh
 ```
 
+Run Docker through the project wrapper so the setup does not depend on a
+system-wide CLI symlink:
+
+```sh
+./scripts/docker.sh --version
+```
+
 The reference environment will use a version-pinned Linux container on macOS.
 Do not install or copy a PDK into Git; record its source and exact revision in
 `docs/decisions/` instead.
-
