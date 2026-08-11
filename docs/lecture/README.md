@@ -39,9 +39,258 @@ Repository: github.com/sykeisuke/asic\_rd
 | 物理実装     | 9       | netlistからGDSII                     |
 | 設計レビュー | 10      | 証拠、blocker、次版仕様              |
 
+# 0. 初学者のための読み方
+
+ASIC設計では、回路、software、半導体process、測定の言葉が同時に登場します。最初から全用語を暗記する必要はありません。まず『何を入力し、どの道具で処理し、何が出力されるか』の3点だけを追い、波形やlogを見ながら意味を増やします。
+
+## 最初に区別する4つ
+
+| **言葉**           | **簡単な意味**                       | **このprojectの例**              |
+|--------------------|--------------------------------------|----------------------------------|
+| 回路図 / schematic | 部品と接続を人が読む図               | nmos\_dc.sch, sampling\_cell.sch |
+| netlist            | simulatorが読む部品と接続の文章      | \*.spice, Xschem生成netlist      |
+| RTL                | clockごとのdigital動作を記述する文章 | \*.v, synthesizable Verilog      |
+| layout             | silicon上のlayer形状                 | DEF, GDSII                       |
+
+## modelと実物を混同しない
+
+-   SPICE modelはtransistorの電気的近似。nominal
+    simulationが通ってもsilicon保証ではない。
+
+-   RTL simulationはlogicとclock順序を確認する。transistor-level
+    analog挙動は含まない。
+
+-   GDSは形状データ。package、bond
+    wire、PCB、測定器まで含めて初めて実験systemになる。
+
+## 数値と単位
+
+| **接頭語** | **倍率** | **例**            |
+|------------|----------|-------------------|
+| m          | 10^-3    | 1 mV = 0.001 V    |
+| µ / u      | 10^-6    | 1 µs = 0.000001 s |
+| n          | 10^-9    | 1 ns              |
+| p          | 10^-12   | 1 pF, 1 ps        |
+
+|                                                                                                                                                               |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **実験ノート** 各Labで、commit hash、command、開始時刻、終了時刻、PASS/FAIL、主要artifact、気づきを記録します。再現できない成功は設計結果として弱いからです。 |
+
+# 1. 使用ツールを理解する
+
+<img src="assets/image2.png" style="width:6.5in;height:3.49143in" />
+
+*図3　各toolの入力と出力。Makefileはこの連鎖を短いcommandで実行する。*
+
+| **Tool**             | **役割**                                     | **学生が直接行うこと**                      |
+|----------------------|----------------------------------------------|---------------------------------------------|
+| Docker Desktop       | 固定Linux環境をMac上で動かす                 | 起動、container状態とdisk容量確認           |
+| Make                 | 複数commandをtarget名へまとめる              | make nmos-dc等を実行                        |
+| Xschem               | analog回路図編集とSPICE netlist生成          | symbol配置、wire、property編集、netlist確認 |
+| ngspice              | transistor-level simulation                  | log、測定値、CSV波形を読む                  |
+| AWK                  | log/CSVの抽出と自動合否判定                  | scriptが何をPASS条件にするか読む            |
+| Icarus Verilog       | RTL simulation                               | iverilogでcompile、vvpで実行、VCD確認       |
+| Yosys                | RTL synthesis                                | mapped netlistとcell統計を読む              |
+| OpenSTA              | static timing analysis                       | SDC constraintとsetup/hold report確認       |
+| LibreLane            | RTL-to-GDS orchestration                     | config.yaml、metrics、final GDS確認         |
+| KLayout/Magic/Netgen | layout閲覧、DRC/LVS。analog layoutで本格使用 | layer、pin、DRC marker、LVS mismatch確認    |
+
+|                                                                                                                                                        |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **現在と将来** KLayout/Magic/Netgenはanalog layout段階で直接操作します。現時点のdigital physical flowではLibreLaneが複数backend toolを統括しています。 |
+
+# 2. Makefileの裏側
+
+makeはsimulatorではありません。Makefileでtarget名をshell
+scriptへ対応づける入口です。たとえば make nmos-dc は
+scripts/run-nmos-dc.sh
+を呼び、そのscriptがDocker内でXschemとngspiceを実行します。
+
+```text
+make nmos-dc
+  -> scripts/run-nmos-dc.sh
+  -> docker run -v <repo>:/foss/designs
+  -> xschem -n ... nmos_dc.sch
+  -> ngspice -b ...spice
+  -> work/nmos_id_vds.csv
+```
+
+## scriptを読む順番
+
+1.  set -eu を確認する。errorや未定義変数で停止する設定。
+
+2.  eda-common.shからEDA\_IMAGE、PROJECT\_ROOT、Docker CLIを読む。
+
+3.  docker
+    runの-vを見て、Mac側repoとcontainer内/foss/designsの対応を理解する。
+
+4.  container内のcd先を確認する。
+
+5.  実行toolとoptionを読む。-bはbatch、-oはlog出力など。
+
+6.  最後のtest/grepを読み、何をPASSとしているか確認する。
+
+## 代表的な実行経路
+
+| **Target**            | **内部tool**                      | **主なartifact**                      |
+|-----------------------|-----------------------------------|---------------------------------------|
+| make nmos-dc          | Xschem → ngspice                  | netlist, raw, CSV                     |
+| make four-cell-cosim  | ngspice → grep/AWK → iverilog/vvp | analog\_stimulus.vh, cosimulation.log |
+| make digital-top      | iverilog/vvp → Yosys → OpenSTA    | VCD, mapped.v, timing log             |
+| make digital-physical | LibreLane/OpenROAD ecosystem      | GDS, DEF, metrics, reports            |
+
+|                                                                                                                                                  |
+|--------------------------------------------------------------------------------------------------------------------------------------------------|
+| **自走のコツ** makeが失敗したらtarget名だけを眺めず、対応するscripts/run-\*.shを開き、最後に成功したcommandと最初に失敗したcommandを特定します。 |
+
+# 3. アナログ設計の基礎
+
+<img src="assets/image3.png" style="width:6.5in;height:3.32222in" />
+
+*図4　deviceのbiasからsampling誤差までを一つの因果関係として考える。*
+
+digital信号は0/1へ抽象化できますが、analog
+nodeは連続した電圧・電流・時間を持ちます。回路を読むときは、まずDC
+operating point、次に小さなsignalへの応答、最後にlarge
+transientとnoise/mismatchの順で考えると整理しやすくなります。
+
+## 3.1 MOS transistorの最低限
+
+| **量** | **意味**                                      | **確認方法**        |
+|--------|-----------------------------------------------|---------------------|
+| VGS    | gate-source間電圧。channel形成を支配          | DC sweep            |
+| VDS    | drain-source間電圧。動作領域とheadroomに関係  | I-V curve           |
+| ID     | drain電流。bias/power/速度を決める            | operating point     |
+| gm     | gate電圧変化を電流へ変える強さ                | op resultまたは微分 |
+| ro     | saturation領域の有限出力抵抗                  | Id-Vdsの傾き        |
+| W/L    | device geometry。電流、容量、mismatchを変える | schematic property  |
+
+|                                                                                                                  |
+|------------------------------------------------------------------------------------------------------------------|
+| **body端子** MOSは4端子deviceです。bulk/body接続を省略して考えると、body effectやparasitic diodeを見落とします。 |
+
+# 3.2 Bias、headroom、gain、bandwidth
+
+Biasはsignalがないときの静止状態です。transistorが意図した領域に入り、全nodeが電源範囲内にあることを先に確認します。Headroomはsignalが振れてもdeviceが必要な電圧を保てる余裕です。
+
+-   DC operating point: node電圧とbranch電流が妥当か。
+
+-   Gain: 小さな入力変化が出力へ何倍伝わるか。
+
+-   Bandwidth: gainが低下せず追従できる周波数範囲。
+
+-   Slew rate: large signalで出力が変化できる最大速度。
+
+-   Settling: 目標値の許容誤差内へ入るまでの時間。
+
+## RCとsampling
+
+switchのON抵抗RONとhold capacitance Cは時定数 τ = RON·C
+を作ります。一次近似では誤差は exp(−t/τ) で減少します。sampling
+pulseが短すぎると、hold
+nodeは入力へ十分settleしません。一方Cを大きくするとkT/C
+noiseとdroopは改善しやすいものの、acquisitionは遅く、面積も増えます。
+
+| **Cを大きくすると** | **良くなりやすい**                    | **悪くなりやすい**                 |
+|---------------------|---------------------------------------|------------------------------------|
+| 効果                | kT/C noise、droop、charge sharing感度 | acquisition time、switch負荷、面積 |
+
+## 簡単な計算例
+
+RON = 2 kΩ、C = 1 pFなら τ = 2
+nsです。0.1%程度までsettleさせるには約7τ、すなわち約14
+nsが一つの目安です。これはfirst-order近似であり、実回路ではsignal-dependent
+RONや寄生容量をSPICEで確認します。
+
+# 3.3 誤差、noise、PVT、Monte Carlo
+
+| **分類**         | **例**                              | **検証**                            |
+|------------------|-------------------------------------|-------------------------------------|
+| Systematic error | comparator offset、ramp slope error | corner/parameter sweep、calibration |
+| Random noise     | thermal noise、kT/C                 | noise/transient noise、統計         |
+| Mismatch         | 同じ寸法のMOS間の差                 | Monte Carlo mismatch                |
+| PVT              | process、supply、temperature        | corner matrix                       |
+| Parasitic        | layout R/C、coupling                | PEX後simulation                     |
+
+Nominal simulationはtypical
+model、代表電源、代表温度での一例です。Tape-out判断には、fast/slow
+device corner、電源min/max、温度範囲、mismatch seed、extracted
+parasiticを組み合わせたverification planが必要です。
+
+## 初学者が波形を見る順序
+
+7.  電源とgroundが期待値か。
+
+8.  入力刺激の振幅・位相・立上りが想定どおりか。
+
+9.  内部nodeがrailへ張り付いていないか。
+
+10. 出力の極性が合っているか。
+
+11. 時間軸と電圧軸の単位が合っているか。
+
+12. 測定cursorだけでなく前後のtransientも見る。
+
+|                                                                                                   |
+|---------------------------------------------------------------------------------------------------|
+| **重要** 波形の形を先に眺め、後から都合のよい測定点を探さない。先に測定定義と合否条件を書きます。 |
+
+# 4. モジュールの接続
+
+<img src="assets/image4.png" style="width:6.5in;height:3.59211in" />
+
+*図5　信号名付きmodule接続。controllerが時間順序を作り、analog
+crossingをGray captureがcodeへ変える。*
+
+| **Signal**    | **Producer**                | **Consumer**               | **種類・意味**              |
+|---------------|-----------------------------|----------------------------|-----------------------------|
+| VIN           | signal source/pad           | sampling transmission gate | analog voltage              |
+| SAMPLE\[3:0\] | controller/clock generation | sampling cells             | digital control             |
+| VHOLD\[3:0\]  | hold capacitors             | analog MUX                 | stored analog voltage       |
+| SEL\[1:0\]    | controller                  | analog MUX                 | selected cell index         |
+| VMUX          | analog MUX                  | comparator                 | selected held voltage       |
+| VRAMP         | ramp generator              | comparator                 | time reference voltage      |
+| HIT           | comparator                  | Gray capture/controller    | asynchronous crossing event |
+| CODE\[5:0\]   | Gray capture                | code registers             | one cell result             |
+| DATA          | serializer                  | FPGA                       | 24-bit payload, serial      |
+
+# 4.1 1回の変換を時系列で追う
+
+13. Track: SAMPLE\[n\]=1。switchがONになりVHOLD\[n\]がVINへ追従する。
+
+14. Hold: SAMPLE\[n\]=0。switchをOFFにし、capacitorへ電圧を保存する。
+
+15. Select: SEL=n。VHOLD\[n\]だけをVMUXへ接続する。
+
+16. Settle: MUX切替によるtransientが収まるまで待つ。
+
+17. Reset: VRAMPとcounterを既知値へ戻す。
+
+18. Convert: rampを開始し、Gray counterを進める。
+
+19. Compare: VRAMPがVMUXを横切るとHIT edgeが発生する。
+
+20. Capture: HIT近傍のGray codeを保存しbinary codeへ扱う。
+
+21. Repeat: n=0..3について繰り返す。
+
+22. Readout: 4×6 bitを24-bit wordへ連結しserial送信する。
+
+## analog/digital境界で決めること
+
+| **境界**                   | **曖昧だと起きる問題**              | **固定事項**                                       |
+|----------------------------|-------------------------------------|----------------------------------------------------|
+| Comparator → capture       | ±1以上の誤code、metastability       | edge polarity、synchronization、capture convention |
+| Controller → analog switch | short、charge sharing、settling不足 | non-overlap、pulse width、SEL timing               |
+| Code RAM → serializer      | cell順・bit順が逆                   | packing order、MSB/LSB first、frame valid          |
+
+|                                                                                                                                                                |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **設計レビュー** 各arrowについてproducer、consumer、voltage domain、clock domain、active polarity、reset stateを説明できれば、接続の理解がかなり進んでいます。 |
+
 # 1. 全体設計フロー
 
-<img src="assets/image2.png" style="width:6.5in;height:3.44118in" />
+<img src="assets/image5.png" style="width:6.5in;height:3.44118in" />
 
 *図2　仕様からGDSIIまで。各矢印が検証可能であることがcomplete
 flowの条件。*
@@ -67,9 +316,9 @@ flowの条件。*
 |-------------------------------------------------------------------------|
 | **到達目標** 設計ソースと生成物を区別し、再現コマンドを自分で見つける。 |
 
-git clone https://github.com/sykeisuke/asic\_rd.git  
-cd asic\_rd  
-git status  
+git clone https://github.com/sykeisuke/asic\_rd.git<br>
+cd asic\_rd<br>
+git status<br>
 make check
 
 ## 最初に読む5ファイル
@@ -104,18 +353,18 @@ make check
 Macはホストとして十分に使えます。Linux向けEDAツールとGF180
 PDKはDockerコンテナ内へ固定し、XschemなどGUIはブラウザVNCから操作します。これにより学生ごとのmacOS差を小さくします。
 
-1.  Docker
+23. Docker
     Desktopを起動し、メイン画面でEngineがRunningであることを確認する。
 
-2.  リポジトリで make vnc を実行する。
+24. リポジトリで make vnc を実行する。
 
-3.  ブラウザで http://localhost:8080/?password=abc123 を開く。
+25. ブラウザで http://localhost:8080/?password=abc123 を開く。
 
-4.  File Managerから
+26. File Managerから
     /foss/designs/simulations/gf180\_nmos\_dc/nmos\_dc.sch を開く。
 
-cd /Users/ykeisuke/Desktop/mywork/asic\_rd  
-make vnc  
+cd /Users/ykeisuke/Desktop/mywork/asic\_rd<br>
+make vnc<br>
 \# Browser: http://localhost:8080/?password=abc123
 
 ## アカウントは必要か
@@ -137,6 +386,122 @@ limit回避、組織管理を使う場合はログインが必要です。授業
 |-----------------------------------------------------------------------------------------------------------------------------------------|
 | **安全上の注意** Gatekeeperを恒久的に無効化しない。Docker公式配布物を使い、異常が続く場合は再インストールとhelper cleanupを優先します。 |
 
+# 5. Xschemを初めて使う
+
+Xschemは回路図editorであり、simulation
+engineそのものではありません。symbolとwireからSPICE
+netlistを生成し、そのnetlistをngspiceへ渡します。本projectではGUI確認に加え、scriptからheadless
+netlistingも行うため、手動操作と自動実行の結果を比較できます。
+
+## 回路図を開く
+
+27. make vncを実行し、browser desktopを開く。
+
+28. File Managerで /foss/designs/simulations/gf180\_nmos\_dc/
+    へ移動する。
+
+29. nmos\_dc.schをdouble-clickする。関連付けで開かない場合はXschemを起動してFile &gt;
+    Openを使う。
+
+30. 画面上のNMOS symbol、voltage source、ground、simulation
+    commandを探す。
+
+31. symbolを選択してpropertyを開き、model名、W、L、multiplicityを読む。
+
+## 配線を読むときの規則
+
+-   線が交差してもjunction dotがなければ接続でない場合がある。
+
+-   node labelが同じなら離れた場所でも同一netとして接続される。
+
+-   ground/reference nodeがないSPICE回路は解けない。
+
+-   MOSのD/G/S/B端子をsymbol向きだけで判断せずproperty/netlistでも確認する。
+
+## 変更前に守ること
+
+-   元のtestbenchを直接壊さず、学習用copyまたはGit branchを作る。
+
+-   一度にW、L、bias、stimulusを同時変更しない。
+
+-   変更前の予測を数値または増減方向で書く。
+
+-   保存後にgit diffで意図した変更だけか確認する。
+
+|                                                                                                                                                         |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **ショートカット** Xschemのshortcutはversionやkeymapで差があり得ます。授業ではまずmenu名で操作を共有し、各自の画面下status/helpでshortcutを確認します。 |
+
+# 5.1 Netlistとngspiceを追跡する
+
+make
+nmos-dcを実行すると、Xschemはnmos\_dc.schからwork/nmos\_dc\_xschem.spiceを生成します。その後ngspiceがbatch
+modeでnetlistを読み、raw dataとCSVを生成します。
+
+```sh
+xschem -n -q -x --rcfile <gf180-xschemrc> \\
+  -o work -N nmos_dc_xschem.spice nmos_dc.sch
+ngspice -b work/nmos_dc_xschem.spice
+```
+
+| **Option** | **意味**                            |
+|------------|-------------------------------------|
+| -n         | user configを限定して再現性を上げる |
+| -q         | quiet startup                       |
+| -x         | GUIを表示しないheadless実行         |
+| --rcfile   | GF180 symbol/model pathを設定       |
+| -o work    | 生成先directory                     |
+| -N file    | netlist file名                      |
+| ngspice -b | 対話画面なしのbatch simulation      |
+
+## 出力を確認する
+
+32. terminalの終了codeが0か確認する。
+
+33. work/nmos\_dc\_xschem.spiceを開き、device instanceとmodel
+    includeを探す。
+
+34. work/nmos\_dc.rawが空でないことを確認する。
+
+35. work/nmos\_id\_vds.csvのheader、行数、指数表記を読む。
+
+36. 同じdirectoryのREADME.mdとRESULTS.mdがあればexpected
+    resultと比較する。
+
+|                                                                                                                                                                     |
+|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **重要** generated netlistは回路図の翻訳結果です。回路図が正しそうでもnetlistのmodel名、node順、parameterが意図と違うことがあります。最初の数回は必ず両方を見ます。 |
+
+# 5.2 Digital toolの使い分け
+
+| **段階**  | **Command**               | **何を確認するか**                        |
+|-----------|---------------------------|-------------------------------------------|
+| Compile   | iverilog -g2012 ...       | syntax、module接続、unsupported construct |
+| Run       | vvp work/tb               | assertion/PASS、event順序                 |
+| Waveform  | VCDをGTKWave等で開く      | clock、reset、state、capture、serial data |
+| Synthesis | yosys ... synth/abc       | logicがstandard cellへ写るか、cell数      |
+| Timing    | sta -exit sta.tcl         | clock constraint、setup/hold slack        |
+| Physical  | librelane ... config.yaml | floorplan、routing、DRC/LVS、GDS          |
+
+## VCD波形の基本
+
+37. 最初にclockとresetを表示する。
+
+38. controller state、cell select、hit、captured codeを追加する。
+
+39. cursorをcapture edgeへ置き、edge直前と直後の値を読む。
+
+40. unknown X、高impedance Z、意図しないglitchを探す。
+
+41. 最後にserializer clock/data/validを同じtimebaseで確認する。
+
+## Synthesis後に失われるもの
+
+testbench、\#delay、display、simulation専用real
+modelはsiliconになりません。Yosysへ渡すsource
+listに何が含まれるかをrun-digital-top.shで確認し、mapped netlistにGF180
+standard-cell instanceが現れることを確認します。
+
 # Lab 1 GF180 MOSを測る
 
 |                                                                        |
@@ -145,13 +510,13 @@ limit回避、組織管理を使う場合はログインが必要です。授業
 
 make nmos-dc
 
-5.  nmos\_dc.schを開き、device名、W/L、body接続、supplyを確認する。
+42. nmos\_dc.schを開き、device名、W/L、body接続、supplyを確認する。
 
-6.  testbenchのVGS/VDS sweep範囲を読む。
+43. testbenchのVGS/VDS sweep範囲を読む。
 
-7.  make nmos-dcを実行し、CSV/plotの生成時刻を確認する。
+44. make nmos-dcを実行し、CSV/plotの生成時刻を確認する。
 
-8.  同じVGSでVDSを上げたとき、linear領域からsaturation領域へ移る形を説明する。
+45. 同じVGSでVDSを上げたとき、linear領域からsaturation領域へ移る形を説明する。
 
 ## 成功判定
 
@@ -177,22 +542,22 @@ providerの許容条件に一致しているかを必ず後段で確認します
 |---------------------------------------------------------------------------------------|
 | **到達目標** track/hold動作、acquisition、droop、charge injectionを波形から評価する。 |
 
-make sampling-cell  
-make four-cell  
+make sampling-cell<br>
+make four-cell<br>
 make four-cell-mux
 
 ## 観測順序
 
-9.  SAMPLE high中にVHOLDがVINへ追従することを確認する。
+46. SAMPLE high中にVHOLDがVINへ追従することを確認する。
 
-10. SAMPLE edge直後のstepを測り、charge
+47. SAMPLE edge直後のstepを測り、charge
     injection/feedthroughを区別する。
 
-11. hold期間の傾きを測り、droop rate \[V/s\]へ換算する。
+48. hold期間の傾きを測り、droop rate \[V/s\]へ換算する。
 
-12. 4-cell testで各cellが異なる時刻の電圧を保持することを確認する。
+49. 4-cell testで各cellが異なる時刻の電圧を保持することを確認する。
 
-13. MUX選択を変え、非選択cellの値が破壊されないことを確認する。
+50. MUX選択を変え、非選択cellの値が破壊されないことを確認する。
 
 | **Cell** | **保持電圧 \[V\]** | **目標 \[V\]** | **誤差 \[mV\]** |
 |----------|--------------------|----------------|-----------------|
@@ -220,9 +585,9 @@ make four-cell-mux
 |----------------------------------------------------------------------|
 | **到達目標** 入力電圧を交差時刻へ変換し、ADCの主要誤差源を説明する。 |
 
-make comparator  
-make comparator-range  
-make comparator-offset  
+make comparator<br>
+make comparator-range<br>
+make comparator-offset<br>
 make ramp-generator
 
 Wilkinson変換では、一定傾斜のrampが保持電圧へ到達した瞬間にcounter値をcaptureします。理想的には
@@ -254,18 +619,18 @@ orderingとmonotonicityを確認し、INL/DNLの保証は後続版へ分離し�
 |-----------------------------------------------------------------------------------|
 | **到達目標** sampling、ramp、comparator、counterの因果関係を1つの波形で説明する。 |
 
-make wilkinson-slice  
+make wilkinson-slice<br>
 make transfer
 
-14. sampling phaseでinputをhold capacitorへ保存する。
+51. sampling phaseでinputをhold capacitorへ保存する。
 
-15. conversion startでramp resetを解除し、counterを開始する。
+52. conversion startでramp resetを解除し、counterを開始する。
 
-16. VRAMPがVHOLDへ到達するとcomparator edgeが発生する。
+53. VRAMPがVHOLDへ到達するとcomparator edgeが発生する。
 
-17. edge時のcounterをcaptureし、end-of-conversionまで保持する。
+54. edge時のcounterをcaptureし、end-of-conversionまで保持する。
 
-18. input sweepからcode transferを作り、単調性を確認する。
+55. input sweepからcode transferを作り、単調性を確認する。
 
 ## 合否基準
 
@@ -289,7 +654,7 @@ make transfer
 
 make four-cell-wilkinson
 
-<img src="assets/image3.png" style="width:6.45in;height:3.49059in" />
+<img src="assets/image6.png" style="width:6.45in;height:3.49059in" />
 
 *図3　4-cell shared Wilkinson conversion。上段は保持値とMUX
 bus、下段はrampとcomparator。*
@@ -315,24 +680,24 @@ compare → captureの順序とデータ対応が崩れていないことです�
 |--------------------------------------------------------------------|
 | **到達目標** 4-cell変換のsequencingを合成可能なRTLとして検証する。 |
 
-make counter  
-make gray-counter  
-make controller  
+make counter<br>
+make gray-counter<br>
+make controller<br>
 make digital-top
 
 ## 状態遷移を言葉で書く
 
-19. IDLE: startを待ち、各valid flagをclearする。
+56. IDLE: startを待ち、各valid flagをclearする。
 
-20. RESET\_RAMP: rampとcounterを既知状態へ戻す。
+57. RESET\_RAMP: rampとcounterを既知状態へ戻す。
 
-21. SELECT: 対象cellをMUXへ接続しsettlingを待つ。
+58. SELECT: 対象cellをMUXへ接続しsettlingを待つ。
 
-22. CONVERT: Gray counterを進め、comparator hitを待つ。
+59. CONVERT: Gray counterを進め、comparator hitを待つ。
 
-23. CAPTURE: codeを対象registerへ保存する。
+60. CAPTURE: codeを対象registerへ保存する。
 
-24. NEXT/DONE: 4 cell完了後にserializerへ引き渡す。
+61. NEXT/DONE: 4 cell完了後にserializerへ引き渡す。
 
 ## RTL testで見るもの
 
@@ -374,15 +739,15 @@ simulatorを同時結合する重いAMS環境を使わず、境界条件を明�
 
 ## debugの順番
 
-25. SPICE CSVに交差が存在するか。
+62. SPICE CSVに交差が存在するか。
 
-26. event抽出値の単位が正しいか。
+63. event抽出値の単位が正しいか。
 
-27. testbenchで同時刻にpulseが生成されたか。
+64. testbenchで同時刻にpulseが生成されたか。
 
-28. capture registerのenableが立ったか。
+65. capture registerのenableが立ったか。
 
-29. expected codeとの±1境界差か、根本的なsequence差か。
+66. expected codeとの±1境界差か、根本的なsequence差か。
 
 # Lab 8 Gray captureとCDC
 
@@ -392,7 +757,7 @@ simulatorを同時結合する重いAMS環境を使わず、境界条件を明�
 
 make phase-sweep
 
-<img src="assets/image4.png" style="width:6.2in;height:2.68667in" />
+<img src="assets/image7.png" style="width:6.2in;height:2.68667in" />
 
 *図4　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
 
@@ -434,13 +799,13 @@ make digital-top
 
 ## logic analyzerでの受入試験
 
-30. 既知code 16, 20, 27, 35をloadする。
+67. 既知code 16, 20, 27, 35をloadする。
 
-31. serial clockとdataを同時取得する。
+68. serial clockとdataを同時取得する。
 
-32. 24 edge分をdecodeし、元の4 codeへ戻す。
+69. 24 edge分をdecodeし、元の4 codeへ戻す。
 
-33. frameを連続送信し、境界でbit slipがないことを確認する。
+70. frameを連続送信し、境界でbit slipがないことを確認する。
 
 |                                                                                                                                                                                              |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -454,7 +819,7 @@ make digital-top
 
 make digital-physical
 
-<img src="assets/image5.png" style="width:5.3in;height:5.7399in" />
+<img src="assets/image8.png" style="width:3.9in;height:4.222in" />
 
 *図5　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
 
@@ -512,19 +877,19 @@ netlist、metricsを相互に対応づけます。
 
 ## 標準debug loop
 
-34. 再現：同じcommitとcommandで再発させる。
+71. 再現：同じcommitとcommandで再発させる。
 
-35. 縮小：最小testbenchまたは単一cellへ戻す。
+72. 縮小：最小testbenchまたは単一cellへ戻す。
 
-36. 観測：input、internal state、outputを同じtimebaseで保存する。
+73. 観測：input、internal state、outputを同じtimebaseで保存する。
 
-37. 仮説：1回の実行で検証できる原因を1つ書く。
+74. 仮説：1回の実行で検証できる原因を1つ書く。
 
-38. 変更：1要因だけ変える。
+75. 変更：1要因だけ変える。
 
-39. 回帰：直ったtestと既存testを両方実行する。
+76. 回帰：直ったtestと既存testを両方実行する。
 
-40. 記録：原因、変更、証拠をcommitまたはdecision logへ残す。
+77. 記録：原因、変更、証拠をcommitまたはdecision logへ残す。
 
 | **症状**               | **最初に見る場所**                                             |
 |------------------------|----------------------------------------------------------------|
