@@ -41,6 +41,9 @@ The continuous-time comparator baseline passes provisional 6-bit limits with
 rail-to-rail output; offset separation and 8-bit improvement remain.
 The PMOS-current-source ramp baseline is automated and passes typical-corner
 reset, slope, coarse-linearity, and power limits using an external bias.
+The three analog blocks are integrated in a single-point Wilkinson-slice test;
+timing-derived 6-bit code formation passes within one count. Physical RTL
+counter/capture integration and a multi-point transfer test remain.
 
 ## Phase 3: Test macro
 
