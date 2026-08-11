@@ -1,0 +1,31 @@
+* GF180MCU NMOS-input comparator static trip-point characterization
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.include work/common_mode.spice
+
+.param VDD=3.3
+VDD_SOURCE vdd 0 {VDD}
+VBIAS bias 0 0.85
+VCM cm 0 {VCM_LEVEL}
+VDIFF diff 0 0
+BSAMPLE sample 0 V='v(cm)+v(diff)/2'
+BRAMP ramp 0 V='v(cm)-v(diff)/2'
+
+XINP left sample tail 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XINN outa ramp tail 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XLOADD left left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XLOADM outa left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XTAIL tail bias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+XBUF1 outb outa 0 0 nfet_03v3 L=0.28u W=4u nf=4 m=1
+XBUF2 outb outa vdd vdd pfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF3 dout outb 0 0 nfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF4 dout outb vdd vdd pfet_03v3 L=0.28u W=16u nf=4 m=1
+
+.dc VDIFF -0.1 0.1 0.1m
+.measure dc trip_diff FIND v(diff) WHEN v(dout)=1.65 CROSS=1
+
+.control
+run
+quit
+.endc
+.end

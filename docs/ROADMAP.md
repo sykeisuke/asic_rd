@@ -56,6 +56,9 @@ required before making a no-missing-code claim.
 The PMOS-input comparator alternative extends measurable operation to 1.8 V
 and reduces the 0.4 V error, but worsens high-range delay error. Both NMOS and
 PMOS variants remain candidate test structures pending offset/delay separation.
+Nominal DC trip-point sweeps show 8-12 mV static error for both variants, much
+smaller than the worst dynamic code error. Dynamic settling is now the primary
+comparator optimization target; mismatch Monte Carlo remains outstanding.
 
 ## Phase 3: Test macro
 
