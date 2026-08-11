@@ -19,6 +19,22 @@ All four cells pass the provisional 10 mV acquisition limit and preserve the
 expected sample order. The input-dependent error is consistent with the
 previous single-cell transmission-gate characterization.
 
-This result does not include an analog readout mux. Connecting a selected cell
-to the comparator may introduce charge sharing and additional droop, so mux
-loading must be measured before integrating the Wilkinson conversion sequence.
+## Sequential analog readout mux
+
+A 4-to-1 transmission-gate mux sequentially connected each cell to a 20 fF
+comparator-input bus. An NMOS reset discharges the otherwise-floating bus before
+the first selection.
+
+| Cell | Held before readout | Mux output | Mux error | Hold disturbance |
+| ---: | ---: | ---: | ---: | ---: |
+| 0 | 0.490862 V | 0.466246 V | 24.615 mV | 31.010 mV |
+| 1 | 0.792183 V | 0.779516 V | 12.666 mV | 17.153 mV |
+| 2 | 1.094410 V | 1.080060 V | 14.351 mV | 16.453 mV |
+| 3 | 1.399230 V | 1.380060 V | 19.165 mV | 17.273 mV |
+
+The mux passes the provisional array-integration limits of 30 mV output error
+and 35 mV hold disturbance while preserving channel order. Cell 0 is the worst
+case because it first shares charge with the reset bus. The next architecture
+iteration should evaluate per-conversion precharge and a source-follower or
+buffered readout path; these results do not yet support a final 6-bit INL/DNL
+claim.

@@ -1,0 +1,95 @@
+* GF180MCU four-cell sampling array with sequential readout mux
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+VDD_SOURCE vdd 0 {VDD}
+
+* Input settles to a different level before each sampling aperture.
+VIN vin 0 PWL(0 0.5 35n 0.5 40n 0.8 75n 0.8 80n 1.1
++ 115n 1.1 120n 1.4 250n 1.4)
+
+VS0 s0 0 PULSE(0 {VDD} 10n 200p 200p 20n 400n)
+VS0B s0b 0 PULSE({VDD} 0 10n 200p 200p 20n 400n)
+VS1 s1 0 PULSE(0 {VDD} 50n 200p 200p 20n 400n)
+VS1B s1b 0 PULSE({VDD} 0 50n 200p 200p 20n 400n)
+VS2 s2 0 PULSE(0 {VDD} 90n 200p 200p 20n 400n)
+VS2B s2b 0 PULSE({VDD} 0 90n 200p 200p 20n 400n)
+VS3 s3 0 PULSE(0 {VDD} 130n 200p 200p 20n 400n)
+VS3B s3b 0 PULSE({VDD} 0 130n 200p 200p 20n 400n)
+
+X0N vin s0 hold0 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X0P vin s0b hold0 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X1N vin s1 hold1 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X1P vin s1b hold1 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X2N vin s2 hold2 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X2P vin s2b hold2 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X3N vin s3 hold3 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X3P vin s3b hold3 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+
+C0 hold0 0 1p
+C1 hold1 0 1p
+C2 hold2 0 1p
+C3 hold3 0 1p
+R0 hold0 0 1T
+R1 hold1 0 1T
+R2 hold2 0 1T
+R3 hold3 0 1T
+
+* Sequentially connect each stored cell to a 20 fF comparator-input bus.
+VSEL0 sel0 0 PULSE(0 {VDD} 170n 200p 200p 15n 400n)
+VSEL0B sel0b 0 PULSE({VDD} 0 170n 200p 200p 15n 400n)
+VSEL1 sel1 0 PULSE(0 {VDD} 195n 200p 200p 15n 400n)
+VSEL1B sel1b 0 PULSE({VDD} 0 195n 200p 200p 15n 400n)
+VSEL2 sel2 0 PULSE(0 {VDD} 220n 200p 200p 15n 400n)
+VSEL2B sel2b 0 PULSE({VDD} 0 220n 200p 200p 15n 400n)
+VSEL3 sel3 0 PULSE(0 {VDD} 245n 200p 200p 15n 400n)
+VSEL3B sel3b 0 PULSE({VDD} 0 245n 200p 200p 15n 400n)
+
+XM0N hold0 sel0 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM0P hold0 sel0b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM1N hold1 sel1 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM1P hold1 sel1b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM2N hold2 sel2 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM2P hold2 sel2b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM3N hold3 sel3 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM3P hold3 sel3b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+CBUS mux_bus 0 20f
+RBUS mux_bus 0 10T
+VBUS_RESET bus_reset 0 PULSE({VDD} 0 165n 200p 200p 300n 800n)
+XBUS_RESET mux_bus bus_reset 0 0 nfet_03v3 L=0.5u W=5u nf=5 m=1
+
+.tran 10p 275n
+.measure tran hold0_value FIND v(hold0) AT=160n
+.measure tran hold1_value FIND v(hold1) AT=160n
+.measure tran hold2_value FIND v(hold2) AT=160n
+.measure tran hold3_value FIND v(hold3) AT=160n
+.measure tran hold0_error PARAM='abs(hold0_value-0.5)'
+.measure tran hold1_error PARAM='abs(hold1_value-0.8)'
+.measure tran hold2_error PARAM='abs(hold2_value-1.1)'
+.measure tran hold3_error PARAM='abs(hold3_value-1.4)'
+.measure tran mux0_value FIND v(mux_bus) AT=184n
+.measure tran mux1_value FIND v(mux_bus) AT=209n
+.measure tran mux2_value FIND v(mux_bus) AT=234n
+.measure tran mux3_value FIND v(mux_bus) AT=259n
+.measure tran mux0_error PARAM='abs(mux0_value-hold0_value)'
+.measure tran mux1_error PARAM='abs(mux1_value-hold1_value)'
+.measure tran mux2_error PARAM='abs(mux2_value-hold2_value)'
+.measure tran mux3_error PARAM='abs(mux3_value-hold3_value)'
+.measure tran hold0_after FIND v(hold0) AT=190n
+.measure tran hold1_after FIND v(hold1) AT=215n
+.measure tran hold2_after FIND v(hold2) AT=240n
+.measure tran hold3_after FIND v(hold3) AT=265n
+.measure tran hold0_disturb PARAM='abs(hold0_after-hold0_value)'
+.measure tran hold1_disturb PARAM='abs(hold1_after-hold1_value)'
+.measure tran hold2_disturb PARAM='abs(hold2_after-hold2_value)'
+.measure tran hold3_disturb PARAM='abs(hold3_after-hold3_value)'
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/four_cell_mux.csv v(vin) v(hold0) v(hold1) v(hold2) v(hold3) v(mux_bus)
+quit
+.endc
+.end
