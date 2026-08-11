@@ -1,0 +1,39 @@
+* GF180MCU CMOS transmission-gate sampling-cell comparison
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+.param CHOLD=1p
+
+VIN in 0 SIN(1.2 0.6 5MEG)
+VCLK sample 0 PULSE(0 {VDD} 5n 100p 100p 20n 100n)
+VCLKB sample_b 0 PULSE({VDD} 0 5n 100p 100p 20n 100n)
+VDD_SOURCE vdd 0 {VDD}
+
+XSWN in sample hold 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+XSWP in sample_b hold vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+CHOLD hold 0 {CHOLD}
+RLEAK hold 0 1T
+
+.options savecurrents
+.tran 5p 80n
+
+.measure tran vin_track FIND v(in) AT=24.9n
+.measure tran vhold_track FIND v(hold) AT=24.9n
+.measure tran acquisition_error PARAM='abs(vin_track-vhold_track)'
+.measure tran vhold_pre_edge FIND v(hold) AT=25.0n
+.measure tran vhold_post_edge FIND v(hold) AT=25.3n
+.measure tran clock_feedthrough PARAM='abs(vhold_post_edge-vhold_pre_edge)'
+.measure tran vhold_30n FIND v(hold) AT=30n
+.measure tran vhold_75n FIND v(hold) AT=75n
+.measure tran hold_droop PARAM='abs(vhold_75n-vhold_30n)'
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/transmission_gate.csv v(in) v(hold) v(sample) v(sample_b)
+quit
+.endc
+
+.end

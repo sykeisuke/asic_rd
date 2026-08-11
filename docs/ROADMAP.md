@@ -34,6 +34,10 @@ Exit criterion: another Mac or Linux host can reproduce the results.
 Exit criterion: a transistor-level ADC slice meets an agreed resolution,
 conversion-time, power, and area budget.
 
+Progress: the typical-corner NMOS sampling-cell baseline and transmission-gate
+comparison are automated. The transmission gate is the provisional topology;
+input-range, PVT, clock-skew, sizing, and physical-capacitor studies remain.
+
 ## Phase 3: Test macro
 
 - Small sampling array.
