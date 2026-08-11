@@ -47,6 +47,9 @@ counter/capture integration and a multi-point transfer test remain.
 The synthesizable 6-bit counter/capture RTL is implemented with self-checking
 simulation and generic Yosys synthesis. GF180 cell mapping, timing, and the
 analog comparator crossing strategy remain before mixed-signal integration.
+File-based mixed-signal co-verification now transfers the measured GF180
+comparator timing into the real counter RTL and checks matching code capture.
+Clock-phase and metastability studies remain.
 
 ## Phase 3: Test macro
 

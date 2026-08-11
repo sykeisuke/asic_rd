@@ -5,4 +5,5 @@
 *.spiceinit
 simulations/**/work/
 digital/**/work/
+mixed_signal/**/work/
 pdk/
