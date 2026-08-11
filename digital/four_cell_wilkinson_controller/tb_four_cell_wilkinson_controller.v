@@ -38,6 +38,7 @@ module tb_four_cell_wilkinson_controller;
         input [1:0] expected_cell;
         input integer count;
         begin
+            compare_high = 1'b1;
             wait (ramp_reset == 1'b0);
             if (active_cell !== expected_cell ||
                 mux_select !== (4'b0001 << expected_cell) || bus_reset) begin
@@ -45,11 +46,7 @@ module tb_four_cell_wilkinson_controller;
                          active_cell, mux_select, bus_reset);
                 failures = failures + 1;
             end
-            compare_high = 1'b1;
-            wait (dut.counter_start == 1'b1);
-            // The controller registers counter_start; allow the counter to
-            // consume that pulse before counting the requested full periods.
-            repeat (count + 2) @(negedge clk);
+            repeat (count + 1) @(negedge clk);
             compare_high = 1'b0;
             wait (ramp_reset == 1'b1);
         end

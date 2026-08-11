@@ -67,8 +67,10 @@ Four replicated transmission-gate cells now have automated sequential-capture,
 comparator convert all four cells in 2.9 us slots; the measured codes are
 monotonic and within three counts of the provisional ideal values. A
 synthesizable controller now sequences bus reset, mux settle, ramp release, and
-counter capture for four cells and stores all four 6-bit results. Buffered
-readout optimization and analog-timing-driven co-verification remain.
+counter capture for four cells and stores all four 6-bit results. File-based
+co-verification transfers all four transistor-level crossing times into that
+controller and checks identical packed codes. Buffered readout optimization
+and comparator-edge metastability characterization remain.
 
 ## Phase 3: Test macro
 

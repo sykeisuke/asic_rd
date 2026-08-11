@@ -104,7 +104,7 @@ module four_cell_wilkinson_controller #(
 
                 SETTLE: begin
                     if (wait_count == 0) begin
-                        ramp_reset <= 1'b0;
+                        counter_start <= 1'b1;
                         state      <= START;
                     end else begin
                         wait_count <= wait_count - 1'b1;
@@ -112,7 +112,9 @@ module four_cell_wilkinson_controller #(
                 end
 
                 START: begin
-                    counter_start <= 1'b1;
+                    // The counter consumes the registered start pulse on this
+                    // edge, exactly when the analog ramp is released.
+                    ramp_reset <= 1'b0;
                     state <= CONVERT;
                 end
 

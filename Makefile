@@ -1,4 +1,4 @@
-.PHONY: check nmos-dc sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter controller cosim vnc stop
+.PHONY: check nmos-dc sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter controller cosim four-cell-cosim vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -44,6 +44,9 @@ controller:
 
 cosim:
 	./scripts/run-cosim.sh
+
+four-cell-cosim:
+	./scripts/run-four-cell-cosim.sh
 
 vnc:
 	./scripts/eda-vnc.sh
