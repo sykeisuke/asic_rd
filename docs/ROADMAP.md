@@ -59,6 +59,9 @@ PMOS variants remain candidate test structures pending offset/delay separation.
 Nominal DC trip-point sweeps show 8-12 mV static error for both variants, much
 smaller than the worst dynamic code error. Dynamic settling is now the primary
 comparator optimization target; mismatch Monte Carlo remains outstanding.
+A 2 pF/10 MHz slow-ramp option reduced the worst tested low-end error by only
+one count while doubling conversion time, so the 1 pF/20 MHz baseline is kept
+and architecture work moves to four-cell integration.
 
 ## Phase 3: Test macro
 
