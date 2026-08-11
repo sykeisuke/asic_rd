@@ -1,4 +1,4 @@
-.PHONY: check nmos-dc sampling-cell comparator vnc stop
+.PHONY: check nmos-dc sampling-cell comparator ramp-generator vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -11,6 +11,9 @@ sampling-cell:
 
 comparator:
 	./scripts/run-comparator.sh
+
+ramp-generator:
+	./scripts/run-ramp-generator.sh
 
 vnc:
 	./scripts/eda-vnc.sh

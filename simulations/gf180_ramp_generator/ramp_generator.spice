@@ -1,0 +1,36 @@
+* GF180MCU current-source Wilkinson ramp generator probe
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+.param CRAMP=1p
+VDD_SOURCE vdd 0 {VDD}
+VBIAS biasp 0 2.2
+VRESET reset 0 PULSE({VDD} 0 100n 1n 1n 2600n 3500n)
+
+XSOURCE ramp biasp vdd vdd pfet_03v3 L=2u W=1u nf=1 m=1
+XRESET ramp reset 0 0 nfet_03v3 L=0.5u W=10u nf=5 m=1
+CRAMP ramp 0 {CRAMP}
+RLEAK ramp 0 10T
+
+.tran 200p 3000n
+.measure tran reset_level FIND v(ramp) AT=90n
+.measure tran t_06 WHEN v(ramp)=0.6 RISE=1
+.measure tran t_12 WHEN v(ramp)=1.2 RISE=1
+.measure tran t_18 WHEN v(ramp)=1.8 RISE=1
+.measure tran slope_low PARAM='0.6/(t_12-t_06)'
+.measure tran slope_high PARAM='0.6/(t_18-t_12)'
+.measure tran slope_average PARAM='1.2/(t_18-t_06)'
+.measure tran slope_mismatch PARAM='abs(slope_low-slope_high)/slope_average'
+.measure tran supply_current AVG par('-i(VDD_SOURCE)') FROM=110n TO=2700n
+.measure tran avg_power PARAM='VDD*supply_current'
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/ramp_generator.csv v(ramp) v(reset) -i(VDD_SOURCE)
+quit
+.endc
+
+.end

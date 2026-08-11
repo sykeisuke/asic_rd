@@ -39,6 +39,8 @@ comparison are automated. The transmission gate is the provisional topology;
 input-range, PVT, clock-skew, sizing, and physical-capacitor studies remain.
 The continuous-time comparator baseline passes provisional 6-bit limits with
 rail-to-rail output; offset separation and 8-bit improvement remain.
+The PMOS-current-source ramp baseline is automated and passes typical-corner
+reset, slope, coarse-linearity, and power limits using an external bias.
 
 ## Phase 3: Test macro
 
