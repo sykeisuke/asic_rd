@@ -1,0 +1,115 @@
+* GF180MCU four-cell sequential Wilkinson conversion macro
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+.param TCOUNT=50n
+VDD_SOURCE vdd 0 {VDD}
+VBIAS_COMP bias_comp 0 0.85
+VBIAS_RAMP bias_ramp 0 2.2
+
+* Capture four ordered input levels before conversion starts.
+VIN vin 0 PWL(0 0.5 35n 0.5 40n 0.8 75n 0.8 80n 1.1
++ 115n 1.1 120n 1.4 12u 1.4)
+VS0 s0 0 PULSE(0 {VDD} 10n 200p 200p 20n 20u)
+VS0B s0b 0 PULSE({VDD} 0 10n 200p 200p 20n 20u)
+VS1 s1 0 PULSE(0 {VDD} 50n 200p 200p 20n 20u)
+VS1B s1b 0 PULSE({VDD} 0 50n 200p 200p 20n 20u)
+VS2 s2 0 PULSE(0 {VDD} 90n 200p 200p 20n 20u)
+VS2B s2b 0 PULSE({VDD} 0 90n 200p 200p 20n 20u)
+VS3 s3 0 PULSE(0 {VDD} 130n 200p 200p 20n 20u)
+VS3B s3b 0 PULSE({VDD} 0 130n 200p 200p 20n 20u)
+
+X0N vin s0 hold0 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X0P vin s0b hold0 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X1N vin s1 hold1 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X1P vin s1b hold1 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X2N vin s2 hold2 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X2P vin s2b hold2 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X3N vin s3 hold3 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X3P vin s3b hold3 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+C0 hold0 0 1p
+C1 hold1 0 1p
+C2 hold2 0 1p
+C3 hold3 0 1p
+R0 hold0 0 1T
+R1 hold1 0 1T
+R2 hold2 0 1T
+R3 hold3 0 1T
+
+* One cell is selected during each 2.9 us conversion slot.
+VSEL0 sel0 0 PULSE(0 {VDD} 180n 200p 200p 2700n 20u)
+VSEL0B sel0b 0 PULSE({VDD} 0 180n 200p 200p 2700n 20u)
+VSEL1 sel1 0 PULSE(0 {VDD} 3080n 200p 200p 2700n 20u)
+VSEL1B sel1b 0 PULSE({VDD} 0 3080n 200p 200p 2700n 20u)
+VSEL2 sel2 0 PULSE(0 {VDD} 5980n 200p 200p 2700n 20u)
+VSEL2B sel2b 0 PULSE({VDD} 0 5980n 200p 200p 2700n 20u)
+VSEL3 sel3 0 PULSE(0 {VDD} 8880n 200p 200p 2700n 20u)
+VSEL3B sel3b 0 PULSE({VDD} 0 8880n 200p 200p 2700n 20u)
+
+XM0N hold0 sel0 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM0P hold0 sel0b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM1N hold1 sel1 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM1P hold1 sel1b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM2N hold2 sel2 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM2P hold2 sel2b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM3N hold3 sel3 mux_bus 0 nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM3P hold3 sel3b mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+CBUS mux_bus 0 20f
+RBUS mux_bus 0 10T
+
+* Discharge the shared bus during each inter-slot guard interval.
+VBUS_RESET bus_reset 0 PULSE({VDD} 0 170n 200p 200p 2710n 2900n)
+XBUS_RESET mux_bus bus_reset 0 0 nfet_03v3 L=0.5u W=5u nf=5 m=1
+
+* Shared ramp: reset in each guard interval, then rise once per selected cell.
+VRESET reset 0 PULSE({VDD} 0 250n 1n 1n 2600n 2900n)
+XRAMP_SOURCE ramp bias_ramp vdd vdd pfet_03v3 L=2u W=1u nf=1 m=1
+XRAMP_RESET ramp reset 0 0 nfet_03v3 L=0.5u W=10u nf=5 m=1
+CRAMP ramp 0 1p
+RLEAK_RAMP ramp 0 10T
+
+* Shared continuous-time comparator.
+XINP left mux_bus tail 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XINN outa ramp tail 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XLOADD left left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XLOADM outa left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XTAIL tail bias_comp 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+XBUF1 outb outa 0 0 nfet_03v3 L=0.28u W=4u nf=4 m=1
+XBUF2 outb outa vdd vdd pfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF3 compare_out outb 0 0 nfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF4 compare_out outb vdd vdd pfet_03v3 L=0.28u W=16u nf=4 m=1
+COUTA outa 0 20f
+COUT compare_out 0 50f
+
+.tran 50p 11600n
+.measure tran start0 WHEN v(reset)=1.65 FALL=1
+.measure tran start1 WHEN v(reset)=1.65 FALL=2
+.measure tran start2 WHEN v(reset)=1.65 FALL=3
+.measure tran start3 WHEN v(reset)=1.65 FALL=4
+.measure tran cross0 WHEN v(compare_out)=1.65 FALL=1
+.measure tran cross1 WHEN v(compare_out)=1.65 FALL=2
+.measure tran cross2 WHEN v(compare_out)=1.65 FALL=3
+.measure tran cross3 WHEN v(compare_out)=1.65 FALL=4
+.measure tran time0 PARAM='cross0-start0'
+.measure tran time1 PARAM='cross1-start1'
+.measure tran time2 PARAM='cross2-start2'
+.measure tran time3 PARAM='cross3-start3'
+.measure tran code0 PARAM='floor(time0/TCOUNT)'
+.measure tran code1 PARAM='floor(time1/TCOUNT)'
+.measure tran code2 PARAM='floor(time2/TCOUNT)'
+.measure tran code3 PARAM='floor(time3/TCOUNT)'
+.measure tran mux0 FIND v(mux_bus) AT=230n
+.measure tran mux1 FIND v(mux_bus) AT=3130n
+.measure tran mux2 FIND v(mux_bus) AT=6030n
+.measure tran mux3 FIND v(mux_bus) AT=8930n
+.measure tran avg_power AVG par('-VDD*i(VDD_SOURCE)') FROM=250n TO=11500n
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/four_cell_wilkinson.csv v(hold0) v(hold1) v(hold2) v(hold3) v(mux_bus) v(ramp) v(compare_out)
+quit
+.endc
+.end

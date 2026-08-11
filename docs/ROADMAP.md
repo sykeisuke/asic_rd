@@ -62,11 +62,11 @@ comparator optimization target; mismatch Monte Carlo remains outstanding.
 A 2 pF/10 MHz slow-ramp option reduced the worst tested low-end error by only
 one count while doubling conversion time, so the 1 pF/20 MHz baseline is kept
 and architecture work moves to four-cell integration.
-Four replicated transmission-gate cells now have automated sequential-capture
-and 4-to-1 analog-mux tests. The mux preserves channel order and passes the
-provisional 30 mV settling and 35 mV disturbance limits with a reset 20 fF bus.
-Buffered readout optimization and per-cell Wilkinson conversion sequencing are
-the next array-level integration steps.
+Four replicated transmission-gate cells now have automated sequential-capture,
+4-to-1 analog-mux, and shared Wilkinson-conversion tests. A single ramp and
+comparator convert all four cells in 2.9 us slots; the measured codes are
+monotonic and within three counts of the provisional ideal values. Buffered
+readout optimization and RTL sequencing/storage are the next array-level steps.
 
 ## Phase 3: Test macro
 
