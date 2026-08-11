@@ -69,8 +69,9 @@ monotonic and within three counts of the provisional ideal values. A
 synthesizable controller now sequences bus reset, mux settle, ramp release, and
 counter capture for four cells and stores all four 6-bit results. File-based
 co-verification transfers all four transistor-level crossing times into that
-controller and checks identical packed codes. Buffered readout optimization
-and comparator-edge metastability characterization remain.
+controller and checks identical packed codes. A +/-2 ns phase sweep identifies
+cell 2 only 500 ps from a conversion-clock boundary. Buffered readout
+optimization and transistor-level metastability characterization remain.
 
 ## Phase 3: Test macro
 
