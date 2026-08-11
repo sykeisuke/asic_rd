@@ -4,5 +4,5 @@
 *.out
 *.spiceinit
 simulations/**/work/
+digital/**/work/
 pdk/
-

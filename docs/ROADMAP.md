@@ -44,6 +44,9 @@ reset, slope, coarse-linearity, and power limits using an external bias.
 The three analog blocks are integrated in a single-point Wilkinson-slice test;
 timing-derived 6-bit code formation passes within one count. Physical RTL
 counter/capture integration and a multi-point transfer test remain.
+The synthesizable 6-bit counter/capture RTL is implemented with self-checking
+simulation and generic Yosys synthesis. GF180 cell mapping, timing, and the
+analog comparator crossing strategy remain before mixed-signal integration.
 
 ## Phase 3: Test macro
 

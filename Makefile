@@ -1,4 +1,4 @@
-.PHONY: check nmos-dc sampling-cell comparator ramp-generator wilkinson-slice vnc stop
+.PHONY: check nmos-dc sampling-cell comparator ramp-generator wilkinson-slice counter vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -17,6 +17,9 @@ ramp-generator:
 
 wilkinson-slice:
 	./scripts/run-wilkinson-slice.sh
+
+counter:
+	./scripts/run-counter.sh
 
 vnc:
 	./scripts/eda-vnc.sh
