@@ -1,4 +1,4 @@
-.PHONY: check nmos-dc sampling-cell comparator ramp-generator wilkinson-slice transfer counter cosim vnc stop
+.PHONY: check nmos-dc sampling-cell comparator comparator-range ramp-generator wilkinson-slice transfer counter cosim vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -11,6 +11,9 @@ sampling-cell:
 
 comparator:
 	./scripts/run-comparator.sh
+
+comparator-range:
+	./scripts/run-comparator-range.sh
 
 ramp-generator:
 	./scripts/run-ramp-generator.sh

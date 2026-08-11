@@ -1,0 +1,60 @@
+* GF180MCU Wilkinson slice with PMOS-input comparator alternative
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+.include work/vin_level.spice
+.param TCOUNT=50n
+VDD_SOURCE vdd 0 {VDD}
+VIN vin 0 {VIN_LEVEL}
+VBIAS_COMP bias_comp 0 2.0
+VBIAS_RAMP bias_ramp 0 2.2
+
+* Track for 50 ns, then hold throughout conversion.
+VSAMPLE sample 0 PULSE({VDD} 0 50n 1n 1n 3u 4u)
+VSAMPLEB sample_b 0 PULSE(0 {VDD} 50n 1n 1n 3u 4u)
+XSWN vin sample hold 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+XSWP vin sample_b hold vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+CHOLD hold 0 1p
+RLEAK_HOLD hold 0 1T
+
+* Reset the ramp until 100 ns, then charge it from the PMOS source.
+VRESET reset 0 PULSE({VDD} 0 100n 1n 1n 2700n 4u)
+XRAMP_SOURCE ramp bias_ramp vdd vdd pfet_03v3 L=2u W=1u nf=1 m=1
+XRAMP_RESET ramp reset 0 0 nfet_03v3 L=0.5u W=10u nf=5 m=1
+CRAMP ramp 0 1p
+RLEAK_RAMP ramp 0 10T
+
+* PMOS-input comparator extends operation toward the lower supply rail.
+XINP left hold tail vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XINN outa ramp tail vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XLOADD left left 0 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XLOADM outa left 0 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XTAIL tail bias_comp vdd vdd pfet_03v3 L=1u W=20u nf=10 m=1
+XBUF1 outb outa 0 0 nfet_03v3 L=0.28u W=4u nf=4 m=1
+XBUF2 outb outa vdd vdd pfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF3 compare_out outb 0 0 nfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF4 compare_out outb vdd vdd pfet_03v3 L=0.28u W=16u nf=4 m=1
+COUTA outa 0 20f
+COUT compare_out 0 50f
+
+.tran 20p 2800n
+.measure tran held_voltage FIND v(hold) AT=90n
+.measure tran acquisition_error PARAM='abs(VIN_LEVEL-held_voltage)'
+.measure tran conversion_start WHEN v(reset)=1.65 FALL=1
+.measure tran compare_time WHEN v(compare_out)=1.65 FALL=1
+.measure tran conversion_time PARAM='compare_time-conversion_start'
+.measure tran output_code PARAM='floor(conversion_time/TCOUNT)'
+.measure tran expected_code PARAM='floor(VIN_LEVEL/(7.67505e5*TCOUNT))'
+.measure tran code_error PARAM='output_code-expected_code'
+.measure tran avg_power AVG par('-VDD*i(VDD_SOURCE)') FROM=100n TO=2700n
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/wilkinson_slice.csv v(vin) v(hold) v(ramp) v(compare_out)
+quit
+.endc
+
+.end

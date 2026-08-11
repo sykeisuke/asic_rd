@@ -53,6 +53,9 @@ Clock-phase and metastability studies remain.
 An eight-point transistor-level input sweep now checks coarse transfer
 monotonicity, sampling error, and code error. Dense transition testing is still
 required before making a no-missing-code claim.
+The PMOS-input comparator alternative extends measurable operation to 1.8 V
+and reduces the 0.4 V error, but worsens high-range delay error. Both NMOS and
+PMOS variants remain candidate test structures pending offset/delay separation.
 
 ## Phase 3: Test macro
 
