@@ -17,11 +17,11 @@ Icarus Verilog functional simulation passes. The controller and its instantiated
 
 | Metric | Result |
 | --- | ---: |
-| Controller-local cells | 169 |
-| Counter cells | 53 |
-| Total mapped cells | 222 |
-| Controller-local Liberty area | 5749.2288 um^2 |
-| Total Liberty area | 7547.0976 um^2 |
+| Controller-local cells | 167 |
+| Gray capture counter cells | 97 |
+| Total mapped cells | 264 |
+| Controller-local Liberty area | 5786.5472 um^2 |
+| Total Liberty area | 8973.9776 um^2 |
 
 These are pre-placement synthesis estimates. Clock distribution, routing,
 power grid, physical-only cells, and placement whitespace are excluded.

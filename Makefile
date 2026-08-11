@@ -1,4 +1,4 @@
-.PHONY: check nmos-dc sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter controller cosim four-cell-cosim phase-sweep vnc stop
+.PHONY: check nmos-dc sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller digital-top digital-physical cosim four-cell-cosim phase-sweep vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -39,8 +39,17 @@ transfer:
 counter:
 	./scripts/run-counter.sh
 
+gray-counter:
+	./scripts/run-gray-counter.sh
+
 controller:
 	./scripts/run-controller.sh
+
+digital-top:
+	./scripts/run-digital-top.sh
+
+digital-physical:
+	./scripts/run-digital-physical.sh
 
 cosim:
 	./scripts/run-cosim.sh

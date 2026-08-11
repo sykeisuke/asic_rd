@@ -15,7 +15,7 @@ mkdir -p "$result_dir"
         analog=simulations/gf180_four_cell_wilkinson
         cosim=mixed_signal/four_cell_cosim
         controller=digital/four_cell_wilkinson_controller
-        counter=digital/wilkinson_counter/wilkinson_counter.v
+        counter=digital/wilkinson_gray_counter/wilkinson_gray_counter.v
 
         mkdir -p "$analog/work" "$cosim/work"
         ngspice -b -o "$analog/work/four_cell_wilkinson.log" \

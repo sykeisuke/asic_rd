@@ -3,26 +3,32 @@
 Research repository for a one-channel waveform-sampling ASIC prototype with an
 on-chip Wilkinson ADC, targeting the GF180MCU process and a future MPW shuttle.
 
-## Current phase
+## Current status
 
 The controlled scope and silicon acceptance criteria are defined in
 [`docs/PROTOTYPE_SPECIFICATION.md`](docs/PROTOTYPE_SPECIFICATION.md).
 
-The first objective is not the complete ASIC. It is a reproducible analog flow:
+The repository now demonstrates the following reproducible path:
 
-1. Pin the foundry, PDK variant, and MPW submission constraints.
-2. Run a GF180 transistor DC simulation from the command line.
-3. Reproduce the same circuit in Xschem.
-4. Lay out the device/test cell and pass DRC and LVS.
-5. Build and characterize a comparator, ramp generator, and sampling switch.
-6. Integrate those blocks into a small Wilkinson ADC test macro.
+1. GF180 transistor-level sampling, mux, ramp, and comparator simulation.
+2. Four-cell sequential Wilkinson conversion.
+3. Gray-coded comparator-edge capture and controller RTL.
+4. File-based four-cell analog-to-RTL co-verification.
+5. Slow synchronous 24-bit serial readout.
+6. GF180 synthesis, STA, routed GDS, DRC, and LVS for the digital top.
+
+The digital physical block is complete as a flow demonstration. Analog layout,
+pad-ring integration, package/PCB design, and provider signoff remain before a
+full-chip tape-out. See [`docs/TAPEOUT_BLOCKERS.md`](docs/TAPEOUT_BLOCKERS.md)
+and [`docs/VERIFICATION_MATRIX.md`](docs/VERIFICATION_MATRIX.md).
 
 ## Repository layout
 
 - `docs/`: roadmap, decisions, MPW constraints, and measurements.
 - `simulations/`: schematic/netlist simulations and generated results.
 - `scripts/`: environment and reproducibility checks.
-- `src/`: design sources, added once the selected PDK flow is operational.
+- `digital/`: counters, controller, serial readout, and physical views.
+- `mixed_signal/`: deterministic SPICE-to-RTL bridges and phase sweeps.
 
 ## Start here
 
@@ -44,6 +50,16 @@ Verify the pinned EDA environment and run the first GF180 simulation:
 ```sh
 make check
 make nmos-dc
+```
+
+Run the integrated milestones:
+
+```sh
+make four-cell-wilkinson
+make four-cell-cosim
+make phase-sweep
+make digital-top
+make digital-physical
 ```
 
 Start the browser-based analog design desktop:

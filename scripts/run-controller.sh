@@ -12,7 +12,7 @@ mkdir -p "$result_dir"
     "$EDA_IMAGE" -lc '
         set -euo pipefail
         cd /foss/designs/digital/four_cell_wilkinson_controller
-        counter=../wilkinson_counter/wilkinson_counter.v
+        counter=../wilkinson_gray_counter/wilkinson_gray_counter.v
         iverilog -g2012 -Wall -o work/tb_four_cell_wilkinson_controller \
             "$counter" four_cell_wilkinson_controller.v \
             tb_four_cell_wilkinson_controller.v

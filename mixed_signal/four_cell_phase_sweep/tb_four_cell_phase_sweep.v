@@ -5,7 +5,7 @@ module tb_four_cell_phase_sweep;
     `include "analog_stimulus.vh"
 
     reg clk = 1'b0;
-    reg rst_n = 1'b0;
+    reg rst_n = 1'b1;
     reg start = 1'b0;
     reg compare_high = 1'b0;
     wire [3:0] mux_select;
@@ -58,6 +58,7 @@ module tb_four_cell_phase_sweep;
         expected2 = (ANALOG_TIME2_PS + offset_ps) / 50000;
         expected3 = (ANALOG_TIME3_PS + offset_ps) / 50000;
 
+        #1 rst_n = 1'b0;
         repeat (2) @(negedge clk);
         rst_n = 1'b1;
         @(negedge clk);

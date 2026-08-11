@@ -16,7 +16,7 @@ mkdir -p "$result_dir"
         bridge=mixed_signal/four_cell_cosim
         sweep=mixed_signal/four_cell_phase_sweep
         controller=digital/four_cell_wilkinson_controller
-        counter=digital/wilkinson_counter/wilkinson_counter.v
+        counter=digital/wilkinson_gray_counter/wilkinson_gray_counter.v
 
         mkdir -p "$analog/work" "$sweep/work"
         ngspice -b -o "$analog/work/four_cell_wilkinson.log" \

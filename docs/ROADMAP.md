@@ -71,7 +71,10 @@ counter capture for four cells and stores all four 6-bit results. File-based
 co-verification transfers all four transistor-level crossing times into that
 controller and checks identical packed codes. A +/-2 ns phase sweep identifies
 cell 2 only 500 ps from a conversion-clock boundary. Buffered readout
-optimization and transistor-level metastability characterization remain.
+optimization and transistor-level metastability characterization remain. The
+production digital path now uses Gray-coded comparator-edge capture and a
+24-bit synchronous serial readout. GF180 mapping and 20 MHz pre-layout STA pass
+for the integrated digital top.
 
 ## Phase 3: Test macro
 
@@ -81,6 +84,12 @@ optimization and transistor-level metastability characterization remain.
 - Extracted post-layout simulation.
 
 Exit criterion: DRC/LVS-clean macro with a documented verification matrix.
+
+Progress: the integrated digital top now completes a reproducible GF180
+RTL-to-GDS flow. Post-route multi-corner STA, antenna checks, detailed-routing
+DRC, Magic DRC, KLayout DRC, and Netgen LVS all pass with zero violations. The
+analog macro layout and extracted analog simulation remain before this phase
+can close.
 
 ## Phase 4: Tape-out integration
 

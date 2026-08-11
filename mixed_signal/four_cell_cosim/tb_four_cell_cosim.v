@@ -5,7 +5,7 @@ module tb_four_cell_cosim;
     `include "analog_stimulus.vh"
 
     reg clk = 1'b0;
-    reg rst_n = 1'b0;
+    reg rst_n = 1'b1;
     reg start = 1'b0;
     reg compare_high = 1'b0;
     wire [3:0] mux_select;
@@ -49,6 +49,7 @@ module tb_four_cell_cosim;
     initial begin
         $dumpfile("work/four_cell_cosim.vcd");
         $dumpvars(0, tb_four_cell_cosim);
+        #1 rst_n = 1'b0;
         repeat (2) @(negedge clk);
         rst_n = 1'b1;
         @(negedge clk);

@@ -6,4 +6,5 @@
 simulations/**/work/
 digital/**/work/
 mixed_signal/**/work/
+digital/**/physical/runs/
 pdk/

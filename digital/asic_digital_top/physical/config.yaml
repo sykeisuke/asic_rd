@@ -1,0 +1,27 @@
+DESIGN_NAME: asic_digital_top
+VERILOG_FILES:
+  - dir::../../wilkinson_gray_counter/wilkinson_gray_counter.v
+  - dir::../../four_cell_wilkinson_controller/four_cell_wilkinson_controller.v
+  - dir::../serial_readout.v
+  - dir::../asic_digital_top.v
+CLOCK_PERIOD: 50.0
+CLOCK_PORT: clk
+PNR_SDC_FILE: dir::physical.sdc
+SIGNOFF_SDC_FILE: dir::physical.sdc
+
+FP_CORE_UTIL: 30
+PL_TARGET_DENSITY: 0.40
+MAX_FANOUT_CONSTRAINT: 6
+
+PDN_VOFFSET: 5
+PDN_HOFFSET: 5
+PDN_VWIDTH: 2
+PDN_HWIDTH: 2
+PDN_VPITCH: 40
+PDN_HPITCH: 40
+PDN_SKIPTRIM: true
+
+pdk::gf180mcu*:
+  FP_CORE_UTIL: 30
+  PL_TARGET_DENSITY: 0.40
+  MAX_FANOUT_CONSTRAINT: 6

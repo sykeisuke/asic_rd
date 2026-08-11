@@ -40,7 +40,7 @@ module four_cell_wilkinson_controller #(
     assign codes = {code3, code2, code1, code0};
     assign active_cell = cell_index;
 
-    wilkinson_counter #(.WIDTH(WIDTH)) counter (
+    wilkinson_gray_counter #(.WIDTH(WIDTH)) counter (
         .clk(clk),
         .rst_n(rst_n),
         .start(counter_start),
