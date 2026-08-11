@@ -1,4 +1,4 @@
-.PHONY: check nmos-dc sampling-cell vnc stop
+.PHONY: check nmos-dc sampling-cell comparator vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -8,6 +8,9 @@ nmos-dc:
 
 sampling-cell:
 	./scripts/run-sampling-cell.sh
+
+comparator:
+	./scripts/run-comparator.sh
 
 vnc:
 	./scripts/eda-vnc.sh

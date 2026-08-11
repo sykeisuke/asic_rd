@@ -37,6 +37,8 @@ conversion-time, power, and area budget.
 Progress: the typical-corner NMOS sampling-cell baseline and transmission-gate
 comparison are automated. The transmission gate is the provisional topology;
 input-range, PVT, clock-skew, sizing, and physical-capacitor studies remain.
+The continuous-time comparator baseline passes provisional 6-bit limits with
+rail-to-rail output; offset separation and 8-bit improvement remain.
 
 ## Phase 3: Test macro
 

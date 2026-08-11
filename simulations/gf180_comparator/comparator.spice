@@ -1,0 +1,44 @@
+* GF180MCU continuous-time comparator baseline for Wilkinson conversion
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+VDD_SOURCE vdd 0 {VDD}
+VBIAS bias 0 0.85
+VSAMPLE sample 0 1.2
+VRAMP ramp 0 PWL(0 0.6 100n 0.6 1100n 1.8 1400n 1.8)
+
+* NMOS differential pair and PMOS current-mirror load.
+XINP left sample tail 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XINN outa ramp tail 0 nfet_03v3 L=0.5u W=20u nf=10 m=1
+XLOADD left left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XLOADM outa left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XTAIL tail bias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+
+* Two inverters restore a full CMOS output while preserving polarity.
+XBUF1 outb outa 0 0 nfet_03v3 L=0.28u W=4u nf=4 m=1
+XBUF2 outb outa vdd vdd pfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF3 dout outb 0 0 nfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF4 dout outb vdd vdd pfet_03v3 L=0.28u W=16u nf=4 m=1
+
+COUTA outa 0 20f
+COUT dout 0 50f
+
+.tran 20p 1400n
+.measure tran t_ideal WHEN v(ramp)=1.2 RISE=1
+.measure tran t_output WHEN v(dout)=1.65 FALL=1
+.measure tran crossing_delay PARAM='t_output-t_ideal'
+.measure tran output_high MAX v(dout) FROM=150n TO=450n
+.measure tran output_low MIN v(dout) FROM=900n TO=1200n
+.measure tran supply_current AVG par('-i(VDD_SOURCE)') FROM=100n TO=1200n
+.measure tran avg_power PARAM='VDD*supply_current'
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/comparator.csv v(ramp) v(sample) v(outa) v(dout)
+quit
+.endc
+
+.end
