@@ -65,8 +65,10 @@ and architecture work moves to four-cell integration.
 Four replicated transmission-gate cells now have automated sequential-capture,
 4-to-1 analog-mux, and shared Wilkinson-conversion tests. A single ramp and
 comparator convert all four cells in 2.9 us slots; the measured codes are
-monotonic and within three counts of the provisional ideal values. Buffered
-readout optimization and RTL sequencing/storage are the next array-level steps.
+monotonic and within three counts of the provisional ideal values. A
+synthesizable controller now sequences bus reset, mux settle, ramp release, and
+counter capture for four cells and stores all four 6-bit results. Buffered
+readout optimization and analog-timing-driven co-verification remain.
 
 ## Phase 3: Test macro
 
