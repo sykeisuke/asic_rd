@@ -5,6 +5,9 @@ on-chip Wilkinson ADC, targeting the GF180MCU process and a future MPW shuttle.
 
 ## Current phase
 
+The controlled scope and silicon acceptance criteria are defined in
+[`docs/PROTOTYPE_SPECIFICATION.md`](docs/PROTOTYPE_SPECIFICATION.md).
+
 The first objective is not the complete ASIC. It is a reproducible analog flow:
 
 1. Pin the foundry, PDK variant, and MPW submission constraints.

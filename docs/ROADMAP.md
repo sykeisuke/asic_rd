@@ -1,5 +1,9 @@
 # Roadmap
 
+The controlled first-prototype scope is defined in
+[`PROTOTYPE_SPECIFICATION.md`](PROTOTYPE_SPECIFICATION.md). Performance work
+shall not displace its Must-level flow and observability requirements.
+
 ## Phase 0: Freeze external constraints
 
 - Confirm the wafer.space run expected for an early-2027 submission.
@@ -44,4 +48,3 @@ Exit criterion: DRC/LVS-clean macro with a documented verification matrix.
 - Pad ring, ESD, power domains, decoupling, and seal-ring constraints.
 - Top-level mixed-signal integration and package/PCB co-design.
 - Provider signoff and final reproducibility run.
-
