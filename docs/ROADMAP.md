@@ -62,6 +62,9 @@ comparator optimization target; mismatch Monte Carlo remains outstanding.
 A 2 pF/10 MHz slow-ramp option reduced the worst tested low-end error by only
 one count while doubling conversion time, so the 1 pF/20 MHz baseline is kept
 and architecture work moves to four-cell integration.
+Four replicated transmission-gate cells now have an automated sequential-
+capture test. Cell selection and conversion sequencing are the next array-level
+integration steps.
 
 ## Phase 3: Test macro
 

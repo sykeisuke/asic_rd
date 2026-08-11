@@ -1,0 +1,56 @@
+* GF180MCU four-cell transmission-gate sampling array
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+VDD_SOURCE vdd 0 {VDD}
+
+* Input settles to a different level before each sampling aperture.
+VIN vin 0 PWL(0 0.5 35n 0.5 40n 0.8 75n 0.8 80n 1.1
++ 115n 1.1 120n 1.4 250n 1.4)
+
+VS0 s0 0 PULSE(0 {VDD} 10n 200p 200p 20n 400n)
+VS0B s0b 0 PULSE({VDD} 0 10n 200p 200p 20n 400n)
+VS1 s1 0 PULSE(0 {VDD} 50n 200p 200p 20n 400n)
+VS1B s1b 0 PULSE({VDD} 0 50n 200p 200p 20n 400n)
+VS2 s2 0 PULSE(0 {VDD} 90n 200p 200p 20n 400n)
+VS2B s2b 0 PULSE({VDD} 0 90n 200p 200p 20n 400n)
+VS3 s3 0 PULSE(0 {VDD} 130n 200p 200p 20n 400n)
+VS3B s3b 0 PULSE({VDD} 0 130n 200p 200p 20n 400n)
+
+X0N vin s0 hold0 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X0P vin s0b hold0 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X1N vin s1 hold1 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X1P vin s1b hold1 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X2N vin s2 hold2 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X2P vin s2b hold2 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+X3N vin s3 hold3 0 nfet_03v3 L=0.28u W=10u nf=10 m=1
+X3P vin s3b hold3 vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+
+C0 hold0 0 1p
+C1 hold1 0 1p
+C2 hold2 0 1p
+C3 hold3 0 1p
+R0 hold0 0 1T
+R1 hold1 0 1T
+R2 hold2 0 1T
+R3 hold3 0 1T
+
+.tran 10p 250n
+.measure tran hold0_value FIND v(hold0) AT=220n
+.measure tran hold1_value FIND v(hold1) AT=220n
+.measure tran hold2_value FIND v(hold2) AT=220n
+.measure tran hold3_value FIND v(hold3) AT=220n
+.measure tran hold0_error PARAM='abs(hold0_value-0.5)'
+.measure tran hold1_error PARAM='abs(hold1_value-0.8)'
+.measure tran hold2_error PARAM='abs(hold2_value-1.1)'
+.measure tran hold3_error PARAM='abs(hold3_value-1.4)'
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/four_cell_array.csv v(vin) v(hold0) v(hold1) v(hold2) v(hold3)
+quit
+.endc
+.end
