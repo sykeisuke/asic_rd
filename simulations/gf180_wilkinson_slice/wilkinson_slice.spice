@@ -3,7 +3,7 @@
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
 
 .param VDD=3.3
-.param VIN_LEVEL=1.2
+.include work/vin_level.spice
 .param TCOUNT=50n
 VDD_SOURCE vdd 0 {VDD}
 VIN vin 0 {VIN_LEVEL}

@@ -14,6 +14,8 @@ mkdir -p "$result_dir"
         cd /foss/designs
 
         mkdir -p simulations/gf180_wilkinson_slice/work
+        printf ".param VIN_LEVEL=1.2\n" \
+            > simulations/gf180_wilkinson_slice/work/vin_level.spice
         ngspice -b -o simulations/gf180_wilkinson_slice/work/wilkinson_slice.log \
             simulations/gf180_wilkinson_slice/wilkinson_slice.spice
         grep -E "^(conversion_time|output_code)" \

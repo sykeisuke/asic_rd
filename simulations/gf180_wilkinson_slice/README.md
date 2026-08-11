@@ -10,6 +10,12 @@ Run:
 make wilkinson-slice
 ```
 
+Run the eight-point coarse transfer test:
+
+```sh
+make transfer
+```
+
 The current test derives the code from measured comparator timing. It proves
 the integrated analog signal path, but does not yet contain a synthesized
 counter or capture latch. Those digital blocks are the next integration step.

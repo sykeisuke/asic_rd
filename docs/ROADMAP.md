@@ -50,6 +50,9 @@ analog comparator crossing strategy remain before mixed-signal integration.
 File-based mixed-signal co-verification now transfers the measured GF180
 comparator timing into the real counter RTL and checks matching code capture.
 Clock-phase and metastability studies remain.
+An eight-point transistor-level input sweep now checks coarse transfer
+monotonicity, sampling error, and code error. Dense transition testing is still
+required before making a no-missing-code claim.
 
 ## Phase 3: Test macro
 

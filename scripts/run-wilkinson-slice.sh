@@ -12,6 +12,7 @@ mkdir -p "$result_dir"
     "$EDA_IMAGE" -lc '
         set -euo pipefail
         cd /foss/designs/simulations/gf180_wilkinson_slice
+        printf ".param VIN_LEVEL=1.2\n" > work/vin_level.spice
         ngspice -b -o work/wilkinson_slice.log wilkinson_slice.spice
         test -s work/wilkinson_slice.csv
         grep -E "^(held_voltage|acquisition_error|conversion_time|output_code|expected_code|code_error|avg_power)" \
