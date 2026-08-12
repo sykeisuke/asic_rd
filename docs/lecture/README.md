@@ -775,6 +775,37 @@ make transfer
 
 make four-cell-wilkinson
 
+## GAWで統合波形を開く
+
+`make four-cell-wilkinson`は自動合否判定に加えて、GAWで読めるRAW波形を生成します。VNC内のLinux Terminalで次を実行します。
+
+```sh
+cd /foss/designs/simulations/gf180_four_cell_wilkinson
+gaw work/four_cell_wilkinson.raw
+```
+
+GAWが開いたら、左側の信号名を右側の黒いgraph panelへdrag and dropします。次の3段に分けると信号の因果関係を追いやすくなります。
+
+- 上段: `v(vin)`、`v(hold0)`、`v(hold1)`、`v(hold2)`、`v(hold3)`
+- 中段: `v(mux_bus)`、`v(ramp)`
+- 下段: `v(reset)`、`v(compare_out)`
+
+信号一覧が見えない場合は左側の小windowを前面に出します。波形が時間軸の一部にしか見えない場合は、上部の`Z Out`または`Zoom` menuを使います。4 cellすべてを確認するには、横軸をsimulation終了時刻の約11.6 µsまで表示します。
+
+![GAWで表示した4-cell統合Wilkinson波形](assets/gaw_four_cell_integrated.png)
+
+*図4　GAWによる4-cell統合SPICE波形。上段は入力と4つの保持電圧、中段はMUX busとramp、下段はresetとcomparator出力。画像は約7 µsまでの表示なので、最後のcellを見るときはさらにZoom Outする。*
+
+## この画面で何を検証するか
+
+1. `hold0`から`hold3`がそれぞれ異なる電圧を保持し、選択されるまで大きく変化しない。
+2. `mux_bus`が変換slotごとに対応するhold電圧へ切り替わる。
+3. `reset`の切替後、`ramp`が各slotで低い電圧からほぼ直線的に上昇する。
+4. `ramp`が`mux_bus`へ到達する付近で`compare_out`が切り替わる。
+5. 高いhold電圧ほど交差までの時間が長くなり、6-bit codeも大きくなる。
+
+この画面は波形の因果関係を人が確認するためのものです。数値の合否はTerminalに表示される`PASS: four cells complete sequential Wilkinson conversion`と、`work/measurements.txt`の`code0`から`code3`でも確認します。
+
 <img src="assets/image8.png" style="width:6.45in;height:3.49059in" />
 
 *図3　4-cell shared Wilkinson conversion。上段は保持値とMUX
