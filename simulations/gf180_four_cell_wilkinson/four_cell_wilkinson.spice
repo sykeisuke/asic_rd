@@ -110,6 +110,7 @@ set wr_singlescale
 set wr_vecnames
 run
 wrdata work/four_cell_wilkinson.csv v(hold0) v(hold1) v(hold2) v(hold3) v(mux_bus) v(ramp) v(compare_out)
+write work/four_cell_wilkinson.raw v(vin) v(s0) v(s1) v(s2) v(s3) v(hold0) v(hold1) v(hold2) v(hold3) v(sel0) v(sel1) v(sel2) v(sel3) v(mux_bus) v(reset) v(ramp) v(compare_out)
 quit
 .endc
 .end
