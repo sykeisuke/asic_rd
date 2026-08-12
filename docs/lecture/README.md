@@ -169,7 +169,7 @@ transientとnoise/mismatchの順で考えると整理しやすくなります。
 |------------------------------------------------------------------------------------------------------------------|
 | **body端子** MOSは4端子deviceです。bulk/body接続を省略して考えると、body effectやparasitic diodeを見落とします。 |
 
-# 3.2 Bias、headroom、gain、bandwidth
+## 3.2 Bias、headroom、gain、bandwidth
 
 Biasはsignalがないときの静止状態です。transistorが意図した領域に入り、全nodeが電源範囲内にあることを先に確認します。Headroomはsignalが振れてもdeviceが必要な電圧を保てる余裕です。
 
@@ -202,7 +202,7 @@ nsです。0.1%程度までsettleさせるには約7τ、すなわち約14
 nsが一つの目安です。これはfirst-order近似であり、実回路ではsignal-dependent
 RONや寄生容量をSPICEで確認します。
 
-# 3.3 誤差、noise、PVT、Monte Carlo
+## 3.3 誤差、noise、PVT、Monte Carlo
 
 | **分類**         | **例**                              | **検証**                            |
 |------------------|-------------------------------------|-------------------------------------|
@@ -254,7 +254,7 @@ crossingをGray captureがcodeへ変える。*
 | CODE\[5:0\]   | Gray capture                | code registers             | one cell result             |
 | DATA          | serializer                  | FPGA                       | 24-bit payload, serial      |
 
-# 4.1 1回の変換を時系列で追う
+## 4.1 1回の変換を時系列で追う
 
 13. Track: SAMPLE\[n\]=1。switchがONになりVHOLD\[n\]がVINへ追従する。
 
@@ -288,7 +288,7 @@ crossingをGray captureがcodeへ変える。*
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **設計レビュー** 各arrowについてproducer、consumer、voltage domain、clock domain、active polarity、reset stateを説明できれば、接続の理解がかなり進んでいます。 |
 
-# 1. 全体設計フロー
+# 5. 全体設計フロー
 
 <img src="assets/image5.png" style="width:6.5in;height:3.44118in" />
 
@@ -348,7 +348,7 @@ make check
 
 -   VERIFICATION\_MATRIXの1行を選び、要求、test、artifact、判定を説明する。
 
-# 2. Mac + Docker開発環境
+# 6. Mac + Docker開発環境
 
 Macはホストとして十分に使えます。Linux向けEDAツールとGF180
 PDKはDockerコンテナ内へ固定し、XschemなどGUIはブラウザVNCから操作します。これにより学生ごとのmacOS差を小さくします。
@@ -386,7 +386,7 @@ limit回避、組織管理を使う場合はログインが必要です。授業
 |-----------------------------------------------------------------------------------------------------------------------------------------|
 | **安全上の注意** Gatekeeperを恒久的に無効化しない。Docker公式配布物を使い、異常が続く場合は再インストールとhelper cleanupを優先します。 |
 
-# 2.1 Docker・VNC・/fossの関係
+## 6.1 Docker・VNC・/fossの関係
 
 VNCで接続している先はDocker Desktopの管理画面ではなく、Docker
 Desktop上で動くIIC-OSIC-TOOLS Linux
@@ -427,7 +427,7 @@ Container: /foss/designs
 |------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **学生の開始手順** git clone後、必ずasic\_rd directoryへcdしてmake vncを実行します。/foss/designsが空なら、cloneではなくmountと起動containerを確認します。 |
 
-# 5. Xschemを初めて使う
+# 7. Xschemを初めて使う
 
 Xschemは回路図editorであり、simulation
 engineそのものではありません。symbolとwireからSPICE
@@ -473,30 +473,29 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 |---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **ショートカット** Xschemのshortcutはversionやkeymapで差があり得ます。授業ではまずmenu名で操作を共有し、各自の画面下status/helpでshortcutを確認します。 |
 
-# 5.1 nmos\_dc.schを開いた後
+## 7.1 nmos\_dc.schを開いた後
 
-<img src="assets/image6.png" alt="Xschemでnmos_dc.schを開いた画面" />
+<img src="assets/image6.png" style="width:6.5in;height:4.59608in" />
 
 *図6　nmos\_dc.schを開いた直後。右のgraphが空なのはRAW結果をまだ読み込んでいないため。*
 
 ## 画面のどこを見るか
 
-| **場所**     | **内容**                                             |
-|--------------|------------------------------------------------------|
-| 左中央       | GF180 3.3 V NMOS。G/D/S/Bの4端子、W=1 µm、L=0.28 µm  |
-| 中央         | ngspice command。VDSを0–3.3 V、VGSを0–3.3 Vでsweep   |
-| 左下         | GF180 model includeとtypical library選択             |
-| 右           | `i(vd) -1 *`を表示するgraph。縦軸はdrain current、横軸はVDS |
-| 左上の緑矢印 | work/nmos\_dc.rawをXschemへ読み込むlauncher          |
+| **場所**     | **内容**                                                   |
+|--------------|------------------------------------------------------------|
+| 左中央       | GF180 3.3 V NMOS。G/D/S/Bの4端子、W=1 µm、L=0.28 µm        |
+| 中央         | ngspice command。VDSを0–3.3 V、VGSを0–3.3 Vでsweep         |
+| 左下         | GF180 model includeとtypical library選択                   |
+| 右           | i(vd) -1 \*を表示するgraph。縦軸はdrain current、横軸はVDS |
+| 左上の緑矢印 | work/nmos\_dc.rawをXschemへ読み込むlauncher                |
 
-# 5.2 最初の波形を表示する
+## 7.2 最初の波形を表示する
 
 32. Mac terminalでrepository直下から make nmos-dc
     を実行する。すでに実行済みならwork/nmos\_dc.rawが存在する。
 
-33. Xschem画面左上の緑矢印『Load simulation
-    results』をCtrl + 左クリックする。通常のクリックやダブルクリックは
-    launcherの選択またはproperty編集になる。
+33. Xschem画面左上の緑矢印『Load simulation results』をCtrl +
+    左クリックする。通常のクリックやダブルクリックはlauncherの選択またはproperty編集になる。
 
 34. 右側graphに複数のId-Vds curveが現れることを確認する。
 
@@ -506,13 +505,9 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 36. Terminalで ls -lh work/nmos\_dc.raw を実行し、fileが0
     byteでないか確認する。
 
-37. 必要なら make nmos-dc を再実行し、Xschemで再度Load simulation
-    resultsを押す。
-
-`raw_read(): failed to open ...`と表示された場合は、Xschemを
-`/foss/designs/simulations/gf180_nmos_dc`から起動しているか確認する。
-launcherは現在のdirectoryを基準に`work/nmos_dc.raw`を開く。古い回路図を
-開いたままprojectを更新した場合は、一度閉じて開き直す。
+37. 必要なら make nmos-dc
+    を再実行し、Xschemを閉じて開き直してから、再度Ctrl +
+    左クリックする。
 
 ```bash
 # Mac terminal
@@ -524,6 +519,15 @@ cd /foss/designs/simulations/gf180_nmos_dc
 ls -lh work/nmos_dc.raw
 ```
 
+|                                                                                                                                                                                                                                |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **RAWを開けない場合** raw\_read(): failed to open ... と表示されたら、Xschemを /foss/designs/simulations/gf180\_nmos\_dc から起動しているか確認します。古い回路図を開いたままprojectを更新した場合は、一度閉じて開き直します。 |
+
+<img src="assets/image7.png" style="width:6.5in;height:5.11506in" />
+
+*図7　期待するId–Vds表示。VGSごとに複数のcurveが現れ、最大電流は約520
+µA。*
+
 ## 表示後に読み取ること
 
 -   VGSが高いcurveほどdrain currentが大きい。
@@ -532,10 +536,9 @@ ls -lh work/nmos_dc.raw
 
 -   縦軸のuはµA。800uは800 µA。
 
--   SPICEのvoltage-source電流はsourceへ流れ込む向きが正なので、NMOSのdrain
-    currentを上向きに表示するためgraphでは`i(vd) -1 *`を使う。Xschemの
-    graph演算は後置記法（RPN）なので`-i(vd)`ではない。`i(vd)`のままだと
-    負側へ描かれ、縦軸が0以上の場合は下端へ潰れて見える。
+-   SPICEの電圧源電流はsourceへ流れ込む向きが正なので、NMOS drain
+    currentを上向きに表示するには i(vd) -1 \*
+    とする。Xschemのgraph演算は後置記法（RPN）。
 
 -   graphのcurve数はVGS sweep点に対応する。
 
@@ -545,7 +548,7 @@ ls -lh work/nmos_dc.raw
 |-------------------------------------------------------------------------------------------------------------------|
 | **ここでの到達点** 自分でRAWを読み込み、curveを表示し、VGS/VDS/ID/W/L/model cornerを説明できればLab 1へ進めます。 |
 
-# 5.3 Netlistとngspiceを追跡する
+## 7.3 Netlistとngspiceを追跡する
 
 make
 nmos-dcを実行すると、Xschemはnmos\_dc.schからwork/nmos\_dc\_xschem.spiceを生成します。その後ngspiceがbatch
@@ -585,7 +588,7 @@ ngspice -b work/nmos_dc_xschem.spice
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **重要** generated netlistは回路図の翻訳結果です。回路図が正しそうでもnetlistのmodel名、node順、parameterが意図と違うことがあります。最初の数回は必ず両方を見ます。 |
 
-# 5.4 Digital toolの使い分け
+# 8. Digital toolの使い分け
 
 | **段階**  | **Command**               | **何を確認するか**                        |
 |-----------|---------------------------|-------------------------------------------|
@@ -767,7 +770,7 @@ make transfer
 
 make four-cell-wilkinson
 
-<img src="assets/image7.png" style="width:6.45in;height:3.49059in" />
+<img src="assets/image8.png" style="width:6.45in;height:3.49059in" />
 
 *図3　4-cell shared Wilkinson conversion。上段は保持値とMUX
 bus、下段はrampとcomparator。*
@@ -870,7 +873,7 @@ simulatorを同時結合する重いAMS環境を使わず、境界条件を明�
 
 make phase-sweep
 
-<img src="assets/image8.png" style="width:6.2in;height:2.68667in" />
+<img src="assets/image9.png" style="width:6.2in;height:2.68667in" />
 
 *図4　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
 
@@ -893,7 +896,7 @@ bitだけ変化するため、境界付近の不確かさを原則として隣�
 |---------------------------------------------------------------------------------------------------------------------------------------------|
 | **判断記録** 設計理由は docs/decisions/0003-gray-comparator-capture.md に残しています。コードだけでなく、なぜその方式を選んだかを読むこと。 |
 
-# 3. 24-bit serial readout
+# 9. 24-bit serial readout
 
 4個の6-bit codeを24-bit
 wordへまとめ、FPGAへserial転送します。pad数を抑えられる一方、bit
@@ -932,7 +935,7 @@ make digital-top
 
 make digital-physical
 
-<img src="assets/image9.png" style="width:3.9in;height:4.222in" />
+<img src="assets/image10.png" style="width:5.3in;height:5.7399in" />
 
 *図5　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
 
@@ -949,7 +952,7 @@ make digital-physical
 以下にあります。GDS、DEF、LEF、gate-level
 netlist、metricsを相互に対応づけます。
 
-# 4. Signoff結果の読み方
+# 10. Signoff結果の読み方
 
 | **Check**         | **今回の結果** | **意味**                            |
 |-------------------|----------------|-------------------------------------|
@@ -984,7 +987,7 @@ netlist、metricsを相互に対応づけます。
 -   hold slackが正でも安心しきれない理由をcorner、OCV、I/O
     constraintから説明する。
 
-# 5. 再現可能なデバッグ
+# 11. 再現可能なデバッグ
 
 エラーを見たらランダムに設定を変えず、最初に失敗した境界を特定します。下流のエラーは上流の欠損から連鎖していることが多いためです。
 
@@ -1013,7 +1016,7 @@ netlist、metricsを相互に対応づけます。
 | RTL simはPASS、P&R失敗 | clock/reset、unsupported construct、constraints                |
 | DRC/LVS不一致          | PDK deck、pin label、bulk/substrate、netlist source            |
 
-# 6. 学生演習
+# 12. 学生演習
 
 ## 演習A：再現レポート
 
@@ -1051,7 +1054,7 @@ netlist、metricsを相互に対応づけます。
 |--------------------------------------------------------------------------------------------------------------|
 | **提出物** README形式の短い実験記録、変更diff、再現command、主要artifactへの相対path。画像だけの提出は不可。 |
 
-# 7. Prototypeからtape-outへ
+# 13. Prototypeからtape-outへ
 
 このリポジトリはcomplete design
 flowのdemonstrationとして大きな節目に到達しています。しかしfoundryへ提出するfull
@@ -1083,7 +1086,7 @@ chipには、デジタルGDS以外の設計とprovider固有条件が残って�
 
 □ package/PCB/test planがchip pinoutと一致する。
 
-# 8. Specification snapshot
+# 14. Specification snapshot
 
 | **項目**          | **Prototype v0**                                                   |
 |-------------------|--------------------------------------------------------------------|
@@ -1111,7 +1114,7 @@ chipには、デジタルGDS以外の設計とprovider固有条件が残って�
 | PEX           | layout寄生R/Cを抽出して再simulation                |
 | GDSII         | mask layoutを表す交換形式                          |
 
-# 9. Command quick reference
+# 15. Command quick reference
 
 | **Command**              | **対象**                      |
 |--------------------------|-------------------------------|
@@ -1135,7 +1138,7 @@ chipには、デジタルGDS以外の設計とprovider固有条件が残って�
 | make digital-physical    | RTL-to-GDS                    |
 | make vnc                 | browser desktop               |
 
-# 10. Final review sheet
+# 16. Final review sheet
 
 学生は以下を口頭またはREADMEで説明できれば、このprototypeのcomplete
 flowを自走できています。
