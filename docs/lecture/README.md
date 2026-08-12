@@ -106,14 +106,12 @@ scriptへ対応づける入口です。たとえば make nmos-dc は
 scripts/run-nmos-dc.sh
 を呼び、そのscriptがDocker内でXschemとngspiceを実行します。
 
-```text
-make nmos-dc
--> scripts/run-nmos-dc.sh
--> docker run -v <repo>:/foss/designs
--> xschem -n ... nmos_dc.sch
--> ngspice -b ...spice
--> work/nmos_id_vds.csv
-```
+make nmos-dc<br>
+-&gt; scripts/run-nmos-dc.sh<br>
+-&gt; docker run -v &lt;repo&gt;:/foss/designs<br>
+-&gt; xschem -n ... nmos\_dc.sch<br>
+-&gt; ngspice -b ...spice<br>
+-&gt; work/nmos\_id\_vds.csv
 
 ## scriptを読む順番
 
@@ -219,17 +217,17 @@ parasiticを組み合わせたverification planが必要です。
 
 ## 初学者が波形を見る順序
 
-7.  電源とgroundが期待値か。
+1.  電源とgroundが期待値か。
 
-8.  入力刺激の振幅・位相・立上りが想定どおりか。
+2.  入力刺激の振幅・位相・立上りが想定どおりか。
 
-9.  内部nodeがrailへ張り付いていないか。
+3.  内部nodeがrailへ張り付いていないか。
 
-10. 出力の極性が合っているか。
+4.  出力の極性が合っているか。
 
-11. 時間軸と電圧軸の単位が合っているか。
+5.  時間軸と電圧軸の単位が合っているか。
 
-12. 測定cursorだけでなく前後のtransientも見る。
+6.  測定cursorだけでなく前後のtransientも見る。
 
 |                                                                                                   |
 |---------------------------------------------------------------------------------------------------|
@@ -256,25 +254,25 @@ crossingをGray captureがcodeへ変える。*
 
 ## 4.1 1回の変換を時系列で追う
 
-13. Track: SAMPLE\[n\]=1。switchがONになりVHOLD\[n\]がVINへ追従する。
+1.  Track: SAMPLE\[n\]=1。switchがONになりVHOLD\[n\]がVINへ追従する。
 
-14. Hold: SAMPLE\[n\]=0。switchをOFFにし、capacitorへ電圧を保存する。
+2.  Hold: SAMPLE\[n\]=0。switchをOFFにし、capacitorへ電圧を保存する。
 
-15. Select: SEL=n。VHOLD\[n\]だけをVMUXへ接続する。
+3.  Select: SEL=n。VHOLD\[n\]だけをVMUXへ接続する。
 
-16. Settle: MUX切替によるtransientが収まるまで待つ。
+4.  Settle: MUX切替によるtransientが収まるまで待つ。
 
-17. Reset: VRAMPとcounterを既知値へ戻す。
+5.  Reset: VRAMPとcounterを既知値へ戻す。
 
-18. Convert: rampを開始し、Gray counterを進める。
+6.  Convert: rampを開始し、Gray counterを進める。
 
-19. Compare: VRAMPがVMUXを横切るとHIT edgeが発生する。
+7.  Compare: VRAMPがVMUXを横切るとHIT edgeが発生する。
 
-20. Capture: HIT近傍のGray codeを保存しbinary codeへ扱う。
+8.  Capture: HIT近傍のGray codeを保存しbinary codeへ扱う。
 
-21. Repeat: n=0..3について繰り返す。
+9.  Repeat: n=0..3について繰り返す。
 
-22. Readout: 4×6 bitを24-bit wordへ連結しserial送信する。
+10. Readout: 4×6 bitを24-bit wordへ連結しserial送信する。
 
 ## analog/digital境界で決めること
 
@@ -353,14 +351,14 @@ make check
 Macはホストとして十分に使えます。Linux向けEDAツールとGF180
 PDKはDockerコンテナ内へ固定し、XschemなどGUIはブラウザVNCから操作します。これにより学生ごとのmacOS差を小さくします。
 
-23. Docker
+1.  Docker
     Desktopを起動し、メイン画面でEngineがRunningであることを確認する。
 
-24. リポジトリで make vnc を実行する。
+2.  リポジトリで make vnc を実行する。
 
-25. ブラウザで http://localhost:8080/?password=abc123 を開く。
+3.  ブラウザで http://localhost:8080/?password=abc123 を開く。
 
-26. File Managerから
+4.  File Managerから
     /foss/designs/simulations/gf180\_nmos\_dc/nmos\_dc.sch を開く。
 
 cd /Users/ykeisuke/Desktop/mywork/asic\_rd<br>
@@ -393,14 +391,12 @@ Desktop上で動くIIC-OSIC-TOOLS Linux
 containerの仮想desktopです。Browserはlocalhost:8080へ接続し、container内のweb/VNC
 serverがLinux desktop画面を転送します。
 
-```text
-Mac
--> Docker Desktop
--> container: asic-rd-gf180-vnc
--> Linux desktop + EDA tools + PDK
--> web/VNC server : port 80
--> Browser localhost:8080
-```
+Mac<br>
+-&gt; Docker Desktop<br>
+-&gt; container: asic-rd-gf180-vnc<br>
+-&gt; Linux desktop + EDA tools + PDK<br>
+-&gt; web/VNC server : port 80<br>
+-&gt; Browser localhost:8080
 
 | **質問**                      | **答え**                                                                                                                                       |
 |-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -417,11 +413,9 @@ eda-vnc.shの -v "$PROJECT\_ROOT:/foss/designs:rw"
 が対応を作ります。PROJECT\_ROOTはmake vncを実行したasic\_rd
 repositoryです。
 
-```text
-Student Mac: /Users/.../asic_rd
-        | Docker bind mount
+Student Mac: /Users/.../asic\_rd<br>
+\| Docker bind mount<br>
 Container: /foss/designs
-```
 
 |                                                                                                                                                            |
 |------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -436,18 +430,18 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 
 ## 回路図を開く
 
-27. make vncを実行し、browser desktopを開く。
+1.  make vncを実行し、browser desktopを開く。
 
-28. File Managerで /foss/designs/simulations/gf180\_nmos\_dc/
+2.  File Managerで /foss/designs/simulations/gf180\_nmos\_dc/
     へ移動する。
 
-29. nmos\_dc.schをdouble-clickする。関連付けで開かない場合はXschemを起動してFile &gt;
+3.  nmos\_dc.schをdouble-clickする。関連付けで開かない場合はXschemを起動してFile &gt;
     Openを使う。
 
-30. 画面上のNMOS symbol、voltage source、ground、simulation
+4.  画面上のNMOS symbol、voltage source、ground、simulation
     commandを探す。
 
-31. symbolを選択してpropertyを開き、model名、W、L、multiplicityを読む。
+5.  symbolを選択してpropertyを開き、model名、W、L、multiplicityを読む。
 
 ## 配線を読むときの規則
 
@@ -491,33 +485,31 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 
 ## 7.2 最初の波形を表示する
 
-32. Mac terminalでrepository直下から make nmos-dc
+1.  Mac terminalでrepository直下から make nmos-dc
     を実行する。すでに実行済みならwork/nmos\_dc.rawが存在する。
 
-33. Xschem画面左上の緑矢印『Load simulation results』をCtrl +
+2.  Xschem画面左上の緑矢印『Load simulation results』をCtrl +
     左クリックする。通常のクリックやダブルクリックはlauncherの選択またはproperty編集になる。
 
-34. 右側graphに複数のId-Vds curveが現れることを確認する。
+3.  右側graphに複数のId-Vds curveが現れることを確認する。
 
-35. curveが見えなければXschemを開いたdirectoryが
+4.  curveが見えなければXschemを開いたdirectoryが
     /foss/designs/simulations/gf180\_nmos\_dc か確認する。
 
-36. Terminalで ls -lh work/nmos\_dc.raw を実行し、fileが0
+5.  Terminalで ls -lh work/nmos\_dc.raw を実行し、fileが0
     byteでないか確認する。
 
-37. 必要なら make nmos-dc
+6.  必要なら make nmos-dc
     を再実行し、Xschemを閉じて開き直してから、再度Ctrl +
     左クリックする。
 
-```bash
-# Mac terminal
-cd /Users/ykeisuke/Desktop/mywork/asic_rd
-make nmos-dc
-
-# Container terminalで確認する場合
-cd /foss/designs/simulations/gf180_nmos_dc
-ls -lh work/nmos_dc.raw
-```
+\# Mac terminal<br>
+cd /Users/ykeisuke/Desktop/mywork/asic\_rd<br>
+make nmos-dc<br>
+<br>
+\# Container terminalで確認する場合<br>
+cd /foss/designs/simulations/gf180\_nmos\_dc<br>
+ls -lh work/nmos\_dc.raw
 
 |                                                                                                                                                                                                                                |
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -554,11 +546,9 @@ make
 nmos-dcを実行すると、Xschemはnmos\_dc.schからwork/nmos\_dc\_xschem.spiceを生成します。その後ngspiceがbatch
 modeでnetlistを読み、raw dataとCSVを生成します。
 
-```bash
-xschem -n -q -x --rcfile <gf180-xschemrc> \
-  -o work -N nmos_dc_xschem.spice nmos_dc.sch
-ngspice -b work/nmos_dc_xschem.spice
-```
+xschem -n -q -x --rcfile &lt;gf180-xschemrc&gt; \\<br>
++ -o work -N nmos\_dc\_xschem.spice nmos\_dc.sch<br>
+ngspice -b work/nmos\_dc\_xschem.spice
 
 | **Option** | **意味**                            |
 |------------|-------------------------------------|
@@ -572,16 +562,16 @@ ngspice -b work/nmos_dc_xschem.spice
 
 ## 出力を確認する
 
-38. terminalの終了codeが0か確認する。
+1.  terminalの終了codeが0か確認する。
 
-39. work/nmos\_dc\_xschem.spiceを開き、device instanceとmodel
+2.  work/nmos\_dc\_xschem.spiceを開き、device instanceとmodel
     includeを探す。
 
-40. work/nmos\_dc.rawが空でないことを確認する。
+3.  work/nmos\_dc.rawが空でないことを確認する。
 
-41. work/nmos\_id\_vds.csvのheader、行数、指数表記を読む。
+4.  work/nmos\_id\_vds.csvのheader、行数、指数表記を読む。
 
-42. 同じdirectoryのREADME.mdとRESULTS.mdがあればexpected
+5.  同じdirectoryのREADME.mdとRESULTS.mdがあればexpected
     resultと比較する。
 
 |                                                                                                                                                                     |
@@ -601,15 +591,15 @@ ngspice -b work/nmos_dc_xschem.spice
 
 ## VCD波形の基本
 
-43. 最初にclockとresetを表示する。
+1.  最初にclockとresetを表示する。
 
-44. controller state、cell select、hit、captured codeを追加する。
+2.  controller state、cell select、hit、captured codeを追加する。
 
-45. cursorをcapture edgeへ置き、edge直前と直後の値を読む。
+3.  cursorをcapture edgeへ置き、edge直前と直後の値を読む。
 
-46. unknown X、高impedance Z、意図しないglitchを探す。
+4.  unknown X、高impedance Z、意図しないglitchを探す。
 
-47. 最後にserializer clock/data/validを同じtimebaseで確認する。
+5.  最後にserializer clock/data/validを同じtimebaseで確認する。
 
 ## Synthesis後に失われるもの
 
@@ -626,13 +616,13 @@ standard-cell instanceが現れることを確認します。
 
 make nmos-dc
 
-48. nmos\_dc.schを開き、device名、W/L、body接続、supplyを確認する。
+1.  nmos\_dc.schを開き、device名、W/L、body接続、supplyを確認する。
 
-49. testbenchのVGS/VDS sweep範囲を読む。
+2.  testbenchのVGS/VDS sweep範囲を読む。
 
-50. make nmos-dcを実行し、CSV/plotの生成時刻を確認する。
+3.  make nmos-dcを実行し、CSV/plotの生成時刻を確認する。
 
-51. 同じVGSでVDSを上げたとき、linear領域からsaturation領域へ移る形を説明する。
+4.  同じVGSでVDSを上げたとき、linear領域からsaturation領域へ移る形を説明する。
 
 ## 成功判定
 
@@ -664,16 +654,16 @@ make four-cell-mux
 
 ## 観測順序
 
-52. SAMPLE high中にVHOLDがVINへ追従することを確認する。
+1.  SAMPLE high中にVHOLDがVINへ追従することを確認する。
 
-53. SAMPLE edge直後のstepを測り、charge
+2.  SAMPLE edge直後のstepを測り、charge
     injection/feedthroughを区別する。
 
-54. hold期間の傾きを測り、droop rate \[V/s\]へ換算する。
+3.  hold期間の傾きを測り、droop rate \[V/s\]へ換算する。
 
-55. 4-cell testで各cellが異なる時刻の電圧を保持することを確認する。
+4.  4-cell testで各cellが異なる時刻の電圧を保持することを確認する。
 
-56. MUX選択を変え、非選択cellの値が破壊されないことを確認する。
+5.  MUX選択を変え、非選択cellの値が破壊されないことを確認する。
 
 | **Cell** | **保持電圧 \[V\]** | **目標 \[V\]** | **誤差 \[mV\]** |
 |----------|--------------------|----------------|-----------------|
@@ -738,15 +728,15 @@ orderingとmonotonicityを確認し、INL/DNLの保証は後続版へ分離し�
 make wilkinson-slice<br>
 make transfer
 
-57. sampling phaseでinputをhold capacitorへ保存する。
+1.  sampling phaseでinputをhold capacitorへ保存する。
 
-58. conversion startでramp resetを解除し、counterを開始する。
+2.  conversion startでramp resetを解除し、counterを開始する。
 
-59. VRAMPがVHOLDへ到達するとcomparator edgeが発生する。
+3.  VRAMPがVHOLDへ到達するとcomparator edgeが発生する。
 
-60. edge時のcounterをcaptureし、end-of-conversionまで保持する。
+4.  edge時のcounterをcaptureし、end-of-conversionまで保持する。
 
-61. input sweepからcode transferを作り、単調性を確認する。
+5.  input sweepからcode transferを作り、単調性を確認する。
 
 ## 合否基準
 
@@ -803,17 +793,17 @@ make digital-top
 
 ## 状態遷移を言葉で書く
 
-62. IDLE: startを待ち、各valid flagをclearする。
+1.  IDLE: startを待ち、各valid flagをclearする。
 
-63. RESET\_RAMP: rampとcounterを既知状態へ戻す。
+2.  RESET\_RAMP: rampとcounterを既知状態へ戻す。
 
-64. SELECT: 対象cellをMUXへ接続しsettlingを待つ。
+3.  SELECT: 対象cellをMUXへ接続しsettlingを待つ。
 
-65. CONVERT: Gray counterを進め、comparator hitを待つ。
+4.  CONVERT: Gray counterを進め、comparator hitを待つ。
 
-66. CAPTURE: codeを対象registerへ保存する。
+5.  CAPTURE: codeを対象registerへ保存する。
 
-67. NEXT/DONE: 4 cell完了後にserializerへ引き渡す。
+6.  NEXT/DONE: 4 cell完了後にserializerへ引き渡す。
 
 ## RTL testで見るもの
 
@@ -855,15 +845,15 @@ simulatorを同時結合する重いAMS環境を使わず、境界条件を明�
 
 ## debugの順番
 
-68. SPICE CSVに交差が存在するか。
+1.  SPICE CSVに交差が存在するか。
 
-69. event抽出値の単位が正しいか。
+2.  event抽出値の単位が正しいか。
 
-70. testbenchで同時刻にpulseが生成されたか。
+3.  testbenchで同時刻にpulseが生成されたか。
 
-71. capture registerのenableが立ったか。
+4.  capture registerのenableが立ったか。
 
-72. expected codeとの±1境界差か、根本的なsequence差か。
+5.  expected codeとの±1境界差か、根本的なsequence差か。
 
 # Lab 8 Gray captureとCDC
 
@@ -915,13 +905,13 @@ make digital-top
 
 ## logic analyzerでの受入試験
 
-73. 既知code 16, 20, 27, 35をloadする。
+1.  既知code 16, 20, 27, 35をloadする。
 
-74. serial clockとdataを同時取得する。
+2.  serial clockとdataを同時取得する。
 
-75. 24 edge分をdecodeし、元の4 codeへ戻す。
+3.  24 edge分をdecodeし、元の4 codeへ戻す。
 
-76. frameを連続送信し、境界でbit slipがないことを確認する。
+4.  frameを連続送信し、境界でbit slipがないことを確認する。
 
 |                                                                                                                                                                                              |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -993,19 +983,19 @@ netlist、metricsを相互に対応づけます。
 
 ## 標準debug loop
 
-77. 再現：同じcommitとcommandで再発させる。
+1.  再現：同じcommitとcommandで再発させる。
 
-78. 縮小：最小testbenchまたは単一cellへ戻す。
+2.  縮小：最小testbenchまたは単一cellへ戻す。
 
-79. 観測：input、internal state、outputを同じtimebaseで保存する。
+3.  観測：input、internal state、outputを同じtimebaseで保存する。
 
-80. 仮説：1回の実行で検証できる原因を1つ書く。
+4.  仮説：1回の実行で検証できる原因を1つ書く。
 
-81. 変更：1要因だけ変える。
+5.  変更：1要因だけ変える。
 
-82. 回帰：直ったtestと既存testを両方実行する。
+6.  回帰：直ったtestと既存testを両方実行する。
 
-83. 記録：原因、変更、証拠をcommitまたはdecision logへ残す。
+7.  記録：原因、変更、証拠をcommitまたはdecision logへ残す。
 
 | **症状**               | **最初に見る場所**                                             |
 |------------------------|----------------------------------------------------------------|
