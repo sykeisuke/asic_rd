@@ -657,6 +657,16 @@ make sampling-cell<br>
 make four-cell<br>
 make four-cell-mux
 
+`sampling_cell.sch`はXschem GUIからも実行できる。回路図を保存し、
+`Netlist`、`Simulate`の順に押した後、`Load sampling waveforms`をCtrl +
+左クリックする。画面には`VIN`、`VHOLD`、`SAMPLE`の3グラフが表示される。
+`SAMPLE`がhighの期間は`VHOLD`が`VIN`へ追従し、lowの期間は直前の電圧を
+保持することを確認する。
+
+各`.sch`にgraph、launcher、GUI用RAW pathが揃っているとは限らない。
+Make targetは回帰試験、Xschem GUIは回路編集と波形観察という役割の違いを
+意識する。
+
 ## 観測順序
 
 1.  SAMPLE high中にVHOLDがVINへ追従することを確認する。

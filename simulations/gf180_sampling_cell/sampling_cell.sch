@@ -4,6 +4,30 @@ K {}
 V {}
 S {}
 E {}
+B 2 850 -610 1380 -420 {flags=graph
+y1=0
+y2=2
+x1=0
+x2=8e-08
+node=vin
+color=4
+dataset=-1}
+B 2 850 -390 1380 -200 {flags=graph
+y1=0
+y2=2
+x1=0
+x2=8e-08
+node=vhold
+color=5
+dataset=-1}
+B 2 850 -170 1380 20 {flags=graph
+y1=0
+y2=3.5
+x1=0
+x2=8e-08
+node=sample
+color=6
+dataset=-1}
 N 300 -480 300 -440 {lab=VIN}
 N 260 -410 220 -410 {lab=SAMPLE}
 N 300 -380 300 -330 {lab=VHOLD}
@@ -47,8 +71,11 @@ RLEAK VHOLD 0 1T
 .tran 5p 80n
 .control
 run
-write work/sampling_cell_xschem.raw
+write sampling_cell_xschem.raw
 quit
 .endc
 "}
 C {devices/title.sym} 160 -30 0 0 {name=l6 author="ASIC R&D"}
+C {devices/launcher.sym} 940 -665 0 0 {name=h1
+descr="Load sampling waveforms"
+tclcommand="xschem raw_read $netlist_dir/sampling_cell_xschem.raw tran"}
