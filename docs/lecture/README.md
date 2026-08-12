@@ -481,7 +481,7 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 | 中央         | ngspice command。VDSを0–3.3 V、VGSを0–3.3 Vでsweep         |
 | 左下         | GF180 model includeとtypical library選択                   |
 | 右           | i(vd) -1 \*を表示するgraph。縦軸はdrain current、横軸はVDS |
-| 左上の緑矢印 | work/nmos\_dc.rawをXschemへ読み込むlauncher                |
+| 左上の緑矢印 | `$netlist_dir/nmos_dc.raw`を読み込むlauncher                |
 
 ## 7.2 最初の波形を表示する
 
@@ -490,6 +490,11 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 
 2.  Xschem画面左上の緑矢印『Load simulation results』をCtrl +
     左クリックする。通常のクリックやダブルクリックはlauncherの選択またはproperty編集になる。
+
+GUI内で再計算する場合は、回路図を保存してから上部の`Netlist`、続いて
+`Simulate`を押し、最後にlauncherをCtrl + 左クリックする。Xschemは
+`$netlist_dir`でngspiceを起動するため、回路図内の`write`には`work/`を付けず
+`write nmos_dc.raw`とする。
 
 3.  右側graphに複数のId-Vds curveが現れることを確認する。
 

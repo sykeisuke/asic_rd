@@ -14,8 +14,10 @@ mkdir -p "$PROJECT_ROOT/simulations/gf180_nmos_dc/work"
             --rcfile /foss/pdks/gf180mcuD/libs.tech/xschem/xschemrc \
             -o work -N nmos_dc_xschem.spice nmos_dc.sch
         test -s work/nmos_dc_xschem.spice
-        ngspice -b work/nmos_dc_xschem.spice
-        test -s work/nmos_dc.raw
+        cd work
+        ngspice -b nmos_dc_xschem.spice
+        test -s nmos_dc.raw
+        cd ..
         ngspice -b nmos_dc.spice
         test -s work/nmos_id_vds.csv
         printf "Result: %s rows\n" "$(wc -l < work/nmos_id_vds.csv)"

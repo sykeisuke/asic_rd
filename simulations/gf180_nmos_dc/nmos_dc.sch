@@ -35,7 +35,7 @@ vb b 0 0
 .control
 save all
 dc vd 0 3.3 0.05 vg 0 3.3 0.3
-write work/nmos_dc.raw
+write nmos_dc.raw
 .endc
 "}
 C {devices/title.sym} 160 -30 0 0 {name=l5 author="ASIC R&D"}
@@ -54,4 +54,4 @@ model=nfet_03v3
 spiceprefix=X}
 C {devices/launcher.sym} 185 -635 0 0 {name=h1
 descr="Load simulation results"
-tclcommand="xschem raw_read [file join [pwd] work nmos_dc.raw]"}
+tclcommand="xschem raw_read $netlist_dir/nmos_dc.raw"}
