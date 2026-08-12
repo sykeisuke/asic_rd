@@ -486,7 +486,7 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 | 左中央       | GF180 3.3 V NMOS。G/D/S/Bの4端子、W=1 µm、L=0.28 µm  |
 | 中央         | ngspice command。VDSを0–3.3 V、VGSを0–3.3 Vでsweep   |
 | 左下         | GF180 model includeとtypical library選択             |
-| 右           | -i(vd)を表示するgraph。縦軸はdrain current、横軸はVDS |
+| 右           | `i(vd) -1 *`を表示するgraph。縦軸はdrain current、横軸はVDS |
 | 左上の緑矢印 | work/nmos\_dc.rawをXschemへ読み込むlauncher          |
 
 # 5.2 最初の波形を表示する
@@ -533,7 +533,8 @@ ls -lh work/nmos_dc.raw
 -   縦軸のuはµA。800uは800 µA。
 
 -   SPICEのvoltage-source電流はsourceへ流れ込む向きが正なので、NMOSのdrain
-    currentを上向きに表示するためgraphでは`-i(vd)`を使う。`i(vd)`のままだと
+    currentを上向きに表示するためgraphでは`i(vd) -1 *`を使う。Xschemの
+    graph演算は後置記法（RPN）なので`-i(vd)`ではない。`i(vd)`のままだと
     負側へ描かれ、縦軸が0以上の場合は下端へ潰れて見える。
 
 -   graphのcurve数はVGS sweep点に対応する。
