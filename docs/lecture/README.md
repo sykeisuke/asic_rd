@@ -108,11 +108,11 @@ scripts/run-nmos-dc.sh
 
 ```text
 make nmos-dc
-  -> scripts/run-nmos-dc.sh
-  -> docker run -v <repo>:/foss/designs
-  -> xschem -n ... nmos_dc.sch
-  -> ngspice -b ...spice
-  -> work/nmos_id_vds.csv
+-> scripts/run-nmos-dc.sh
+-> docker run -v <repo>:/foss/designs
+-> xschem -n ... nmos_dc.sch
+-> ngspice -b ...spice
+-> work/nmos_id_vds.csv
 ```
 
 ## scriptを読む順番
@@ -386,6 +386,47 @@ limit回避、組織管理を使う場合はログインが必要です。授業
 |-----------------------------------------------------------------------------------------------------------------------------------------|
 | **安全上の注意** Gatekeeperを恒久的に無効化しない。Docker公式配布物を使い、異常が続く場合は再インストールとhelper cleanupを優先します。 |
 
+# 2.1 Docker・VNC・/fossの関係
+
+VNCで接続している先はDocker Desktopの管理画面ではなく、Docker
+Desktop上で動くIIC-OSIC-TOOLS Linux
+containerの仮想desktopです。Browserはlocalhost:8080へ接続し、container内のweb/VNC
+serverがLinux desktop画面を転送します。
+
+```text
+Mac
+-> Docker Desktop
+-> container: asic-rd-gf180-vnc
+-> Linux desktop + EDA tools + PDK
+-> web/VNC server : port 80
+-> Browser localhost:8080
+```
+
+| **質問**                      | **答え**                                                                                                                                       |
+|-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| IIC-OSIC-TOOLSには何が入る？  | Linux user environment、Xschem、ngspice、KLayout、Magic、Netgen、Icarus Verilog、Yosys、OpenSTA、LibreLane/OpenROAD系、PDK、VNC/web server等。 |
+| 一つの巨大application？       | いいえ。独立toolとPDKをversion固定したLinux image。scriptやLibreLaneが必要なtoolを順番に呼ぶ。                                                 |
+| 学生の/fossは空？             | /foss/pdks等はimageが提供。/foss/designsは学生がcloneしたrepositoryをMacからmountする。                                                        |
+| 編集結果は消える？            | /foss/designs内はMac側repositoryへ直接書かれるので残る。container内部だけのfileはcontainer削除で失う可能性がある。                             |
+| Connected to &lt;id&gt;とは？ | 起動中containerのdesktop sessionへbrowser VNCが接続済みという意味。                                                                            |
+| 同じ環境を再現するには？      | 同じGit commit、同じimage tag/digest、同じMake targetを使う。                                                                                  |
+
+## volume mount
+
+eda-vnc.shの -v "$PROJECT\_ROOT:/foss/designs:rw"
+が対応を作ります。PROJECT\_ROOTはmake vncを実行したasic\_rd
+repositoryです。
+
+```text
+Student Mac: /Users/.../asic_rd
+        | Docker bind mount
+Container: /foss/designs
+```
+
+|                                                                                                                                                            |
+|------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **学生の開始手順** git clone後、必ずasic\_rd directoryへcdしてmake vncを実行します。/foss/designsが空なら、cloneではなくmountと起動containerを確認します。 |
+
 # 5. Xschemを初めて使う
 
 Xschemは回路図editorであり、simulation
@@ -432,14 +473,75 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 |---------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **ショートカット** Xschemのshortcutはversionやkeymapで差があり得ます。授業ではまずmenu名で操作を共有し、各自の画面下status/helpでshortcutを確認します。 |
 
-# 5.1 Netlistとngspiceを追跡する
+# 5.1 nmos\_dc.schを開いた後
+
+<img src="assets/image6.png" alt="Xschemでnmos_dc.schを開いた画面" />
+
+*図6　nmos\_dc.schを開いた直後。右のgraphが空なのはRAW結果をまだ読み込んでいないため。*
+
+## 画面のどこを見るか
+
+| **場所**     | **内容**                                             |
+|--------------|------------------------------------------------------|
+| 左中央       | GF180 3.3 V NMOS。G/D/S/Bの4端子、W=1 µm、L=0.28 µm  |
+| 中央         | ngspice command。VDSを0–3.3 V、VGSを0–3.3 Vでsweep   |
+| 左下         | GF180 model includeとtypical library選択             |
+| 右           | i(vd)を表示するgraph。縦軸はdrain current、横軸はVDS |
+| 左上の緑矢印 | work/nmos\_dc.rawをXschemへ読み込むlauncher          |
+
+# 5.2 最初の波形を表示する
+
+32. Mac terminalでrepository直下から make nmos-dc
+    を実行する。すでに実行済みならwork/nmos\_dc.rawが存在する。
+
+33. Xschem画面左上の緑矢印『Load simulation
+    results』を一度クリックする。
+
+34. 右側graphに複数のId-Vds curveが現れることを確認する。
+
+35. curveが見えなければXschemを開いたdirectoryが
+    /foss/designs/simulations/gf180\_nmos\_dc か確認する。
+
+36. Terminalで ls -lh work/nmos\_dc.raw を実行し、fileが0
+    byteでないか確認する。
+
+37. 必要なら make nmos-dc を再実行し、Xschemで再度Load simulation
+    resultsを押す。
+
+```bash
+# Mac terminal
+cd /Users/ykeisuke/Desktop/mywork/asic_rd
+make nmos-dc
+
+# Container terminalで確認する場合
+cd /foss/designs/simulations/gf180_nmos_dc
+ls -lh work/nmos_dc.raw
+```
+
+## 表示後に読み取ること
+
+-   VGSが高いcurveほどdrain currentが大きい。
+
+-   低VDSでは電流がVDSに強く依存し、VDS増加後は傾きが小さくなる。
+
+-   縦軸のuはµA。800uは800 µA。
+
+-   graphのcurve数はVGS sweep点に対応する。
+
+-   この結果はtypical modelのnominal DC sweepであり、PVT保証ではない。
+
+|                                                                                                                   |
+|-------------------------------------------------------------------------------------------------------------------|
+| **ここでの到達点** 自分でRAWを読み込み、curveを表示し、VGS/VDS/ID/W/L/model cornerを説明できればLab 1へ進めます。 |
+
+# 5.3 Netlistとngspiceを追跡する
 
 make
 nmos-dcを実行すると、Xschemはnmos\_dc.schからwork/nmos\_dc\_xschem.spiceを生成します。その後ngspiceがbatch
 modeでnetlistを読み、raw dataとCSVを生成します。
 
-```sh
-xschem -n -q -x --rcfile <gf180-xschemrc> \\
+```bash
+xschem -n -q -x --rcfile <gf180-xschemrc> \
   -o work -N nmos_dc_xschem.spice nmos_dc.sch
 ngspice -b work/nmos_dc_xschem.spice
 ```
@@ -456,23 +558,23 @@ ngspice -b work/nmos_dc_xschem.spice
 
 ## 出力を確認する
 
-32. terminalの終了codeが0か確認する。
+38. terminalの終了codeが0か確認する。
 
-33. work/nmos\_dc\_xschem.spiceを開き、device instanceとmodel
+39. work/nmos\_dc\_xschem.spiceを開き、device instanceとmodel
     includeを探す。
 
-34. work/nmos\_dc.rawが空でないことを確認する。
+40. work/nmos\_dc.rawが空でないことを確認する。
 
-35. work/nmos\_id\_vds.csvのheader、行数、指数表記を読む。
+41. work/nmos\_id\_vds.csvのheader、行数、指数表記を読む。
 
-36. 同じdirectoryのREADME.mdとRESULTS.mdがあればexpected
+42. 同じdirectoryのREADME.mdとRESULTS.mdがあればexpected
     resultと比較する。
 
 |                                                                                                                                                                     |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **重要** generated netlistは回路図の翻訳結果です。回路図が正しそうでもnetlistのmodel名、node順、parameterが意図と違うことがあります。最初の数回は必ず両方を見ます。 |
 
-# 5.2 Digital toolの使い分け
+# 5.4 Digital toolの使い分け
 
 | **段階**  | **Command**               | **何を確認するか**                        |
 |-----------|---------------------------|-------------------------------------------|
@@ -485,15 +587,15 @@ ngspice -b work/nmos_dc_xschem.spice
 
 ## VCD波形の基本
 
-37. 最初にclockとresetを表示する。
+43. 最初にclockとresetを表示する。
 
-38. controller state、cell select、hit、captured codeを追加する。
+44. controller state、cell select、hit、captured codeを追加する。
 
-39. cursorをcapture edgeへ置き、edge直前と直後の値を読む。
+45. cursorをcapture edgeへ置き、edge直前と直後の値を読む。
 
-40. unknown X、高impedance Z、意図しないglitchを探す。
+46. unknown X、高impedance Z、意図しないglitchを探す。
 
-41. 最後にserializer clock/data/validを同じtimebaseで確認する。
+47. 最後にserializer clock/data/validを同じtimebaseで確認する。
 
 ## Synthesis後に失われるもの
 
@@ -510,13 +612,13 @@ standard-cell instanceが現れることを確認します。
 
 make nmos-dc
 
-42. nmos\_dc.schを開き、device名、W/L、body接続、supplyを確認する。
+48. nmos\_dc.schを開き、device名、W/L、body接続、supplyを確認する。
 
-43. testbenchのVGS/VDS sweep範囲を読む。
+49. testbenchのVGS/VDS sweep範囲を読む。
 
-44. make nmos-dcを実行し、CSV/plotの生成時刻を確認する。
+50. make nmos-dcを実行し、CSV/plotの生成時刻を確認する。
 
-45. 同じVGSでVDSを上げたとき、linear領域からsaturation領域へ移る形を説明する。
+51. 同じVGSでVDSを上げたとき、linear領域からsaturation領域へ移る形を説明する。
 
 ## 成功判定
 
@@ -548,16 +650,16 @@ make four-cell-mux
 
 ## 観測順序
 
-46. SAMPLE high中にVHOLDがVINへ追従することを確認する。
+52. SAMPLE high中にVHOLDがVINへ追従することを確認する。
 
-47. SAMPLE edge直後のstepを測り、charge
+53. SAMPLE edge直後のstepを測り、charge
     injection/feedthroughを区別する。
 
-48. hold期間の傾きを測り、droop rate \[V/s\]へ換算する。
+54. hold期間の傾きを測り、droop rate \[V/s\]へ換算する。
 
-49. 4-cell testで各cellが異なる時刻の電圧を保持することを確認する。
+55. 4-cell testで各cellが異なる時刻の電圧を保持することを確認する。
 
-50. MUX選択を変え、非選択cellの値が破壊されないことを確認する。
+56. MUX選択を変え、非選択cellの値が破壊されないことを確認する。
 
 | **Cell** | **保持電圧 \[V\]** | **目標 \[V\]** | **誤差 \[mV\]** |
 |----------|--------------------|----------------|-----------------|
@@ -622,15 +724,15 @@ orderingとmonotonicityを確認し、INL/DNLの保証は後続版へ分離し�
 make wilkinson-slice<br>
 make transfer
 
-51. sampling phaseでinputをhold capacitorへ保存する。
+57. sampling phaseでinputをhold capacitorへ保存する。
 
-52. conversion startでramp resetを解除し、counterを開始する。
+58. conversion startでramp resetを解除し、counterを開始する。
 
-53. VRAMPがVHOLDへ到達するとcomparator edgeが発生する。
+59. VRAMPがVHOLDへ到達するとcomparator edgeが発生する。
 
-54. edge時のcounterをcaptureし、end-of-conversionまで保持する。
+60. edge時のcounterをcaptureし、end-of-conversionまで保持する。
 
-55. input sweepからcode transferを作り、単調性を確認する。
+61. input sweepからcode transferを作り、単調性を確認する。
 
 ## 合否基準
 
@@ -654,7 +756,7 @@ make transfer
 
 make four-cell-wilkinson
 
-<img src="assets/image6.png" style="width:6.45in;height:3.49059in" />
+<img src="assets/image7.png" style="width:6.45in;height:3.49059in" />
 
 *図3　4-cell shared Wilkinson conversion。上段は保持値とMUX
 bus、下段はrampとcomparator。*
@@ -687,17 +789,17 @@ make digital-top
 
 ## 状態遷移を言葉で書く
 
-56. IDLE: startを待ち、各valid flagをclearする。
+62. IDLE: startを待ち、各valid flagをclearする。
 
-57. RESET\_RAMP: rampとcounterを既知状態へ戻す。
+63. RESET\_RAMP: rampとcounterを既知状態へ戻す。
 
-58. SELECT: 対象cellをMUXへ接続しsettlingを待つ。
+64. SELECT: 対象cellをMUXへ接続しsettlingを待つ。
 
-59. CONVERT: Gray counterを進め、comparator hitを待つ。
+65. CONVERT: Gray counterを進め、comparator hitを待つ。
 
-60. CAPTURE: codeを対象registerへ保存する。
+66. CAPTURE: codeを対象registerへ保存する。
 
-61. NEXT/DONE: 4 cell完了後にserializerへ引き渡す。
+67. NEXT/DONE: 4 cell完了後にserializerへ引き渡す。
 
 ## RTL testで見るもの
 
@@ -739,15 +841,15 @@ simulatorを同時結合する重いAMS環境を使わず、境界条件を明�
 
 ## debugの順番
 
-62. SPICE CSVに交差が存在するか。
+68. SPICE CSVに交差が存在するか。
 
-63. event抽出値の単位が正しいか。
+69. event抽出値の単位が正しいか。
 
-64. testbenchで同時刻にpulseが生成されたか。
+70. testbenchで同時刻にpulseが生成されたか。
 
-65. capture registerのenableが立ったか。
+71. capture registerのenableが立ったか。
 
-66. expected codeとの±1境界差か、根本的なsequence差か。
+72. expected codeとの±1境界差か、根本的なsequence差か。
 
 # Lab 8 Gray captureとCDC
 
@@ -757,7 +859,7 @@ simulatorを同時結合する重いAMS環境を使わず、境界条件を明�
 
 make phase-sweep
 
-<img src="assets/image7.png" style="width:6.2in;height:2.68667in" />
+<img src="assets/image8.png" style="width:6.2in;height:2.68667in" />
 
 *図4　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
 
@@ -799,13 +901,13 @@ make digital-top
 
 ## logic analyzerでの受入試験
 
-67. 既知code 16, 20, 27, 35をloadする。
+73. 既知code 16, 20, 27, 35をloadする。
 
-68. serial clockとdataを同時取得する。
+74. serial clockとdataを同時取得する。
 
-69. 24 edge分をdecodeし、元の4 codeへ戻す。
+75. 24 edge分をdecodeし、元の4 codeへ戻す。
 
-70. frameを連続送信し、境界でbit slipがないことを確認する。
+76. frameを連続送信し、境界でbit slipがないことを確認する。
 
 |                                                                                                                                                                                              |
 |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -819,7 +921,7 @@ make digital-top
 
 make digital-physical
 
-<img src="assets/image8.png" style="width:3.9in;height:4.222in" />
+<img src="assets/image9.png" style="width:3.9in;height:4.222in" />
 
 *図5　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
 
@@ -877,19 +979,19 @@ netlist、metricsを相互に対応づけます。
 
 ## 標準debug loop
 
-71. 再現：同じcommitとcommandで再発させる。
+77. 再現：同じcommitとcommandで再発させる。
 
-72. 縮小：最小testbenchまたは単一cellへ戻す。
+78. 縮小：最小testbenchまたは単一cellへ戻す。
 
-73. 観測：input、internal state、outputを同じtimebaseで保存する。
+79. 観測：input、internal state、outputを同じtimebaseで保存する。
 
-74. 仮説：1回の実行で検証できる原因を1つ書く。
+80. 仮説：1回の実行で検証できる原因を1つ書く。
 
-75. 変更：1要因だけ変える。
+81. 変更：1要因だけ変える。
 
-76. 回帰：直ったtestと既存testを両方実行する。
+82. 回帰：直ったtestと既存testを両方実行する。
 
-77. 記録：原因、変更、証拠をcommitまたはdecision logへ残す。
+83. 記録：原因、変更、証拠をcommitまたはdecision logへ残す。
 
 | **症状**               | **最初に見る場所**                                             |
 |------------------------|----------------------------------------------------------------|
