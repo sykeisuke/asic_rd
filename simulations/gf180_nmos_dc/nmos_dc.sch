@@ -54,5 +54,4 @@ model=nfet_03v3
 spiceprefix=X}
 C {devices/launcher.sym} 185 -635 0 0 {name=h1
 descr="Load simulation results"
-tclcommand="xschem raw_read $netlist_dir/work/nmos_dc.raw"}
-
+tclcommand="xschem raw_read [file join [pwd] work nmos_dc.raw]"}

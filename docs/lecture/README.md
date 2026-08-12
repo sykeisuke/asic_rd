@@ -495,7 +495,8 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
     を実行する。すでに実行済みならwork/nmos\_dc.rawが存在する。
 
 33. Xschem画面左上の緑矢印『Load simulation
-    results』を一度クリックする。
+    results』をCtrl + 左クリックする。通常のクリックやダブルクリックは
+    launcherの選択またはproperty編集になる。
 
 34. 右側graphに複数のId-Vds curveが現れることを確認する。
 
@@ -507,6 +508,11 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 
 37. 必要なら make nmos-dc を再実行し、Xschemで再度Load simulation
     resultsを押す。
+
+`raw_read(): failed to open ...`と表示された場合は、Xschemを
+`/foss/designs/simulations/gf180_nmos_dc`から起動しているか確認する。
+launcherは現在のdirectoryを基準に`work/nmos_dc.raw`を開く。古い回路図を
+開いたままprojectを更新した場合は、一度閉じて開き直す。
 
 ```bash
 # Mac terminal
