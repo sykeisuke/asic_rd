@@ -1,4 +1,13 @@
-<img src="assets/image1.png" style="width:6.5in;height:2.74444in" />
+# 教材の使い分け
+
+- `ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.md`: 学生が手を動かす詳細実習書の編集元。
+- `ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.pdf`: 図13点を含む印刷・配布版。
+- `IRSX_ASIC_Student_Lab_Handbook_JP.pdf`: project全体を俯瞰するハンドブック。
+- `IRSX_ASIC_Student_Lab_Handbook_JP.docx`: ハンドブックの編集用ファイル。
+
+初めて取り組む場合は、WorkbookのLab 0から順番に実行する。
+
+<img src="assets/architecture.png" style="width:6.5in;height:2.74444in" />
 
 *図1　本プロトタイプの信号経路。青はアナログ、緑はデジタル領域。*
 
@@ -78,7 +87,7 @@ ASIC設計では、回路、software、半導体process、測定の言葉が同�
 
 # 1. 使用ツールを理解する
 
-<img src="assets/image2.png" style="width:6.5in;height:3.49143in" />
+<img src="assets/toolchain.png" style="width:6.5in;height:3.49143in" />
 
 *図2　各toolの入力と出力。Makefileはこの連鎖を短いcommandで実行する。*
 
@@ -143,7 +152,7 @@ make nmos-dc<br>
 
 # 3. アナログ設計の基礎
 
-<img src="assets/image3.png" style="width:6.5in;height:3.32222in" />
+<img src="assets/analog_foundations.png" style="width:6.5in;height:3.32222in" />
 
 *図3　deviceのbiasからsampling誤差までを一つの因果関係として考える。*
 
@@ -235,7 +244,7 @@ parasiticを組み合わせたverification planが必要です。
 
 # 4. モジュールの接続
 
-<img src="assets/image4.png" style="width:6.5in;height:3.59211in" />
+<img src="assets/module_connectivity.png" style="width:6.5in;height:3.59211in" />
 
 *図4　信号名付きmodule接続。controllerが時間順序を作り、analog
 crossingをGray captureがcodeへ変える。*
@@ -288,7 +297,7 @@ crossingをGray captureがcodeへ変える。*
 
 # 5. 全体設計フロー
 
-<img src="assets/image5.png" style="width:6.5in;height:3.44118in" />
+<img src="assets/complete_flow.png" style="width:6.5in;height:3.44118in" />
 
 *図5　仕様からGDSIIまで。各矢印が検証可能であることがcomplete
 flowの条件。*
@@ -469,7 +478,7 @@ netlistingも行うため、手動操作と自動実行の結果を比較でき�
 
 ## 7.1 nmos\_dc.schを開いた後
 
-<img src="assets/image6.png" style="width:6.5in;height:4.59608in" />
+<img src="assets/xschem_nmos_dc_open.png" style="width:6.5in;height:4.59608in" />
 
 *図6　nmos\_dc.schを開いた直後。右のgraphが空なのはRAW結果をまだ読み込んでいないため。*
 
@@ -520,7 +529,7 @@ ls -lh work/nmos\_dc.raw
 |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **RAWを開けない場合** raw\_read(): failed to open ... と表示されたら、Xschemを /foss/designs/simulations/gf180\_nmos\_dc から起動しているか確認します。古い回路図を開いたままprojectを更新した場合は、一度閉じて開き直します。 |
 
-<img src="assets/image7.png" style="width:6.5in;height:5.11506in" />
+<img src="assets/xschem_nmos_dc_result.png" style="width:6.5in;height:5.11506in" />
 
 *図7　期待するId–Vds表示。VGSごとに複数のcurveが現れ、最大電流は約520
 µA。*
@@ -806,7 +815,7 @@ GAWが開いたら、左側の信号名を右側の黒いgraph panelへdrag and 
 
 この画面は波形の因果関係を人が確認するためのものです。数値の合否はTerminalに表示される`PASS: four cells complete sequential Wilkinson conversion`と、`work/measurements.txt`の`code0`から`code3`でも確認します。
 
-<img src="assets/image8.png" style="width:6.45in;height:3.49059in" />
+<img src="assets/four_cell_waveform.png" style="width:6.45in;height:3.49059in" />
 
 *図9　4-cell shared Wilkinson conversion。上段は保持値とMUX
 bus、下段はrampとcomparator。*
@@ -909,7 +918,7 @@ simulatorを同時結合する重いAMS環境を使わず、境界条件を明�
 
 make phase-sweep
 
-<img src="assets/image9.png" style="width:6.2in;height:2.68667in" />
+<img src="assets/phase_sweep.png" style="width:6.2in;height:2.68667in" />
 
 *図10　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
 
@@ -971,7 +980,7 @@ make digital-top
 
 make digital-physical
 
-<img src="assets/image10.png" style="width:5.3in;height:5.7399in" />
+<img src="assets/asic_digital_top.png" style="width:5.3in;height:5.7399in" />
 
 *図11　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
 

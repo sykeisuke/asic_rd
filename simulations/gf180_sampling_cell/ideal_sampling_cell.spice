@@ -1,0 +1,32 @@
+* Ideal-switch reference for the sampling-cell lab
+.param VDD=3.3
+.param CHOLD=1p
+
+VIN in 0 SIN(1.2 0.6 5MEG)
+VCLK sample 0 PULSE(0 {VDD} 5n 100p 100p 20n 100n)
+
+* An ideal voltage-controlled switch provides the reference behavior.
+SAMPLE_SWITCH in hold sample 0 IDEAL_SWITCH
+.model IDEAL_SWITCH SW(Ron=0.01 Roff=1e15 Vt=1.65 Vh=0.05)
+CHOLD hold 0 {CHOLD}
+RLEAK hold 0 1T
+
+.tran 5p 80n
+.measure tran vin_track FIND v(in) AT=24.9n
+.measure tran vhold_track FIND v(hold) AT=24.9n
+.measure tran acquisition_error PARAM='abs(vin_track-vhold_track)'
+.measure tran vhold_pre_edge FIND v(hold) AT=25.0n
+.measure tran vhold_post_edge FIND v(hold) AT=25.3n
+.measure tran clock_feedthrough PARAM='abs(vhold_post_edge-vhold_pre_edge)'
+.measure tran vhold_30n FIND v(hold) AT=30n
+.measure tran vhold_75n FIND v(hold) AT=75n
+.measure tran hold_droop PARAM='abs(vhold_75n-vhold_30n)'
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata work/ideal_sampling_cell.csv v(in) v(hold) v(sample)
+quit
+.endc
+.end

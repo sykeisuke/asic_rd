@@ -1,7 +1,11 @@
-.PHONY: check nmos-dc sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller digital-top digital-physical cosim four-cell-cosim phase-sweep vnc stop
+.PHONY: check analog-regression course-regression nmos-dc sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller digital-top digital-physical cosim four-cell-cosim phase-sweep vnc stop
 
 check:
 	./scripts/eda-check.sh
+
+analog-regression: nmos-dc sampling-cell four-cell four-cell-mux ramp-generator comparator comparator-range comparator-offset wilkinson-slice transfer four-cell-wilkinson
+
+course-regression: analog-regression counter gray-counter controller digital-top cosim four-cell-cosim phase-sweep
 
 nmos-dc:
 	./scripts/run-nmos-dc.sh

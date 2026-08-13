@@ -32,6 +32,11 @@ and [`docs/VERIFICATION_MATRIX.md`](docs/VERIFICATION_MATRIX.md).
 
 ## Start here
 
+初学者向けの詳細な日本語実習書は
+[`docs/lecture/ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.md`](docs/lecture/ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.md)
+です。印刷・配布用PDFも同じdirectoryにあります。まずLab 0から順番に進め、各Labの
+合格条件を満たしてから次へ進んでください。
+
 Run the host check:
 
 ```sh
@@ -60,6 +65,12 @@ make four-cell-cosim
 make phase-sweep
 make digital-top
 make digital-physical
+```
+
+教材で扱うpre-layout simulationとRTLをまとめて再検証する場合:
+
+```sh
+make course-regression
 ```
 
 Start the browser-based analog design desktop:
