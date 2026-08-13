@@ -80,7 +80,7 @@ ASIC設計では、回路、software、半導体process、測定の言葉が同�
 
 <img src="assets/image2.png" style="width:6.5in;height:3.49143in" />
 
-*図3　各toolの入力と出力。Makefileはこの連鎖を短いcommandで実行する。*
+*図2　各toolの入力と出力。Makefileはこの連鎖を短いcommandで実行する。*
 
 | **Tool**             | **役割**                                     | **学生が直接行うこと**                      |
 |----------------------|----------------------------------------------|---------------------------------------------|
@@ -145,7 +145,7 @@ make nmos-dc<br>
 
 <img src="assets/image3.png" style="width:6.5in;height:3.32222in" />
 
-*図4　deviceのbiasからsampling誤差までを一つの因果関係として考える。*
+*図3　deviceのbiasからsampling誤差までを一つの因果関係として考える。*
 
 digital信号は0/1へ抽象化できますが、analog
 nodeは連続した電圧・電流・時間を持ちます。回路を読むときは、まずDC
@@ -237,7 +237,7 @@ parasiticを組み合わせたverification planが必要です。
 
 <img src="assets/image4.png" style="width:6.5in;height:3.59211in" />
 
-*図5　信号名付きmodule接続。controllerが時間順序を作り、analog
+*図4　信号名付きmodule接続。controllerが時間順序を作り、analog
 crossingをGray captureがcodeへ変える。*
 
 | **Signal**    | **Producer**                | **Consumer**               | **種類・意味**              |
@@ -290,7 +290,7 @@ crossingをGray captureがcodeへ変える。*
 
 <img src="assets/image5.png" style="width:6.5in;height:3.44118in" />
 
-*図2　仕様からGDSIIまで。各矢印が検証可能であることがcomplete
+*図5　仕様からGDSIIまで。各矢印が検証可能であることがcomplete
 flowの条件。*
 
 ## ブロックの役割
@@ -794,7 +794,7 @@ GAWが開いたら、左側の信号名を右側の黒いgraph panelへdrag and 
 
 ![GAWで表示した4-cell統合Wilkinson波形](assets/gaw_four_cell_integrated.png)
 
-*図4　GAWによる4-cell統合SPICE波形。上段は入力と4つの保持電圧、中段はMUX busとramp、下段はresetとcomparator出力。画像は約7 µsまでの表示なので、最後のcellを見るときはさらにZoom Outする。*
+*図8　GAWによる4-cell統合SPICE波形。上段は入力と4つの保持電圧、中段はMUX busとramp、下段はresetとcomparator出力。画像は約7 µsまでの表示なので、最後のcellを見るときはさらにZoom Outする。*
 
 ## この画面で何を検証するか
 
@@ -808,7 +808,7 @@ GAWが開いたら、左側の信号名を右側の黒いgraph panelへdrag and 
 
 <img src="assets/image8.png" style="width:6.45in;height:3.49059in" />
 
-*図3　4-cell shared Wilkinson conversion。上段は保持値とMUX
+*図9　4-cell shared Wilkinson conversion。上段は保持値とMUX
 bus、下段はrampとcomparator。*
 
 | **Cell** | **MUX電圧 \[V\]** | **交差時刻 \[µs\]** | **6-bit code** |
@@ -911,7 +911,7 @@ make phase-sweep
 
 <img src="assets/image9.png" style="width:6.2in;height:2.68667in" />
 
-*図4　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
+*図10　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
 
 binary
 counterは例として011111→100000のように複数bitが同時に変化します。非同期edgeがその途中をcaptureすると存在しないcodeになり得ます。Gray
@@ -973,7 +973,7 @@ make digital-physical
 
 <img src="assets/image10.png" style="width:5.3in;height:5.7399in" />
 
-*図5　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
+*図11　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
 
 | **Metric**        | **結果**              |
 |-------------------|-----------------------|
