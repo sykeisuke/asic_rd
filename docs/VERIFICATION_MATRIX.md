@@ -1,10 +1,10 @@
 # Prototype verification matrix
 
-Date: 2026-08-11
+Date: 2026-08-13
 
 | Domain | Verification | Status | Reproducible target |
 | --- | --- | --- | --- |
-| Sampling | Single transmission-gate cell | PASS | `make sampling-cell` |
+| Sampling | Ideal, NMOS-only, and transmission-gate comparison | PASS | `make sampling-cell` |
 | Sampling | Four sequential cells | PASS | `make four-cell` |
 | Read mux | Settling and charge sharing | PASS | `make four-cell-mux` |
 | Comparator | Nominal transient and range | PASS | `make comparator` |

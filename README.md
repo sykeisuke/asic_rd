@@ -5,8 +5,10 @@ on-chip Wilkinson ADC, targeting the GF180MCU process and a future MPW shuttle.
 
 ## Current status
 
-The controlled scope and silicon acceptance criteria are defined in
-[`docs/PROTOTYPE_SPECIFICATION.md`](docs/PROTOTYPE_SPECIFICATION.md).
+The controlled scope and silicon acceptance criteria are defined in both
+[`docs/PROTOTYPE_SPECIFICATION.md`](docs/PROTOTYPE_SPECIFICATION.md) (English)
+and [`docs/PROTOTYPE_SPECIFICATION_JP.md`](docs/PROTOTYPE_SPECIFICATION_JP.md)
+(日本語).
 
 The repository now demonstrates the following reproducible path:
 

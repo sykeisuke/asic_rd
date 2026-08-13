@@ -1,306 +1,321 @@
 # IRSX-like ASIC Prototype Specification
 
-Version: 0.1 (draft)
+Version: 0.2 (student baseline)
 
-Date: 2026-08-10
+Date: 2026-08-13
 
 Process baseline: GF180MCU (`gf180mcuD`)
 
-## 1. Purpose
+Status: architecture baseline frozen; MPW/provider-dependent items remain open
 
-The first prototype shall demonstrate a complete, reproducible mixed-signal
-ASIC design flow. Peak detector performance is not the primary tape-out
-criterion. The project is successful when a small waveform-sampling and
-Wilkinson-conversion signal path can be designed, verified, fabricated, and
-measured with enough internal access to identify failures.
+Language: **English** | [日本語版](PROTOTYPE_SPECIFICATION_JP.md)
 
-The demonstrated flow shall include:
+## 1. Purpose and document control
 
-1. Architecture and specification control.
-2. Transistor-level schematic design and simulation.
-3. RTL design and mixed-signal integration.
-4. Layout, DRC, LVS, extraction, and post-layout simulation.
-5. Pad-ring and top-level integration.
-6. Reproducible GDS/OASIS submission package generation.
-7. Evaluation PCB, FPGA control/readout, and first-silicon measurements.
-8. Open-source release of design sources, tests, and reports.
+This is the controlled specification shared by the student team for Tape-out 1.
+The first priority is a reproducible demonstration of the complete flow from
+specification and schematic through simulation, layout, signoff, fabrication,
+and measurement. Maximum performance is not the primary acceptance criterion.
+
+The laboratory procedure is in [`lecture/README.md`](lecture/README.md), current
+verification status is in [`VERIFICATION_MATRIX.md`](VERIFICATION_MATRIX.md),
+and unfinished tape-out work is tracked in
+[`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md).
+
+- **Must**: required for Tape-out 1 unless an explicit waiver or scope revision is approved.
+- **Target**: an objective whose miss does not by itself invalidate the flow demonstration.
+- **Stretch**: attempted only when it does not endanger Must requirements.
+- **Demonstrated**: reproducible pre-layout evidence exists in the repository.
+- **TBD**: requires an external MPW, PDK, pad, package, or physical-design decision.
 
 ## 2. Relationship to the proposal
 
-The proposal described a one-channel, multi-GSa/s waveform digitizer with
-approximately 25 ps timing resolution, 500 MHz analog bandwidth, a 12-bit
-Wilkinson ADC, less than 125 mW/channel, and FPGA readout over a high-speed
-link. These remain long-term research goals, not pass/fail requirements for
-the first prototype.
+The long-term proposal targets one channel, multi-GSa/s sampling, approximately
+25 ps timing, 500 MHz analog bandwidth, a 12-bit Wilkinson ADC, and FPGA
+readout. These remain research-program goals, not Tape-out 1 pass/fail criteria.
 
-This specification deliberately reduces speed, resolution, array depth, and
-I/O complexity while retaining the architectural path from analog sampling
-through digitization and digital readout.
-
-## 3. Success levels
-
-Requirements are classified as follows:
-
-- **Must**: required for first-prototype tape-out or flow completion.
-- **Target**: design objective, but failure to meet the number does not by
-  itself invalidate the complete-flow demonstration.
-- **Stretch**: included only if schedule, area, and verification maturity
-  permit.
-
-## 4. Prototype architecture
-
-The minimum integrated signal path is:
+Tape-out 1 retains the IRSX-like signal path at deliberately reduced scale:
 
 ```text
-Analog input
-    -> sampling switch
-    -> small storage-capacitor array
-    -> cell selection
-    -> comparator against a voltage ramp
-    -> counter capture / result latch
-    -> slow CMOS serial readout
-    -> FPGA or host test controller
+1 analog channel
+-> 4 sampling cells
+-> 4-to-1 analog MUX
+-> shared ramp + comparator
+-> 6-bit counter capture
+-> four 6-bit registers
+-> 24-bit synchronous serial readout
 ```
 
-The ramp and critical internal nodes shall be externally accessible in test
-modes. This allows the comparator, storage array, counter, and readout to be
-tested independently if the on-chip ramp generator does not perform as
-expected.
+## 3. Tape-out 1 success definition
 
-## 5. Top-level specifications
+Tape-out 1 shall demonstrate this complete chain:
+
+```text
+specification
+-> schematic
+-> pre-layout simulation
+-> layout
+-> DRC / LVS
+-> PEX / post-layout simulation
+-> analog + digital top integration
+-> pad ring / package / PCB
+-> provider submission
+-> first-silicon measurement
+```
+
+Silicon success includes either correct 4-cell/6-bit operation or conclusive
+fault isolation through the required test modes. Achieving 12 bits, 1 GSa/s,
+or 500 MHz is not required for Tape-out 1.
+
+## 4. Frozen architecture baseline
+
+| Item | Tape-out 1 Must | Current baseline | Later revision |
+| --- | --- | --- | --- |
+| Process | Provider-qualified GF180MCU | `gf180mcuD` open PDK | Freeze exact provider revision |
+| Analog channels | 1 | 1 | Multiple channels |
+| Storage depth | 4 cells | Demonstrated | 32-128 cells |
+| Sampling switch | Transmission gate | NMOS/PMOS comparison demonstrated | Bootstrapped switch after reliability review |
+| Hold capacitor | One per cell | 1 pF simulation baseline | Select PDK capacitor after layout study |
+| Read MUX | 4-to-1 analog MUX | Sequential MUX demonstrated | Buffered/deeper array |
+| ADC | Shared Wilkinson | Ramp/comparator demonstrated | Parallelism and calibration |
+| Resolution | 6 bits | Timing-derived codes demonstrated | 8-10 bits, then 12-bit research |
+| Counter capture | 6-bit Gray-safe capture | RTL demonstrated | Higher resolution |
+| Result storage | Four 6-bit words | 24-bit packed payload demonstrated | Deeper memory |
+| Readout | Slow synchronous CMOS serial | Demonstrated | Framed/high-speed link |
+| Ramp | Internal ramp plus external debug path | Internal pre-layout baseline | Programmable/calibrated ramp |
+| Clocking | External and board-controllable | 20 MHz conversion baseline | Fast sampling generator |
+| Test access | Block isolation and observable nodes | Architecture defined | Final pads TBD |
+
+Cell count, ADC width, payload format, clock-domain boundary, and analog/digital
+interfaces are frozen. Changing any of them requires a specification revision
+and full regression.
+
+## 5. Functional requirements
+
+### 5.1 Sampling and hold
+
+`VIN` is connected to `VHOLD[i]` through a transmission gate while
+`SAMPLE[i]` is active. `CHOLD[i]` retains the sampled voltage after opening.
+
+Must requirements:
+
+- Four cells capture distinguishable input values in the intended order.
+- Each cell has explicit complementary switch control.
+- Acquisition error, edge disturbance, and hold droop have defined measurements.
+- Non-selected cells are not unintentionally overwritten.
+
+The nominal regression stimuli are approximately 0.5, 0.8, 1.1, and 1.4 V.
+They are not guaranteed silicon input limits.
+
+### 5.2 Analog selection
+
+A one-hot transmission-gate MUX connects one stored value to `MUX_BUS`.
+
+- No more than one `SEL[i]` is active during conversion.
+- A defined bus-reset interval separates cells.
+- MUX settling completes before ramp release.
+- Disturbance of the source hold capacitor is measured.
+
+### 5.3 Wilkinson conversion
+
+The ramp is reset, one cell is selected, and the counter starts. The comparator
+captures the count when `VRAMP` crosses `MUX_BUS`.
+
+```text
+ideal_code = floor(crossing_time / conversion_clock_period)
+code range = 0 ... 63
+```
+
+- Higher held voltage produces a later crossing and non-decreasing code.
+- Four conversions complete without loss of cell order.
+- Comparator polarity and capture convention are documented.
+- A conversion timeout handles no-crossing cases.
+
+The current nominal integrated signature is `16, 20, 27, 35`. It is a
+regression result, not an INL/DNL guarantee.
+
+### 5.4 Digital capture and readout
+
+The controller sequence is:
+
+```text
+IDLE -> RESET_RAMP -> SELECT -> CONVERT -> CAPTURE -> NEXT -> DONE
+```
+
+- Gray-coded count capture is used at the asynchronous comparator boundary.
+- Four 6-bit results remain associated with their cell numbers.
+- The 24-bit payload is `{cell3, cell2, cell1, cell0}` unless explicitly revised.
+- Serial bit order, active edge, frame start, and data-valid timing are documented.
+- Reset, timeout, and phase-boundary cases have self-checking tests.
+
+## 6. Provisional electrical targets
+
+Provider-qualified limits override this table.
 
 | Item | Must | Target | Stretch |
 | --- | --- | --- | --- |
-| Process | GF180MCU `gf180mcuD` | MPW-provider-qualified revision | - |
-| Signal channels | 1 | 1 | 2 replicated test channels |
-| Storage depth | 4 cells | 8 cells | 16 cells |
-| Sampling clock | External, single-ended CMOS | 10-50 MSa/s | 100 MSa/s or higher |
-| Sampling timing | Functional capture with documented aperture | Characterize cell-to-cell timing | On-chip delay line |
-| Analog input | Unipolar voltage input within characterized safe range | 0.3-2.8 V nominal range | Dedicated fast input buffer |
-| Input bandwidth | Demonstrate sampled sine/pulse response | At least 10 MHz | At least 50 MHz |
-| ADC architecture | Wilkinson / single-slope | Wilkinson with internal ramp | Multi-cell parallel conversion |
-| ADC resolution | 6-bit functional conversion | 8-bit monotonic conversion | 10-bit characterization |
-| ADC linearity | Transfer curve measurable | No missing codes at 8 bit | DNL/INL within 1 LSB |
-| Ramp source | External ramp input and bypass path | On-chip ramp generator | Programmable slope/current |
-| Conversion clock | External CMOS clock | 10-50 MHz | 100 MHz |
-| Readout | Slow synchronous serial CMOS | SPI-like interface | Framed serializer |
-| Power | Measurable by separated supplies | Less than 50 mW core, excluding I/O | Power-gated modes |
-| Package/interface | Provider-supported pad ring and package/COB | Evaluation PCB | High-speed package study |
+| Analog input | Safe operation in a characterized unipolar range | Verify 0.4-1.6 V baseline | Wider range with input buffer |
+| Sampling rate | Externally controllable functional sampling | Characterize 10-50 MSa/s | 100 MSa/s or higher |
+| Input bandwidth | Demonstrate DC/low-frequency sampling | At least 10 MHz measured | At least 50 MHz |
+| ADC resolution | Functional 6-bit conversion | Monotonic 6-bit transfer | 8-bit test mode |
+| Conversion clock | External CMOS | 20 MHz baseline | Up to 50 MHz after timing review |
+| Conversion time | Below controller timeout | Complete four-cell sequence | Reduced dead time |
+| Core power | Separate analog/digital measurement | Less than 50 mW excluding I/O | Power modes |
+| Readout | Slow synchronous CMOS | FPGA-compatible protocol | Framed serializer |
 
-Numerical target values may be revised after initial device, capacitor, and
-comparator characterization. Any revision shall be recorded in Git before the
-affected block is frozen.
+No value is a silicon guarantee until PVT, mismatch, PEX, package effects, and
+measurement uncertainty are included.
 
-## 6. Required functional blocks
+## 7. Required implementation and observability
 
-### 6.1 Sampling cell
+### 7.1 Analog blocks
 
-Each cell shall contain a GF180-compatible sampling switch and storage
-capacitor. The first design may use a single NMOS switch; a transmission gate
-or bootstrapped switch is a target only after reliability and voltage limits
+- Four transmission-gate sampling cells and hold capacitors.
+- 4-to-1 analog MUX and bus reset.
+- Ramp generator, reset device, bias, and monitor.
+- Comparator and output buffer.
+- External ramp injection or bypass.
+- Required analog biasing and supply decoupling.
+
+### 7.2 Digital blocks
+
+- 6-bit counter and Gray-coded asynchronous capture.
+- Four-cell conversion controller.
+- Four 6-bit result registers.
+- 24-bit synchronous serial readout.
+- Reset, test mode, timeout, and status logic.
+
+### 7.3 Mandatory test access
+
+Subject to the final pad budget, the top shall provide:
+
+- Direct or buffered observation of at least one `VHOLD` node.
+- External ramp input and buffered internal-ramp monitor.
+- Comparator standalone mode and digital output observation.
+- Conversion-clock input and divided-clock/status monitor.
+- Digital test mode independent of the analog crossing.
+- Access to all captured codes.
+- Separately measurable analog, digital, and I/O supply currents.
+- At least one replica MOS/capacitor characterization structure.
+
+Test access takes priority over additional depth, resolution, or serializer
+complexity.
+
+## 8. Verification requirements
+
+### 8.1 Analog
+
+Every analog block included in silicon requires a readable Xschem schematic or
+controlled SPICE source, automated nominal measurements, applicable DC/AC/
+transient tests, PVT corners, mismatch analysis for sensitive blocks, DRC/LVS
+clean layout, and extracted post-layout verification.
+
+```sh
+make analog-regression
+```
+
+### 8.2 Digital and mixed signal
+
+Every RTL block requires self-checking simulation, GF180 synthesis, timing
+analysis, and boundary tests. Measured SPICE crossing times shall drive the
+real capture RTL, including conversion-clock phase sweeps.
+
+```sh
+make course-regression
+```
+
+### 8.3 Physical and top-level signoff
+
+```text
+schematic simulation
+-> layout
+-> DRC
+-> extraction
+-> LVS
+-> PEX simulation
+```
+
+LVS proves connectivity, not analog performance. PEX shall repeat sampling
+error, hold disturbance, ramp slope/linearity, comparator delay/offset, and
+integrated conversion measurements.
+
+The full chip also requires qualified pad/ESD cells, power/substrate review,
+analog macro integration, DRC/LVS/antenna/density/ERC/provider checks, and a
+clean-checkout build using pinned tools and PDK data.
+
+## 9. Silicon acceptance
+
+Tape-out 1 is a complete-flow success when these are demonstrated or a failure
+is conclusively isolated through test access:
+
+1. Safe power-up and measurable analog/digital currents.
+2. Functional reset, clocks, status, and serial communication.
+3. Acquisition and hold of a DC or low-frequency input by at least one cell.
+4. Observable comparator crossing with the external ramp.
+5. Counter capture and bit-correct serial readout.
+6. A measurable multi-point transfer curve.
+7. Four samples associated with the correct cell addresses.
+8. Internal-ramp behavior compared with the external reference.
+9. Publication of measurements, failures, calibration, and pre-silicon comparison.
+
+## 10. Explicit non-goals for Tape-out 1
+
+- Multi-GSa/s operation or 25 ps timing resolution.
+- Validated 500 MHz analog bandwidth.
+- Guaranteed 8-, 10-, or 12-bit ADC performance.
+- A 32-, 128-, or 512-cell array or multiple channels.
+- DLL-locked timing, production PMT front end, or high-speed I/O.
+- Radiation or production reliability qualification.
+
+## 11. Freeze gates
+
+### Gate A: External constraints
+
+Confirm MPW run/date, die area, PDK revision, supplies, qualified I/O cells,
+package/COB option, pad template, and provider deliverables.
+
+### Gate B: Schematic
+
+The 4-cell/6-bit architecture passes `make course-regression`; PVT/mismatch
+criteria, interfaces, test modes, timeout, payload, area, power, and pad budgets
 are reviewed.
 
-Required simulations:
+### Gate C: Block layout
 
-- Acquisition and hold transient response.
-- Droop versus hold time.
-- Signal-dependent charge injection.
-- Clock feedthrough.
-- Process, supply, and temperature corners.
+Analog and digital blocks are DRC/LVS clean, extracted critical simulations
+pass or have reviewed waivers, and macro interfaces are frozen.
 
-### 6.2 Storage array and selection
+### Gate D: Full chip
 
-At least four cells shall be addressable. Sampling and readout may be
-sequential; simultaneous high-speed write and conversion are not required.
-Gray-code addressing, deep circular buffers, and DLL-based timing are outside
-the first-prototype minimum scope.
+Pads, power, macros, test structures, fill, and seal-ring constraints are
+integrated; full-chip signoff passes; ASIC pinout, bond map, PCB, and FPGA
+interface agree.
 
-### 6.3 Comparator
+### Gate E: Release
 
-The comparator shall detect the crossing between a held sample and the ramp.
-The design shall prioritize observable operation and input range over minimum
-delay or power.
+Provider checklist and clean-clone build pass. GDS/OASIS, netlists, reports,
+waivers, checksums, Git tag, and measurement plan are archived.
 
-Must-characterize quantities:
+## 12. Open external decisions
 
-- Input common-mode range.
-- Input-referred offset, including Monte Carlo mismatch.
-- Propagation delay versus overdrive.
-- Kickback onto the held sample and ramp.
-- Static or dynamic power, as applicable.
+The internal architecture is frozen at four cells and six bits. Remaining
+decisions are:
 
-A nominal simulated offset below 20 mV is an initial target, not a tape-out
-pass/fail limit.
+1. MPW provider, run, slot, and deadline.
+2. Accepted GF180MCU PDK release and metal stack.
+3. Qualified supplies and pad/ESD libraries.
+4. Die area, pad count/pitch, seal ring, and density rules.
+5. Package, chip-on-board, or wire-bond carrier.
+6. Final capacitor type/value after leakage, area, and PEX study.
+7. Final comparator variant after PVT/mismatch/post-layout comparison.
+8. Ramp ranges and monitor implementation.
+9. Formal silicon sampling and conversion-clock limits.
+10. Evaluation PCB, FPGA, connectors, and I/O voltage levels.
 
-### 6.4 Ramp generator
+## 13. Change control
 
-The chip shall accept an external voltage ramp. An on-chip current-source and
-capacitor ramp generator is a target block and shall have a monitor pad or
-buffered test output. The external ramp path is mandatory for debug and shall
-remain usable independently of the internal generator.
-
-### 6.5 Counter and capture logic
-
-The digital block shall count an external conversion clock and capture the
-count at the comparator transition. Six bits are required; eight bits are the
-target. The RTL shall have a standalone simulation and synthesis test.
-
-### 6.6 Control and readout
-
-The minimum interface shall use ordinary CMOS pads and a low-speed synchronous
-protocol. Required operations are reset, sample, start conversion, select
-cell, and shift/read conversion data. LVDS and a high-speed serializer are not
-required for the first prototype.
-
-## 7. Test and debug requirements
-
-The following observability is mandatory, subject to pad availability:
-
-- Direct or buffered sampling-cell output for at least one cell.
-- External ramp input.
-- Buffered internal-ramp monitor.
-- Comparator standalone input mode and digital output.
-- Conversion clock input and divided-clock monitor.
-- Counter test mode independent of the analog comparator.
-- Scan or direct access to captured ADC code.
-- Separate analog, digital, and I/O supply current measurement points.
-- At least one replica device/capacitor or analog characterization structure.
-
-Test access takes priority over storage depth and serializer complexity.
-
-## 8. Electrical and reliability constraints
-
-- Device types, terminal voltages, and pad cells shall comply with the exact
-  MPW-qualified GF180MCU PDK revision.
-- No node may exceed foundry oxide, junction, or ESD limits in normal or test
-  modes.
-- Clock and analog input ranges shall be documented at top level.
-- Analog and digital supplies shall be independently filterable on the PCB.
-- All asynchronous external controls entering digital logic shall be
-  synchronized or constrained by the test protocol.
-- Unused inputs shall have defined bias states.
-
-Absolute voltage limits remain TBD until the MPW provider and I/O library are
-frozen.
-
-## 9. Verification requirements
-
-### 9.1 Analog blocks
-
-Every tape-out analog block shall have:
-
-- A standalone Xschem schematic and ngspice testbench.
-- Nominal DC, AC, and transient tests as applicable.
-- Process, voltage, and temperature corner tests.
-- Monte Carlo mismatch analysis for matching-sensitive blocks.
-- Defined measurements and automated pass/report output.
-- DRC-clean and LVS-clean layout.
-- Extracted post-layout simulation for its primary function.
-
-### 9.2 Digital blocks
-
-Every tape-out RTL block shall have:
-
-- Self-checking simulation.
-- Reset and boundary-condition tests.
-- Synthesis with the selected GF180 standard-cell library.
-- Timing analysis at the intended slow operating clock.
-- Gate-level or equivalent post-synthesis verification before integration.
-
-### 9.3 Top level
-
-Top-level signoff shall include:
-
-- Pad-ring and power-domain review.
-- Full-chip DRC and LVS.
-- Antenna, density/fill, and provider-specific checks where required.
-- Extracted simulation of critical analog paths.
-- Mixed-signal functional test of sample, convert, capture, and readout.
-- Reproducible build from a clean checkout using pinned tools and PDK data.
-
-## 10. Silicon acceptance plan
-
-The first silicon is considered a complete-flow success when all of the
-following are demonstrated or conclusively diagnosed through test access:
-
-1. The packaged die powers safely with measurable analog and digital currents.
-2. Reset, control, clock, and readout communication operate.
-3. At least one sampling cell acquires and holds a DC or low-frequency input.
-4. The comparator crossing can be observed using the external ramp path.
-5. The counter capture and serial readout return a conversion code.
-6. A multi-point ADC transfer curve can be measured.
-7. At least four stored samples can be read and associated with their cell
-   addresses, or the exact failing stage can be isolated using test modes.
-8. Pre-silicon and measured results are published with the design sources.
-
-Meeting the proposal's eventual speed, bandwidth, timing, or 12-bit resolution
-is not required for first-silicon acceptance.
-
-## 11. Explicit non-goals for the first prototype
-
-- Multi-GSa/s operation.
-- 25 ps timing resolution.
-- 500 MHz validated analog bandwidth.
-- Guaranteed 12-bit ADC performance.
-- A 128- or 512-cell storage array.
-- Eight-channel integration.
-- DLL-locked sampling timing.
-- Production-quality PMT amplifier and shaper.
-- LVDS output or a high-speed serializer.
-- Radiation qualification or production reliability qualification.
-
-These items remain candidates for later revisions after the basic flow and
-silicon measurement loop are established.
-
-## 12. Milestones and freeze gates
-
-### Gate A: Specification freeze
-
-- Resolve the open decisions in Section 13.
-- Confirm MPW provider, PDK revision, pad ring, and available I/O count.
-- Approve Must/Target/Stretch classifications.
-
-### Gate B: Block schematic freeze
-
-- Sampling cell, comparator, ramp, and counter pass standalone tests.
-- Initial area and pad budget are credible.
-
-### Gate C: Block layout freeze
-
-- Required blocks are DRC/LVS clean.
-- Primary extracted simulations pass or deviations are documented.
-
-### Gate D: Top-level freeze
-
-- Full-chip integration and debug modes are verified.
-- PCB and package pinout are reviewed together with the ASIC pinout.
-
-### Gate E: Tape-out release
-
-- Provider signoff checklist is complete.
-- Clean-clone reproducibility run passes.
-- Final GDS/OASIS and reports are tagged in Git.
-
-## 13. Open decisions
-
-The following shall be resolved before Gate A:
-
-1. Exact MPW run, submission date, die slot, and PDK revision.
-2. Package/COB option and mandatory pad-ring template.
-3. Core, analog, and I/O supply voltages.
-4. Four versus eight storage cells.
-5. Six-bit minimum versus eight-bit-only counter implementation.
-6. External clock frequency used as the formal target.
-7. Capacitor type and nominal storage capacitance.
-8. Static versus dynamic comparator architecture.
-9. Internal ramp implementation and external-ramp voltage range.
-10. FPGA/evaluation-board choice and final readout pin protocol.
-
-## 14. Change control
-
-This document is the controlled specification for the first prototype. A
-change that affects interfaces, pad count, supply domains, device reliability,
-or a Must requirement requires a version update and review. Performance
-targets may be refined as characterization data becomes available, provided
-the complete-flow objective and silicon observability are preserved.
-
+Changes to interfaces, cell count, ADC width, payload, pads, supplies,
+reliability, or a Must requirement require a version/date update, written
+impact assessment, updates to tests/matrix/Handbook/decision records, and full
+regression. Parameter tuning may proceed without an architecture revision only
+when interfaces, reliability limits, and Must behavior remain unchanged.
