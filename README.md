@@ -32,10 +32,10 @@ and [`docs/VERIFICATION_MATRIX.md`](docs/VERIFICATION_MATRIX.md).
 
 ## Start here
 
-初学者向けの詳細な日本語実習書は
-[`docs/lecture/ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.md`](docs/lecture/ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.md)
-です。印刷・配布用PDFも同じdirectoryにあります。まずLab 0から順番に進め、各Labの
-合格条件を満たしてから次へ進んでください。
+初学者向けの正式な日本語教材は
+[`docs/lecture/README.md`](docs/lecture/README.md)です。印刷・配布用の
+`IRSX_ASIC_Student_Lab_Handbook_JP.pdf`も同じdirectoryにあります。まずLab 0から
+順番に進め、各Labの合格条件を満たしてから次へ進んでください。
 
 Run the host check:
 

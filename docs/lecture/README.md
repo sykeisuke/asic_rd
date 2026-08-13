@@ -1,23 +1,20 @@
-# 教材の使い分け
-
-- `ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.md`: 学生が手を動かす詳細実習書の編集元。
-- `ASIC_CIRCUIT_DESIGN_WORKBOOK_JP.pdf`: 図13点を含む印刷・配布版。
-- `IRSX_ASIC_Student_Lab_Handbook_JP.pdf`: project全体を俯瞰するハンドブック。
-- `IRSX_ASIC_Student_Lab_Handbook_JP.docx`: ハンドブックの編集用ファイル。
-
-初めて取り組む場合は、WorkbookのLab 0から順番に実行する。
+# IRSX-like ASIC設計実習ハンドブック
 
 <img src="assets/architecture.png" style="width:6.5in;height:2.74444in" />
 
 *図1　本プロトタイプの信号経路。青はアナログ、緑はデジタル領域。*
 
-Version 1.0 \| 2026-08-11
+Version 1.1 \| 2026-08-13
 
 Repository: github.com/sykeisuke/asic\_rd
 
 # このハンドブックの目的
 
 この教材のゴールは、最高性能のASICを一度で作ることではありません。仕様、回路図、SPICE、RTL、協調検証、配置配線、サインオフ、GDSIIという一連の流れを、誰でも再現できる形で通すことです。学生はGitHubの設計ファイルを読み、同じコマンドで結果を再生成し、次の設計判断を説明できる状態を目指します。
+
+本書がこのprojectの唯一の正式教材です。前半で環境と回路の読み方を学び、Lab 0から
+順に手を動かします。各Labでは、目的、入力、出力、観測点、合格条件を確認してから
+次へ進みます。
 
 |                                                                                                                                |
 |--------------------------------------------------------------------------------------------------------------------------------|
@@ -666,6 +663,34 @@ make sampling-cell<br>
 make four-cell<br>
 make four-cell-mux
 
+Sampling cellは入力電圧をswitchでhold capacitorへ接続し、switchを切った後も
+電荷として保存する回路です。
+
+![Sampling cellの構成](assets/sampling_cell_concept.png)
+
+*図8　Transmission gate型sampling cell。TRACK中はVHOLDがVINを追跡し、HOLD中はCHOLDに電圧を保存する。*
+
+このLabでは次の3回路を同じ入力条件で比較します。
+
+| **回路** | **ファイル** | **確認すること** |
+|---|---|---|
+| 理想switch | `ideal_sampling_cell.spice` | MOS固有誤差を含まない基準 |
+| NMOS-only | `sampling_cell.spice` | 高電圧側のon-resistanceとacquisition error |
+| Transmission gate | `transmission_gate.spice` | NMOSとPMOSの相補動作による改善 |
+
+![3種類のsampling cell波形](assets/sampling_cell_simulation.png)
+
+*図9　理想switch、NMOS-only、transmission gateのVIN、VHOLD、SAMPLE比較。*
+
+Xschemでtransmission gateを確認する場合は、VNCのFile Managerから次を開きます。
+
+```text
+/foss/designs/simulations/gf180_sampling_cell/sampling_cell_tg.sch
+```
+
+NMOS gateは`SAMPLE`、PMOS gateは`SAMPLE_B`へ接続されています。`Netlist`、
+`Simulate`を順に押し、緑矢印を`Ctrl + 左クリック`してRAWを読み込みます。
+
 `sampling_cell.sch`はXschem GUIからも実行できる。回路図を保存し、
 `Netlist`、`Simulate`の順に押した後、`Load sampling waveforms`をCtrl +
 左クリックする。画面には`VIN`、`VHOLD`、`SAMPLE`の3グラフが表示される。
@@ -709,6 +734,16 @@ Make targetは回帰試験、Xschem GUIは回路編集と波形観察という�
 
 -   保持値が急減：capacitance、leakage path、simulation timestepを確認。
 
+## Sampling cellの合格条件
+
+□ TRACKとHOLDを波形上で指し示せる。
+
+□ acquisition error、edge disturbance、hold droopの測定位置を説明できる。
+
+□ 理想switchとMOS switchの違いを説明できる。
+
+□ transmission gateを使う理由を説明できる。
+
 # Lab 3 Comparatorとramp
 
 |                                                                      |
@@ -723,6 +758,22 @@ make ramp-generator
 Wilkinson変換では、一定傾斜のrampが保持電圧へ到達した瞬間にcounter値をcaptureします。理想的には
 t\_cross = (V\_hold − V\_start) / slope です。したがってramp
 slope、offset、delay、noiseがcodeへ直接写ります。
+
+![Ramp generatorとcomparator](assets/ramp_comparator_concept.png)
+
+*図10　一定電流でCRAMPを充電し、VRAMPとVHOLDの交差をcomparatorでdigital edgeへ変換する。*
+
+Rampの基本式は`dV/dt = I/C`です。電流を2倍にすると傾きは約2倍、capacitorを
+2倍にすると約半分になります。実MOSの有限出力抵抗があるため、傾きは完全には一定に
+なりません。
+
+ComparatorはVHOLDとVRAMPをdifferential pairへ入力し、active loadとinverterを
+通して`HIT`を生成します。理想交差時刻とoutput edgeの差がdelay、同じ入力でもtrip
+pointがずれる静的誤差がoffsetです。
+
+![Rampとcomparatorのsimulation](assets/ramp_comparator_simulation.png)
+
+*図11　GF180 ramp generatorのreset・上昇波形と、保持電圧との交差で切り替わるcomparator出力。*
 
 ## 測るもの
 
@@ -762,6 +813,10 @@ make transfer
 
 5.  input sweepからcode transferを作り、単調性を確認する。
 
+![1-cell Wilkinson simulation](assets/wilkinson_slice_simulation.png)
+
+*図12　VHOLD、VRAMP、HITの時間波形と、入力電圧に対する6-bit codeの粗いtransfer characteristic。*
+
 ## 合否基準
 
 □ 低い入力ほど早く交差し、小さいcodeになる。
@@ -799,11 +854,16 @@ GAWが開いたら、左側の信号名を右側の黒いgraph panelへdrag and 
 - 中段: `v(mux_bus)`、`v(ramp)`
 - 下段: `v(reset)`、`v(compare_out)`
 
+RAWに保存された任意のtest pointはGAWで表示できます。左のsignal一覧からnodeを選び、
+観測したいpanelへdragします。`vin`と`hold0`のように因果関係を比較するsignalは同じ
+panelへ置き、電圧scaleが異なるdigital信号は別panelへ置きます。必要な内部nodeが
+一覧にない場合はSPICE sourceの`.save`へ追加し、simulationを再実行します。
+
 信号一覧が見えない場合は左側の小windowを前面に出します。波形が時間軸の一部にしか見えない場合は、上部の`Z Out`または`Zoom` menuを使います。4 cellすべてを確認するには、横軸をsimulation終了時刻の約11.6 µsまで表示します。
 
 ![GAWで表示した4-cell統合Wilkinson波形](assets/gaw_four_cell_integrated.png)
 
-*図8　GAWによる4-cell統合SPICE波形。上段は入力と4つの保持電圧、中段はMUX busとramp、下段はresetとcomparator出力。画像は約7 µsまでの表示なので、最後のcellを見るときはさらにZoom Outする。*
+*図13　GAWによる4-cell統合SPICE波形。上段は入力と4つの保持電圧、中段はMUX busとramp、下段はresetとcomparator出力。画像は約7 µsまでの表示なので、最後のcellを見るときはさらにZoom Outする。*
 
 ## この画面で何を検証するか
 
@@ -817,7 +877,7 @@ GAWが開いたら、左側の信号名を右側の黒いgraph panelへdrag and 
 
 <img src="assets/four_cell_waveform.png" style="width:6.45in;height:3.49059in" />
 
-*図9　4-cell shared Wilkinson conversion。上段は保持値とMUX
+*図14　4-cell shared Wilkinson conversion。上段は保持値とMUX
 bus、下段はrampとcomparator。*
 
 | **Cell** | **MUX電圧 \[V\]** | **交差時刻 \[µs\]** | **6-bit code** |
@@ -920,7 +980,7 @@ make phase-sweep
 
 <img src="assets/phase_sweep.png" style="width:6.2in;height:2.68667in" />
 
-*図10　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
+*図15　cell 2のphase sweep。+500 ps付近でcodeが27から28へ変わる。*
 
 binary
 counterは例として011111→100000のように複数bitが同時に変化します。非同期edgeがその途中をcaptureすると存在しないcodeになり得ます。Gray
@@ -982,7 +1042,7 @@ make digital-physical
 
 <img src="assets/asic_digital_top.png" style="width:5.3in;height:5.7399in" />
 
-*図11　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
+*図16　GF180 standard-cell flowで生成したデジタルtopの最終レイアウト。*
 
 | **Metric**        | **結果**              |
 |-------------------|-----------------------|
@@ -996,6 +1056,53 @@ make digital-physical
 成果物は digital/asic\_digital\_top/physical/final\_views/
 以下にあります。GDS、DEF、LEF、gate-level
 netlist、metricsを相互に対応づけます。
+
+## 9.1 Analog layoutは別に設計する
+
+Digital blockはstandard cellを自動配置配線できますが、sampling cell、MUX、ramp、
+comparatorはdevice matchingと寄生を考えて手作業でlayoutします。
+
+Sampling cell:
+
+- NMOS/PMOSのclock配線を短くする。
+- VHOLD nodeを短くし、digital配線から離す。
+- CHOLD周辺のcouplingを抑える。
+- guard ringとwell connectionを確認する。
+
+Comparator:
+
+- differential pairを対称配置する。
+- input配線長を揃える。
+- current mirrorをmatching配置する。
+- digital output bufferをinput pairから離す。
+
+Ramp:
+
+- ramp nodeの寄生容量を管理する。
+- digital clockからshieldする。
+- current-source deviceの周囲環境を揃える。
+
+## 9.2 DRC、LVS、PEXの順序
+
+```text
+schematic simulation
+→ layout
+→ DRC
+→ extraction
+→ LVS
+→ post-layout simulation
+```
+
+- `DRC`: layoutがfoundryのgeometry ruleを守るか確認する。
+- `LVS`: layoutから抽出した接続がschematicと一致するか確認する。
+- `PEX`: 配線抵抗、寄生容量、couplingを含むnetlistを生成する。
+
+LVS PASSだけでは性能は保証されません。PEX後にsampling error、ramp slope、
+comparator delayを同じ測定定義で再確認します。
+
+![段階的な検証](assets/verification_ladder.png)
+
+*図17　検証は理想model、transistor block、統合回路、PEX、siliconの順に積み上げる。*
 
 # 10. Signoff結果の読み方
 
@@ -1130,6 +1237,25 @@ chipには、デジタルGDS以外の設計とprovider固有条件が残って�
 □ pad ring、seal ring、density/fillを含むtop GDSがある。
 
 □ package/PCB/test planがchip pinoutと一致する。
+
+## 高性能化すると何が難しくなるか
+
+Sampling rateを上げると、sampling aperture、switch settling、clock skew、input
+bandwidth、bus capacitance、clock feedthroughが厳しくなります。Resolutionを上げると、
+comparator offset/noise、ramp linearity、counter clock jitter、pedestal variation、
+supply noise、calibration精度が厳しくなります。
+
+1 V入力範囲での理想LSBは次の通りです。
+
+| **Resolution** | **Levels** | **Ideal LSB** |
+|---|---:|---:|
+| 6 bit | 64 | 15.625 mV |
+| 8 bit | 256 | 3.906 mV |
+| 10 bit | 1024 | 0.977 mV |
+| 12 bit | 4096 | 0.244 mV |
+
+12-bit、1 GSa/sはopen-source toolを使うだけで自動的に達成できる仕様ではありません。
+回路、layout、clock、package、PCB、calibrationを含むsystemとして段階的に実証します。
 
 # 14. Specification snapshot
 
