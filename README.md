@@ -10,6 +10,11 @@ The controlled scope and silicon acceptance criteria are defined in both
 and [`docs/PROTOTYPE_SPECIFICATION_JP.md`](docs/PROTOTYPE_SPECIFICATION_JP.md)
 (日本語).
 
+First-silicon power-up and measurement are defined in
+[`docs/SILICON_TEST_PROCEDURE.md`](docs/SILICON_TEST_PROCEDURE.md) (English)
+and [`docs/SILICON_TEST_PROCEDURE_JP.md`](docs/SILICON_TEST_PROCEDURE_JP.md)
+(日本語).
+
 The repository now demonstrates the following reproducible path:
 
 1. GF180 transistor-level sampling, mux, ramp, and comparator simulation.

@@ -72,24 +72,31 @@ Tape-out 1では、次の工程を一度最後まで通すことを第一目的�
 故障箇所を明確に切り分けられた場合も、フロー実証としての成功に含める。12 bit、
 1 GSa/s、500 MHzの達成はTape-out 1の必須条件ではない。
 
-## 4. 凍結する回路構成
+## 4. 3段階の開発計画と回路構成
 
-| 項目 | Tape-out 1の必須仕様 | 現在の基準 | 将来版 |
-| --- | --- | --- | --- |
-| プロセス | MPW事業者が認定したGF180MCU | `gf180mcuD` Open PDK | 事業者確定後に正確な版を凍結 |
-| アナログチャンネル | 1 | 1 | IRSX相当の8チャンネル |
-| 保存段数 | 4 cells | 実証済み | 32-128 cells |
-| Sampling switch | Transmission gate | NMOS/PMOS比較を実証済み | 信頼性確認後にbootstrapped switch |
-| Hold capacitor | 各cellに1個 | 1 pFのシミュレーション基準 | レイアウト検討後にPDK素子を選択 |
-| 読み出しMUX | 4-to-1 analog MUX | 順次読み出しを実証済み | Buffer追加、深いarray |
-| ADC方式 | 共有Wilkinson方式 | Ramp/comparatorを実証済み | 並列化、calibration |
-| ADC分解能 | 6 bit | 時刻からのcode生成を実証済み | 8-10 bit、その後12-bit研究 |
-| Counter capture | 6-bit Gray-safe capture | RTLで実証済み | 高分解能化 |
-| 結果保存 | 6-bit wordを4個 | 24-bit payloadを実証済み | 深いmemory |
-| 読み出し | 低速同期CMOS serial | 実証済み | Frame付き高速link |
-| Ramp | 内部rampと外部debug経路 | 内部rampのレイアウト前基準あり | 傾き可変、calibration対応 |
-| Clock | 外部入力でboardから制御可能 | 20 MHz conversion基準 | 高速sampling timing generator |
-| Test access | Block単位で切り分け可能 | 構成を定義済み | 最終pad割当は未確定 |
+`[x]`は現在の正式な設計基準、`[ ]`は将来段階を示す。Tape-out 2と3の数値は、前段の
+シリコン測定結果を受けて再凍結するため、現時点では研究目標である。
+
+| 開発段階 | 現在選択 | 目的 | Channels | Cells/ch | ADC | Sampling目標 | 主な追加機能 |
+| --- | --- | --- | ---: | ---: | ---: | ---: | --- |
+| Tape-out 1 | [x] | Complete flowとtest accessの実証 | 1 | 4 | 6 bit | 25 MSa/s基準 | 外部clock、内部/外部ramp、24-bit serial |
+| Tape-out 2 | [ ] | 深いSCAとcalibrationの実証 | 1 | 32-128 | 8-10 bit | 100-500 MSa/s目標 | PVT/mismatch、cell calibration、高速timing |
+| Tape-out 3 | [ ] | IRSX相当systemへの拡張 | 8 | 128以上を候補 | 12 bit目標 | 1 GSa/s以上を目標 | 8-channel統合、500 MHz帯域、system calibration |
+
+Tape-out 1で凍結する詳細構成は次の通りである。
+
+| 項目 | 現在の基準 | 状態 |
+| --- | --- | --- |
+| プロセス | `gf180mcuD` Open PDK。事業者決定後にexact revisionを凍結 | [x] |
+| Sampling switch | NMOS+PMOS transmission gate | [x] |
+| Hold capacitor | 各cell 1個、1 pF simulation baseline | [x] |
+| 読み出しMUX | One-hot 4-to-1 analog MUX | [x] |
+| ADC方式 | 共有ramp/comparatorによるWilkinson方式 | [x] |
+| Counter capture | 6-bit Gray-safe capture | [x] |
+| Result storage | 6-bit word 4個、合計24 bit | [x] |
+| Readout | 低速同期CMOS serial | [x] |
+| Ramp | 内部rampと外部debug/bypass経路 | [x] |
+| Test access | Block単位で故障を切り分け可能 | [x]、最終pad割当はTBD |
 
 4 cells、6 bit、24-bit payload、clock domainの境界、アナログ・デジタル間interfaceは
 教育用およびレイアウト前統合用の基準として凍結する。これらを変更する場合は、
@@ -160,20 +167,47 @@ IDLE → RESET_RAMP → SELECT → CONVERT → CAPTURE → NEXT → DONE
 - Resetとconversion timeoutにself-checking RTL testを設ける。
 - Conversion clock境界付近での非同期captureを検証する。
 
-## 6. 暫定的な電気仕様
+### 5.5 Sampling timingとconversion timing
 
-MPW事業者が認定した電気的制限は、必ずこの表より優先する。
+SamplingとWilkinson conversionには、独立した時間parameterを使用する。
 
-| 項目 | 必須 | 目標 | 発展 |
+- 現在の4-cell SPICE testbenchでは、`SAMPLE0..3`の開始を10、50、90、130 nsに設定する。
+- Cell間隔は40 nsなので、実効sampling rateは`1 / 40 ns = 25 MSa/s`である。
+- 各switchのtrack pulse幅は20 nsである。
+- 40 nsはtestbenchで直接設定したphase scheduleであり、20 MHz conversion clockから
+  生成された値ではない。
+- 将来、1 clockごとに次cellへ進むsequencerを採用すれば25 MHz system clockで同じ
+  sampling間隔を作れるが、Tape-out 1のsampling clock生成方式はまだ外部条件とともに
+  凍結する必要がある。
+- Conversion clockの現在の基準は20 MHz、すなわち`TCOUNT = 50 ns`で、ADC codeを
+  数えるために使う。Sampling pulseを生成するclockとは別parameterである。
+- 統合testbenchでは1 cellあたり約2.9 us、4 cell全体で約11.6 usを変換に割り当てる。
+  現構成は、この変換中に次のwaveformを連続取得するping-pong構成ではない。
+
+![Tape-out 1のsamplingとconversion timing](lecture/assets/tapeout1_sampling_conversion_timing.png)
+
+*図1　上段は4 cellを40 ns間隔でsampleする動作、下段は保存後に独立した20 MHz
+conversion clockで4 cellを順次6-bit変換する動作を示す。*
+
+## 6. 開発段階ごとの暫定電気仕様
+
+回路構成と電気仕様は同じTape-out段階に対応させる。MPW事業者が認定した電気的制限は、
+必ずこの表より優先する。
+
+| 項目 | Tape-out 1 [x] | Tape-out 2 [ ] | Tape-out 3 [ ] |
 | --- | --- | --- | --- |
-| アナログ入力 | 評価済みunipolar範囲で安全動作 | 0.4-1.6 V基準を検証 | Input bufferで範囲拡大 |
-| Sampling rate | 外部から制御して機能確認可能 | 10-50 MSa/sを評価 | 100 MSa/s以上 |
-| 入力帯域 | DCおよび低周波samplingを実証 | 10 MHz以上を測定 | 50 MHz以上 |
-| ADC分解能 | 6-bit変換が機能 | 6-bit transferが単調 | 8-bit test mode |
-| Conversion clock | 外部CMOS入力 | 20 MHz基準 | Timing確認後50 MHzまで |
-| 変換時間 | Controller timeout以内 | 4-cell sequenceを完了 | Dead time短縮 |
-| Core power | Analog/digitalを分離測定可能 | I/Oを除き50 mW未満 | Power mode追加 |
-| Readout | 低速同期CMOS | FPGAと接続可能 | Frame付きserializer |
+| Channels | 1 | 1 | 8 |
+| Cells/channel | 4 | 32-128 | 128以上を候補 |
+| Sampling interval | 40 ns基準 | 2-10 ns目標 | 1 ns以下を目標 |
+| Sampling rate | 25 MSa/s基準 | 100-500 MSa/s目標 | 1 GSa/s以上を目標 |
+| Record window | 最初から最後まで120 ns、4 sample depthとして160 ns相当 | Cell数とrateで決定 | Cell数とrateで決定 |
+| Analog input | 0.4-1.6 V simulation baseline | 前段測定後に再設定 | Front-endを含め再設定 |
+| Analog bandwidth | DC/低周波を必須、10 MHzを測定目標 | 50-200 MHz目標 | 500 MHz目標 |
+| ADC | 6-bit Wilkinson | 8-10 bit Wilkinson | 12-bit Wilkinson目標 |
+| Conversion clock | 20 MHz基準、samplingと独立 | 20-100 MHz候補 | Architectureと並列度を再設計 |
+| Conversion/readout | 4 cellを約11.6 usで順次変換 | 深いarrayに対応した並列化を検討 | 8-channel throughputへ対応 |
+| Power | Analog/digitalを分離測定、I/O除き50 mW未満を目標 | 測定結果からbudget化 | System power budgetを設定 |
+| Calibration | Pedestal/transfer測定 | Cellごとのtime/voltage calibration | 8-channel system calibration |
 
 PVT、mismatch、PEX、package効果、測定不確かさを含めるまでは、表の数値をシリコン保証値と
 して扱わない。
@@ -268,6 +302,9 @@ disturbance、ramp slope/linearity、comparator delay/offset、統合conversion 
 - Report、tool version、waiver、最終提出checksumの保存。
 
 ## 9. シリコン受入試験
+
+電源投入順序、停止条件、block別測定、4-cell統合測定、ADC/速度/帯域評価の詳細は
+[`SILICON_TEST_PROCEDURE_JP.md`](SILICON_TEST_PROCEDURE_JP.md)に従う。
 
 次の項目を実証できた場合、またはtest modeによって故障箇所を明確に切り分けられた場合、
 Tape-out 1をcomplete-flow実証として成功とする。

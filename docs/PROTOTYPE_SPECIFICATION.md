@@ -69,24 +69,34 @@ Silicon success includes either correct 4-cell/6-bit operation or conclusive
 fault isolation through the required test modes. Achieving 12 bits, 1 GSa/s,
 or 500 MHz is not required for Tape-out 1.
 
-## 4. Frozen architecture baseline
+## 4. Three-stage development plan and circuit architecture
 
-| Item | Tape-out 1 Must | Current baseline | Later revision |
-| --- | --- | --- | --- |
-| Process | Provider-qualified GF180MCU | `gf180mcuD` open PDK | Freeze exact provider revision |
-| Analog channels | 1 | 1 | Eight channels, matching the IRSX-level objective |
-| Storage depth | 4 cells | Demonstrated | 32-128 cells |
-| Sampling switch | Transmission gate | NMOS/PMOS comparison demonstrated | Bootstrapped switch after reliability review |
-| Hold capacitor | One per cell | 1 pF simulation baseline | Select PDK capacitor after layout study |
-| Read MUX | 4-to-1 analog MUX | Sequential MUX demonstrated | Buffered/deeper array |
-| ADC | Shared Wilkinson | Ramp/comparator demonstrated | Parallelism and calibration |
-| Resolution | 6 bits | Timing-derived codes demonstrated | 8-10 bits, then 12-bit research |
-| Counter capture | 6-bit Gray-safe capture | RTL demonstrated | Higher resolution |
-| Result storage | Four 6-bit words | 24-bit packed payload demonstrated | Deeper memory |
-| Readout | Slow synchronous CMOS serial | Demonstrated | Framed/high-speed link |
-| Ramp | Internal ramp plus external debug path | Internal pre-layout baseline | Programmable/calibrated ramp |
-| Clocking | External and board-controllable | 20 MHz conversion baseline | Fast sampling generator |
-| Test access | Block isolation and observable nodes | Architecture defined | Final pads TBD |
+`[x]` marks the current formal design baseline. `[ ]` marks a future stage whose
+values must be re-frozen after measuring the preceding silicon.
+
+| Stage | Selected now | Purpose | Channels | Cells/ch | ADC | Sampling target | Main additions |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Tape-out 1 | [x] | Demonstrate the complete flow | 1 | 4 | 6 bit | 25 MSa/s baseline | External clocks, extensive test access |
+| Tape-out 2 | [ ] | Increase depth and characterize variation | 1 | 32-128 | 8-10 bit | 100-500 MSa/s target | PVT/mismatch, cell calibration, faster timing generation |
+| Tape-out 3 | [ ] | Approach the IRSX-level research objective | 8 | 128 or more, TBD | 12-bit target | 1 GSa/s or more target | Multi-channel front end, timing/voltage calibration |
+
+The following Tape-out 1 choices are frozen unless this specification is
+formally revised.
+
+| Item | Status | Tape-out 1 baseline |
+| --- | --- | --- |
+| Process | [x] | Provider-qualified GF180MCU; development PDK is `gf180mcuD` |
+| Analog channels | [x] | 1 |
+| Storage | [x] | Four sampling cells, one hold capacitor per cell |
+| Sampling switch | [x] | Transmission gate |
+| Hold capacitor | [x] | 1 pF simulation baseline; final PDK device after layout study |
+| Read MUX | [x] | 4-to-1 transmission-gate analog MUX |
+| ADC | [x] | One shared Wilkinson ramp/comparator path |
+| Counter and storage | [x] | 6-bit Gray-safe capture and four 6-bit result registers |
+| Readout | [x] | 24-bit slow synchronous CMOS serial output |
+| Ramp | [x] | Internal ramp plus external debug/bypass path |
+| Clocking | [x] | Board-controllable sampling controls and independent 20 MHz conversion clock |
+| Test access | [x] | Block isolation and observable internal nodes, subject to pad budget |
 
 Cell count, ADC width, payload format, clock-domain boundary, and analog/digital
 interfaces are frozen. Changing any of them requires a specification revision
@@ -150,20 +160,47 @@ IDLE -> RESET_RAMP -> SELECT -> CONVERT -> CAPTURE -> NEXT -> DONE
 - Serial bit order, active edge, frame start, and data-valid timing are documented.
 - Reset, timeout, and phase-boundary cases have self-checking tests.
 
-## 6. Provisional electrical targets
+### 5.5 Sampling timing and conversion timing
 
-Provider-qualified limits override this table.
+The current four-cell testbench begins the four track pulses at 10, 50, 90,
+and 130 ns. The 40 ns spacing corresponds to a 25 MSa/s aggregate sampling
+rate. Each track pulse is 20 ns wide in this baseline.
 
-| Item | Must | Target | Stretch |
+The 40 ns spacing is a testbench phase schedule. It is not derived from the
+20 MHz conversion clock. A later sequencer could advance one cell per cycle of
+a 25 MHz sampling-system clock, but that clock-generation architecture is not
+yet frozen.
+
+The conversion clock is an independent parameter. At the present 20 MHz
+baseline, `TCOUNT = 50 ns`; one sequential conversion takes about 2.9 us and
+four conversions take about 11.6 us. Tape-out 1 therefore captures one short
+four-sample record and converts it afterward. It is not a continuous dead-time-
+free sampler.
+
+![Tape-out 1 sampling and conversion timing](lecture/assets/tapeout1_sampling_conversion_timing.png)
+
+*Figure: A 5 MHz example input sampled every 40 ns by four cells, followed by
+sequential 6-bit Wilkinson conversion using an independent 20 MHz clock.*
+
+## 6. Provisional electrical specifications by development stage
+
+The electrical targets and circuit architecture refer to the same three
+Tape-out stages. Provider-qualified limits always override this table.
+
+| Item | Tape-out 1 [x] | Tape-out 2 [ ] | Tape-out 3 [ ] |
 | --- | --- | --- | --- |
-| Analog input | Safe operation in a characterized unipolar range | Verify 0.4-1.6 V baseline | Wider range with input buffer |
-| Sampling rate | Externally controllable functional sampling | Characterize 10-50 MSa/s | 100 MSa/s or higher |
-| Input bandwidth | Demonstrate DC/low-frequency sampling | At least 10 MHz measured | At least 50 MHz |
-| ADC resolution | Functional 6-bit conversion | Monotonic 6-bit transfer | 8-bit test mode |
-| Conversion clock | External CMOS | 20 MHz baseline | Up to 50 MHz after timing review |
-| Conversion time | Below controller timeout | Complete four-cell sequence | Reduced dead time |
-| Core power | Separate analog/digital measurement | Less than 50 mW excluding I/O | Power modes |
-| Readout | Slow synchronous CMOS | FPGA-compatible protocol | Framed serializer |
+| Channels | 1 | 1 | 8 |
+| Cells/channel | 4 | 32-128 | 128 or more, TBD |
+| Sampling interval | 40 ns baseline | 2-10 ns target | 1 ns or less target |
+| Sampling rate | 25 MSa/s baseline | 100-500 MSa/s target | 1 GSa/s or more target |
+| Record window | 120 ns first-to-last; 160 ns as four-sample depth | Determined by depth and rate | Determined by depth and rate |
+| Analog input | 0.4-1.6 V simulation baseline | Re-freeze after first-silicon measurements | Re-freeze with front end |
+| Analog bandwidth | DC/low frequency required; 10 MHz measurement target | 50-200 MHz target | 500 MHz target |
+| ADC | 6-bit Wilkinson | 8-10 bit Wilkinson | 12-bit Wilkinson target |
+| Conversion clock | Independent 20 MHz baseline | 20-100 MHz candidate | Redesign architecture and parallelism |
+| Conversion/readout | Four cells sequentially in about 11.6 us | Add parallelism for deeper arrays | Support eight-channel throughput |
+| Power | Measure analog/digital separately; target below 50 mW excluding I/O | Budget from silicon data | Define system power budget |
+| Calibration | Pedestal and transfer measurement | Per-cell time/voltage calibration | Eight-channel system calibration |
 
 No value is a silicon guarantee until PVT, mismatch, PEX, package effects, and
 measurement uncertainty are included.
@@ -246,6 +283,10 @@ analog macro integration, DRC/LVS/antenna/density/ERC/provider checks, and a
 clean-checkout build using pinned tools and PDK data.
 
 ## 9. Silicon acceptance
+
+Follow [`SILICON_TEST_PROCEDURE.md`](SILICON_TEST_PROCEDURE.md) for power
+sequencing, stop conditions, block tests, integrated conversion, and ADC/speed/
+bandwidth characterization.
 
 Tape-out 1 is a complete-flow success when these are demonstrated or a failure
 is conclusively isolated through test access:
