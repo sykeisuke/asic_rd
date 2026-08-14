@@ -109,6 +109,48 @@ and full regression.
 `VIN` is connected to `VHOLD[i]` through a transmission gate while
 `SAMPLE[i]` is active. `CHOLD[i]` retains the sampled voltage after opening.
 
+```mermaid
+flowchart LR
+    VIN["VIN<br/>shared analog input"]
+    subgraph C0["Sampling cell 0"]
+      SW0["Write transmission gate<br/>SAMPLE[0] / SAMPLE_B[0]"]
+      H0(("VHOLD[0]"))
+      CAP0["CHOLD[0]<br/>hold capacitor"]
+      R0["Read transmission gate<br/>SEL[0] / SEL_B[0]"]
+      SW0 --> H0
+      H0 --- CAP0
+      H0 --> R0
+    end
+    subgraph C1["Sampling cells 1..3 (same structure)"]
+      SWX["Write transmission gate<br/>SAMPLE[i] / SAMPLE_B[i]"]
+      HX(("VHOLD[i]"))
+      CAPX["CHOLD[i]<br/>hold capacitor"]
+      RX["Read transmission gate<br/>SEL[i] / SEL_B[i]"]
+      SWX --> HX
+      HX --- CAPX
+      HX --> RX
+    end
+    VIN --> SW0
+    VIN --> SWX
+    R0 --> BUS["MUX_BUS"]
+    RX --> BUS
+    BUS --> CMP["Comparator<br/>compares MUX_BUS and VRAMP"]
+    RAMP["VRAMP"] --> CMP
+```
+
+`VHOLD[i]` names an electrical node; `CHOLD[i]` names the physical capacitor
+from that node to ground. Ideally, `VHOLD[i]` equals `VIN` when the write switch
+opens, and `CHOLD[i]` preserves that voltage as stored charge.
+
+| Name | Type | Function |
+| --- | --- | --- |
+| `VIN` | Analog voltage | Continuous input shared by four cells |
+| `SAMPLE[i]` / `SAMPLE_B[i]` | Complementary digital control | Opens or closes the cell-i write switch |
+| `VHOLD[i]` | Analog node voltage | Sampled voltage currently stored by cell i |
+| `CHOLD[i]` | Physical capacitor | Temporarily stores charge at `VHOLD[i]` |
+| `SEL[i]` / `SEL_B[i]` | Complementary one-hot control | Connects only cell i to `MUX_BUS` |
+| `MUX_BUS` | Analog voltage | Carries the selected stored voltage to the comparator |
+
 Must requirements:
 
 - Four cells capture distinguishable input values in the intended order.
@@ -122,6 +164,19 @@ They are not guaranteed silicon input limits.
 ### 5.2 Analog selection
 
 A one-hot transmission-gate MUX connects one stored value to `MUX_BUS`.
+
+The MUX does not combine four voltages; it selects **exactly one conversion
+input**. When `SEL[2]=1`, only `VHOLD[2]` connects to `MUX_BUS`, while the other
+cells remain high impedance. This lets four cells share one ramp, comparator,
+and counter, reducing area at the cost of sequential conversion time and
+possible read disturbance.
+
+| Phase | `SAMPLE[i]` | `SEL[i]` | `VHOLD[i]` / `MUX_BUS` state |
+| --- | --- | --- | --- |
+| Track | 1 | 0 | `VHOLD[i]` follows `VIN`; disconnected from MUX |
+| Hold | 0 | 0 | `CHOLD[i]` stores voltage; disconnected from MUX |
+| Convert cell i | 0 | Only cell i is 1 | `VHOLD[i]` drives `MUX_BUS` for ramp comparison |
+| Bus reset | 0 | All 0 | All cells disconnect while the bus returns to a known state |
 
 - No more than one `SEL[i]` is active during conversion.
 - A defined bus-reset interval separates cells.

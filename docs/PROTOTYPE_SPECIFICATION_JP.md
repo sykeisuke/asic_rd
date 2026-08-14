@@ -109,6 +109,48 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 `SAMPLE[i]`が有効な間、transmission gateを通して`VIN`を`VHOLD[i]`へ接続する。
 Switchを開いた後は、`CHOLD[i]`にsampled voltageを保持する。
 
+```mermaid
+flowchart LR
+    VIN["VIN<br/>共通アナログ入力"]
+    subgraph C0["Sampling cell 0"]
+      SW0["書込みtransmission gate<br/>SAMPLE[0] / SAMPLE_B[0]"]
+      H0(("VHOLD[0]"))
+      CAP0["CHOLD[0]<br/>hold capacitor"]
+      R0["読出しtransmission gate<br/>SEL[0] / SEL_B[0]"]
+      SW0 --> H0
+      H0 --- CAP0
+      H0 --> R0
+    end
+    subgraph C1["Sampling cell 1..3（同じ構成）"]
+      SWX["書込みtransmission gate<br/>SAMPLE[i] / SAMPLE_B[i]"]
+      HX(("VHOLD[i]"))
+      CAPX["CHOLD[i]<br/>hold capacitor"]
+      RX["読出しtransmission gate<br/>SEL[i] / SEL_B[i]"]
+      SWX --> HX
+      HX --- CAPX
+      HX --> RX
+    end
+    VIN --> SW0
+    VIN --> SWX
+    R0 --> BUS["MUX_BUS"]
+    RX --> BUS
+    BUS --> CMP["Comparator<br/>MUX_BUSとVRAMPを比較"]
+    RAMP["VRAMP"] --> CMP
+```
+
+`VHOLD[i]`は配線nodeの名前、`CHOLD[i]`はそのnodeとgroundの間に置くcapacitorという
+部品名である。理想的にはswitchを開いた直後の`VHOLD[i]`がsampling時の`VIN`に等しく、
+その電圧を`CHOLD[i]`が電荷として保持する。
+
+| 名前 | 種類 | 役割 |
+| --- | --- | --- |
+| `VIN` | Analog voltage | 4 cellへ共通に配る連続入力 |
+| `SAMPLE[i]` / `SAMPLE_B[i]` | Complementary digital control | Cell iの書込みswitchを閉じる/開く |
+| `VHOLD[i]` | Analog node voltage | Cell iが現在保持しているsampled voltage |
+| `CHOLD[i]` | Physical capacitor | `VHOLD[i]`の電荷を一時保存する |
+| `SEL[i]` / `SEL_B[i]` | Complementary one-hot control | Cell iの読出しswitchだけをMUX_BUSへ接続する |
+| `MUX_BUS` | Analog voltage | 選択した1 cellの保持電圧をcomparatorへ運ぶ共通線 |
+
 必須要求:
 
 - 4個のcellが、異なる入力値を意図した順番で保存する。
@@ -122,6 +164,18 @@ Switchを開いた後は、`CHOLD[i]`にsampled voltageを保持する。
 ### 5.2 アナログ選択
 
 One-hot制御のtransmission-gate MUXを使い、保持電圧を1個ずつ`MUX_BUS`へ接続する。
+
+MUXの役割は、4個の電圧を混ぜることではなく、**変換対象を1個だけ選ぶこと**である。
+`SEL[2]=1`なら`VHOLD[2]`だけが`MUX_BUS`へ接続され、他の3 cellはhigh impedanceとなる。
+この構成により、4 cellで1組のramp、comparator、counterを共有でき、面積を減らせる。
+代わりに4 cellを順番に変換するため、conversion時間と読出しによる電圧変化が生じる。
+
+| 動作phase | `SAMPLE[i]` | `SEL[i]` | `VHOLD[i]` / `MUX_BUS`の状態 |
+| --- | --- | --- | --- |
+| Track | 1 | 0 | `VHOLD[i]`は`VIN`を追従、MUXから切離し |
+| Hold | 0 | 0 | `CHOLD[i]`が電圧を保持、MUXから切離し |
+| Convert cell i | 0 | Cell iだけ1 | `VHOLD[i]`を`MUX_BUS`へ接続してrampと比較 |
+| Bus reset | 0 | 全て0 | 全cellを切離し、次の選択前にbusを既知状態へ戻す |
 
 必須要求:
 
