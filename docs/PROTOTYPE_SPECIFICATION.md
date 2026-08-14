@@ -30,9 +30,11 @@ and unfinished tape-out work is tracked in
 
 ## 2. Relationship to the proposal
 
-The long-term proposal targets one channel, multi-GSa/s sampling, approximately
-25 ps timing, 500 MHz analog bandwidth, a 12-bit Wilkinson ADC, and FPGA
-readout. These remain research-program goals, not Tape-out 1 pass/fail criteria.
+The proposal begins with a one-channel proof of concept. The longer-term
+IRSX-equivalent objective is eight channels with multi-GSa/s sampling,
+approximately 25 ps timing, 500 MHz analog bandwidth, a 12-bit Wilkinson ADC,
+and FPGA readout. These longer-term capabilities are not Tape-out 1 pass/fail
+criteria.
 
 Tape-out 1 retains the IRSX-like signal path at deliberately reduced scale:
 
@@ -72,7 +74,7 @@ or 500 MHz is not required for Tape-out 1.
 | Item | Tape-out 1 Must | Current baseline | Later revision |
 | --- | --- | --- | --- |
 | Process | Provider-qualified GF180MCU | `gf180mcuD` open PDK | Freeze exact provider revision |
-| Analog channels | 1 | 1 | Multiple channels |
+| Analog channels | 1 | 1 | Eight channels, matching the IRSX-level objective |
 | Storage depth | 4 cells | Demonstrated | 32-128 cells |
 | Sampling switch | Transmission gate | NMOS/PMOS comparison demonstrated | Bootstrapped switch after reliability review |
 | Hold capacitor | One per cell | 1 pF simulation baseline | Select PDK capacitor after layout study |
@@ -263,7 +265,7 @@ is conclusively isolated through test access:
 - Multi-GSa/s operation or 25 ps timing resolution.
 - Validated 500 MHz analog bandwidth.
 - Guaranteed 8-, 10-, or 12-bit ADC performance.
-- A 32-, 128-, or 512-cell array or multiple channels.
+- A 32-, 128-, or 512-cell array or IRSX-level eight-channel integration.
 - DLL-locked timing, production PMT front end, or high-speed I/O.
 - Radiation or production reliability qualification.
 

@@ -31,9 +31,10 @@
 
 ## 2. Proposalとの関係
 
-Proposalの長期目標は、1チャンネル、multi-GSa/s、約25 psの時間精度、500 MHzの
-アナログ帯域、12-bit Wilkinson ADC、FPGA読み出しである。これらは研究計画全体の
-目標であり、Tape-out 1の合否条件ではない。
+Proposalで最初に実証するPoCは1チャンネルである。一方、IRSX相当を目指す研究の
+長期到達点は、8チャンネル、multi-GSa/s、約25 psの時間精度、500 MHzのアナログ帯域、
+12-bit Wilkinson ADC、FPGA読み出しである。これらの長期性能は、Tape-out 1の
+合否条件ではない。
 
 Tape-out 1では、IRSXと同じ基本的な信号経路を、次の小規模仕様で実証する。
 
@@ -76,7 +77,7 @@ Tape-out 1では、次の工程を一度最後まで通すことを第一目的�
 | 項目 | Tape-out 1の必須仕様 | 現在の基準 | 将来版 |
 | --- | --- | --- | --- |
 | プロセス | MPW事業者が認定したGF180MCU | `gf180mcuD` Open PDK | 事業者確定後に正確な版を凍結 |
-| アナログチャンネル | 1 | 1 | 複数チャンネル |
+| アナログチャンネル | 1 | 1 | IRSX相当の8チャンネル |
 | 保存段数 | 4 cells | 実証済み | 32-128 cells |
 | Sampling switch | Transmission gate | NMOS/PMOS比較を実証済み | 信頼性確認後にbootstrapped switch |
 | Hold capacitor | 各cellに1個 | 1 pFのシミュレーション基準 | レイアウト検討後にPDK素子を選択 |
@@ -288,7 +289,7 @@ Tape-out 1をcomplete-flow実証として成功とする。
 - 500 MHz analog bandwidthの実測保証。
 - 8、10、12-bit ADC性能の保証。
 - 32、128、512-cell array。
-- 複数チャンネル統合。
+- IRSX相当の8チャンネル統合。
 - DLLでlockしたsampling timing。
 - 製品品質のPMT amplifier/shaper。
 - LVDSまたは高速serial I/O。
