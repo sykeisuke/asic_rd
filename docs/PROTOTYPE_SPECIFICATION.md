@@ -1,6 +1,6 @@
-# IRSX-like ASIC Prototype Specification
+# Waveform-Sampling ASIC Prototype Specification
 
-Version: 0.3 (student baseline)
+Version: 0.3 (controlled baseline)
 
 Date: 2026-08-14
 
@@ -22,7 +22,8 @@ The first priority is a reproducible demonstration of the complete flow from
 specification and schematic through simulation, layout, signoff, fabrication,
 and measurement. Maximum performance is not the primary acceptance criterion.
 
-The laboratory procedure is in [`lecture/README.md`](lecture/README.md), current
+The laboratory procedure is in
+[`lecture/ASIC_Lab_Handbook_JP.md`](lecture/ASIC_Lab_Handbook_JP.md), current
 verification status is in [`VERIFICATION_MATRIX.md`](VERIFICATION_MATRIX.md),
 and unfinished tape-out work is tracked in
 [`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md).
@@ -45,7 +46,8 @@ approximately 25 ps timing, 500 MHz analog bandwidth, a 12-bit Wilkinson ADC,
 and FPGA readout. These longer-term capabilities are not Tape-out 1 pass/fail
 criteria.
 
-Tape-out 1 retains the IRSX-like signal path at deliberately reduced scale:
+Tape-out 1 retains the waveform-sampling and Wilkinson-conversion signal path
+at deliberately reduced scale:
 
 ```text
 1 analog channel

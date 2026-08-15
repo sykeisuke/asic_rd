@@ -1,6 +1,6 @@
-# IRSX-like ASICプロトタイプ仕様書
+# 波形サンプリングASICプロトタイプ仕様書
 
-版: 0.3（学生実習用基準仕様）
+版: 0.3（管理基準仕様）
 
 日付: 2026-08-14
 
@@ -22,7 +22,8 @@ Slotの電源構成とESDの事業者認定は未確定。
 サインオフ、製造、測定までの一連の設計フローを、再現可能な形で実証することを
 優先する。
 
-実習の詳しい手順は[`lecture/README.md`](lecture/README.md)、現在の検証状況は
+実習の詳しい手順は
+[`lecture/ASIC_Lab_Handbook_JP.md`](lecture/ASIC_Lab_Handbook_JP.md)、現在の検証状況は
 [`VERIFICATION_MATRIX.md`](VERIFICATION_MATRIX.md)、テープアウトまでの未完了項目は
 [`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md)を参照する。
 MPW選定根拠と公開済みslot条件は
@@ -58,7 +59,7 @@ Tape-out 1では、IRSXと同じ基本的な信号経路を、次の小規模仕
 ```
 
 速度、分解能、storage depthは意図的に下げるが、sampling、hold、selection、
-Wilkinson conversion、digital capture、readoutというIRSX-likeの信号経路は維持する。
+波形sampling、Wilkinson conversion、digital capture、readoutという信号経路は維持する。
 
 ## 3. Tape-out 1の成功定義
 

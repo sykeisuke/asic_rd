@@ -1,21 +1,23 @@
-# IRSX-like ASIC R&D
+# Waveform-Sampling ASIC R&D
 
-Research repository for a one-channel waveform-sampling ASIC prototype with an
-on-chip Wilkinson ADC, targeting the GF180MCU process and a future MPW shuttle.
+Research repository for a waveform-sampling ASIC prototype with an on-chip
+Wilkinson ADC, targeting the GF180MCU process and a future wafer.space MPW run.
+
+## Documentation
+
+- [Prototype specification (English)](docs/PROTOTYPE_SPECIFICATION.md)
+- [Prototype specification (Japanese)](docs/PROTOTYPE_SPECIFICATION_JP.md)
+- [ASIC Lab Handbook (Japanese, Markdown)](docs/lecture/ASIC_Lab_Handbook_JP.md)
+- [ASIC Lab Handbook (Japanese, PDF)](docs/lecture/ASIC_Lab_Handbook_JP.pdf)
+- [First-silicon test procedure (English)](docs/SILICON_TEST_PROCEDURE.md)
+- [First-silicon test procedure (Japanese)](docs/SILICON_TEST_PROCEDURE_JP.md)
+
+Start with Lab 0 in the handbook and satisfy each acceptance check before
+moving to the next lab.
 
 ## Current status
 
-The controlled scope and silicon acceptance criteria are defined in both
-[`docs/PROTOTYPE_SPECIFICATION.md`](docs/PROTOTYPE_SPECIFICATION.md) (English)
-and [`docs/PROTOTYPE_SPECIFICATION_JP.md`](docs/PROTOTYPE_SPECIFICATION_JP.md)
-(日本語).
-
-First-silicon power-up and measurement are defined in
-[`docs/SILICON_TEST_PROCEDURE.md`](docs/SILICON_TEST_PROCEDURE.md) (English)
-and [`docs/SILICON_TEST_PROCEDURE_JP.md`](docs/SILICON_TEST_PROCEDURE_JP.md)
-(日本語).
-
-The repository now demonstrates the following reproducible path:
+The repository demonstrates this reproducible path:
 
 1. GF180 transistor-level sampling, mux, ramp, and comparator simulation.
 2. Four-cell sequential Wilkinson conversion.
@@ -26,23 +28,18 @@ The repository now demonstrates the following reproducible path:
 
 The digital physical block is complete as a flow demonstration. Analog layout,
 pad-ring integration, package/PCB design, and provider signoff remain before a
-full-chip tape-out. See [`docs/TAPEOUT_BLOCKERS.md`](docs/TAPEOUT_BLOCKERS.md)
-and [`docs/VERIFICATION_MATRIX.md`](docs/VERIFICATION_MATRIX.md).
+full-chip tape-out. See [Tape-out blockers](docs/TAPEOUT_BLOCKERS.md) and the
+[verification matrix](docs/VERIFICATION_MATRIX.md).
 
 ## Repository layout
 
-- `docs/`: roadmap, decisions, MPW constraints, and measurements.
+- `docs/`: specifications, roadmap, decisions, MPW constraints, and procedures.
 - `simulations/`: schematic/netlist simulations and generated results.
 - `scripts/`: environment and reproducibility checks.
 - `digital/`: counters, controller, serial readout, and physical views.
 - `mixed_signal/`: deterministic SPICE-to-RTL bridges and phase sweeps.
 
-## Start here
-
-初学者向けの正式な日本語教材は
-[`docs/lecture/README.md`](docs/lecture/README.md)です。印刷・配布用の
-`IRSX_ASIC_Student_Lab_Handbook_JP.pdf`も同じdirectoryにあります。まずLab 0から
-順番に進め、各Labの合格条件を満たしてから次へ進んでください。
+## Getting started
 
 Run the host check:
 
@@ -50,8 +47,7 @@ Run the host check:
 ./scripts/check-host.sh
 ```
 
-Run Docker through the project wrapper so the setup does not depend on a
-system-wide CLI symlink:
+Run Docker through the project wrapper:
 
 ```sh
 ./scripts/docker.sh --version
@@ -74,7 +70,7 @@ make digital-top
 make digital-physical
 ```
 
-教材で扱うpre-layout simulationとRTLをまとめて再検証する場合:
+Re-run the handbook's pre-layout simulations and RTL checks:
 
 ```sh
 make course-regression
@@ -86,8 +82,9 @@ Start the browser-based analog design desktop:
 make vnc
 ```
 
-Then open <http://localhost:8080/?password=abc123>. Stop it with `make stop`.
+Open <http://localhost:8080/> and use the locally configured VNC credential.
+Stop the environment with `make stop`.
 
-The reference environment will use a version-pinned Linux container on macOS.
-Do not install or copy a PDK into Git; record its source and exact revision in
-`docs/decisions/` instead.
+The reference environment uses a version-pinned Linux container on macOS. Do
+not copy a PDK into Git; record its source and exact revision in
+`docs/decisions/`.

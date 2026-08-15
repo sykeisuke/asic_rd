@@ -1,4 +1,4 @@
-# IRSX-like ASIC設計実習ハンドブック
+# ASIC Lab Handbook（日本語版）
 
 <img src="assets/architecture.png" style="width:6.5in;height:2.74444in" />
 
@@ -10,7 +10,7 @@ Repository: github.com/sykeisuke/asic\_rd
 
 # このハンドブックの目的
 
-この教材のゴールは、最高性能のASICを一度で作ることではありません。仕様、回路図、SPICE、RTL、協調検証、配置配線、サインオフ、GDSIIという一連の流れを、誰でも再現できる形で通すことです。学生はGitHubの設計ファイルを読み、同じコマンドで結果を再生成し、次の設計判断を説明できる状態を目指します。
+この教材のゴールは、最高性能のASICを一度で作ることではありません。仕様、回路図、SPICE、RTL、協調検証、配置配線、サインオフ、GDSIIという一連の流れを、誰でも再現できる形で通すことです。利用者はGitHubの設計ファイルを読み、同じコマンドで結果を再生成し、次の設計判断を説明できる状態を目指します。
 
 本書がこのprojectの唯一の正式教材です。前半で環境と回路の読み方を学び、Lab 0から
 順に手を動かします。各Labでは、目的、入力、出力、観測点、合格条件を確認してから
@@ -88,7 +88,7 @@ ASIC設計では、回路、software、半導体process、測定の言葉が同�
 
 *図2　各toolの入力と出力。Makefileはこの連鎖を短いcommandで実行する。*
 
-| **Tool**             | **役割**                                     | **学生が直接行うこと**                      |
+| **Tool**             | **役割**                                     | **利用者が直接行うこと**                    |
 |----------------------|----------------------------------------------|---------------------------------------------|
 | Docker Desktop       | 固定Linux環境をMac上で動かす                 | 起動、container状態とdisk容量確認           |
 | Make                 | 複数commandをtarget名へまとめる              | make nmos-dc等を実行                        |
@@ -355,21 +355,21 @@ make check
 # 6. Mac + Docker開発環境
 
 Macはホストとして十分に使えます。Linux向けEDAツールとGF180
-PDKはDockerコンテナ内へ固定し、XschemなどGUIはブラウザVNCから操作します。これにより学生ごとのmacOS差を小さくします。
+PDKはDockerコンテナ内へ固定し、XschemなどGUIはブラウザVNCから操作します。これにより環境ごとのmacOS差を小さくします。
 
 1.  Docker
     Desktopを起動し、メイン画面でEngineがRunningであることを確認する。
 
 2.  リポジトリで make vnc を実行する。
 
-3.  ブラウザで http://localhost:8080/?password=abc123 を開く。
+3.  ブラウザで http://localhost:8080/ を開き、ローカル環境で設定したVNC passwordを入力する。
 
 4.  File Managerから
     /foss/designs/simulations/gf180\_nmos\_dc/nmos\_dc.sch を開く。
 
 cd /Users/ykeisuke/Desktop/mywork/asic\_rd<br>
 make vnc<br>
-\# Browser: http://localhost:8080/?password=abc123
+\# Browser: http://localhost:8080/
 
 ## アカウントは必要か
 
@@ -408,7 +408,7 @@ Mac<br>
 |-------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
 | IIC-OSIC-TOOLSには何が入る？  | Linux user environment、Xschem、ngspice、KLayout、Magic、Netgen、Icarus Verilog、Yosys、OpenSTA、LibreLane/OpenROAD系、PDK、VNC/web server等。 |
 | 一つの巨大application？       | いいえ。独立toolとPDKをversion固定したLinux image。scriptやLibreLaneが必要なtoolを順番に呼ぶ。                                                 |
-| 学生の/fossは空？             | /foss/pdks等はimageが提供。/foss/designsは学生がcloneしたrepositoryをMacからmountする。                                                        |
+| 新しい環境の/fossは空？       | /foss/pdks等はimageが提供。/foss/designsは利用者がcloneしたrepositoryをMacからmountする。                                                        |
 | 編集結果は消える？            | /foss/designs内はMac側repositoryへ直接書かれるので残る。container内部だけのfileはcontainer削除で失う可能性がある。                             |
 | Connected to &lt;id&gt;とは？ | 起動中containerのdesktop sessionへbrowser VNCが接続済みという意味。                                                                            |
 | 同じ環境を再現するには？      | 同じGit commit、同じimage tag/digest、同じMake targetを使う。                                                                                  |
@@ -419,13 +419,13 @@ eda-vnc.shの -v "$PROJECT\_ROOT:/foss/designs:rw"
 が対応を作ります。PROJECT\_ROOTはmake vncを実行したasic\_rd
 repositoryです。
 
-Student Mac: /Users/.../asic\_rd<br>
+Host Mac: /Users/.../asic\_rd<br>
 \| Docker bind mount<br>
 Container: /foss/designs
 
 |                                                                                                                                                            |
 |------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **学生の開始手順** git clone後、必ずasic\_rd directoryへcdしてmake vncを実行します。/foss/designsが空なら、cloneではなくmountと起動containerを確認します。 |
+| **開始手順** git clone後、必ずasic\_rd directoryへcdしてmake vncを実行します。/foss/designsが空なら、cloneではなくmountと起動containerを確認します。 |
 
 # 7. Xschemを初めて使う
 
@@ -1168,7 +1168,7 @@ comparator delayを同じ測定定義で再確認します。
 | RTL simはPASS、P&R失敗 | clock/reset、unsupported construct、constraints                |
 | DRC/LVS不一致          | PDK deck、pin label、bulk/substrate、netlist source            |
 
-# 12. 学生演習
+# 12. 実践演習
 
 ## 演習A：再現レポート
 
@@ -1311,7 +1311,7 @@ supply noise、calibration精度が厳しくなります。
 
 # 16. Final review sheet
 
-学生は以下を口頭またはREADMEで説明できれば、このprototypeのcomplete
+以下を口頭またはREADMEで説明できれば、このprototypeのcomplete
 flowを自走できています。
 
 □ なぜ4-cell/6-bitまで仕様を緩めたのか。

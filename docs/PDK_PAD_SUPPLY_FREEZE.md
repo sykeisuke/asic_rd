@@ -69,9 +69,26 @@ support proves that the cells can be instantiated by the flow; it does not by
 itself establish the analog pad's guaranteed ESD level, allowed voltage/current,
 input capacitance, leakage, or suitability for the COB service.
 
-## Questions that block schematic and pad-ring freeze
+## Information required from wafer.space
 
-Send these questions to wafer.space and archive the written response:
+This is the controlled information list, not an email draft. Record each
+written answer, response date, provider contact, and supporting file or URL in
+the table below before closing Gate A.
+
+| ID | Required information | Status | Evidence |
+| --- | --- | --- | --- |
+| WS-01 | Exact accepted PDK/Ciel commit | [ ] | Pending |
+| WS-02 | Accepted project-template commit | [ ] | Pending |
+| WS-03 | Approved 3.3 V standard-cell and I/O-library combination | [ ] | Pending |
+| WS-04 | Accepted I/O cell names and signoff views | [ ] | Pending |
+| WS-05 | Analog-pad ESD, clamp, leakage, and capacitance limits | [ ] | Pending |
+| WS-06 | Permission to add a core supply pair in the `0p5x1` ring | [ ] | Pending |
+| WS-07 | Alternative slot/ring if separate supplies are unsupported | [ ] | Pending |
+| WS-08 | COB fixed pad constraints, schematic, and connector pinout | [ ] | Pending |
+| WS-09 | Rail limits and required power-up sequence | [ ] | Pending |
+| WS-10 | Authoritative precheck image and signoff checklist | [ ] | Pending |
+
+### Detailed acceptance questions
 
 1. Is PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`
    the required Run 3 submission version? If not, provide the exact commit.
