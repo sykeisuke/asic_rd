@@ -6,9 +6,12 @@ shall not displace its Must-level flow and observability requirements.
 
 ## Phase 0: Freeze external constraints
 
-- Confirm the wafer.space run expected for an early-2027 submission.
+- [x] Select wafer.space GF180MCU Run 3 as the MPW route.
+- [x] Record the published 2026-12-16 clean-GDS deadline and Q2 2027 shipment.
+- [ ] Reconfirm the dates directly with wafer.space before purchase.
 - Obtain the exact GF180MCU variant and accepted PDK release.
-- Confirm slot size, pad ring, I/O count, packaging, and signoff requirements.
+- Validate the provisional `0.5x1` default pad ring and COB choice against area,
+  six-analog-pad mapping, supply partitioning, and provider signoff rules.
 - Freeze the reference container and tool versions.
 
 Exit criterion: a written submission-constraint sheet and a reproducible tool

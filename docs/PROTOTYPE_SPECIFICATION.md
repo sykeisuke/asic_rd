@@ -1,12 +1,17 @@
 # IRSX-like ASIC Prototype Specification
 
-Version: 0.2 (student baseline)
+Version: 0.3 (student baseline)
 
-Date: 2026-08-13
+Date: 2026-08-14
 
 Process baseline: GF180MCU (`gf180mcuD`)
 
-Status: architecture baseline frozen; MPW/provider-dependent items remain open
+MPW provider: **wafer.space GF180MCU Run 3**
+
+Submission baseline: clean GDS by 2026-12-16 11:59 PM AoE; reconfirm before purchase
+
+Status: architecture and provider frozen; slot, pad mapping, supplies, and exact
+PDK revision remain open
 
 Language: **English** | [日本語版](PROTOTYPE_SPECIFICATION_JP.md)
 
@@ -21,6 +26,8 @@ The laboratory procedure is in [`lecture/README.md`](lecture/README.md), current
 verification status is in [`VERIFICATION_MATRIX.md`](VERIFICATION_MATRIX.md),
 and unfinished tape-out work is tracked in
 [`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md).
+Provider rationale and published slot constraints are recorded in
+[`decisions/0004-wafer-space-run3.md`](decisions/0004-wafer-space-run3.md).
 
 - **Must**: required for Tape-out 1 unless an explicit waiver or scope revision is approved.
 - **Target**: an objective whose miss does not by itself invalidate the flow demonstration.
@@ -61,7 +68,7 @@ specification
 -> PEX / post-layout simulation
 -> analog + digital top integration
 -> pad ring / package / PCB
--> provider submission
+-> clean-GDS submission to wafer.space GF180MCU Run 3
 -> first-silicon measurement
 ```
 
@@ -85,7 +92,11 @@ formally revised.
 
 | Item | Status | Tape-out 1 baseline |
 | --- | --- | --- |
-| Process | [x] | Provider-qualified GF180MCU; development PDK is `gf180mcuD` |
+| MPW provider | [x] | wafer.space GF180MCU Run 3 |
+| Schedule | [x] published / [ ] reconfirm | Clean GDS 2026-12-16; parts Q2 2027 |
+| Process | [x] process / [ ] commit | wafer.space `gf180mcuD`; exact accepted commit TBD |
+| Slot/package | [ ] | Provisional `0.5x1` default pad ring plus COB; freeze after area/pad review |
+| Published pad budget | [ ] provider mapping | 56 signal I/Os including 6 analog, plus 16 power pads |
 | Analog channels | [x] | 1 |
 | Storage | [x] | Four sampling cells, one hold capacitor per cell |
 | Sampling switch | [x] | Transmission gate |
@@ -399,7 +410,8 @@ waivers, checksums, Git tag, and measurement plan are archived.
 The internal architecture is frozen at four cells and six bits. Remaining
 decisions are:
 
-1. MPW provider, run, slot, and deadline.
+1. Reconfirm the selected wafer.space GF180MCU Run 3 deadline; freeze the
+   provisional `0.5x1` default-ring COB slot after area and pad review.
 2. Accepted GF180MCU PDK release and metal stack.
 3. Qualified supplies and pad/ESD libraries.
 4. Die area, pad count/pitch, seal ring, and density rules.

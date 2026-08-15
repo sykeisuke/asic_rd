@@ -1,12 +1,16 @@
 # IRSX-like ASICプロトタイプ仕様書
 
-版: 0.2（学生実習用基準仕様）
+版: 0.3（学生実習用基準仕様）
 
-日付: 2026-08-13
+日付: 2026-08-14
 
 プロセス基準: GF180MCU（`gf180mcuD`）
 
-状態: 回路構成の基準仕様は凍結済み。MPW事業者に依存する項目は未確定。
+MPW事業者: **wafer.space GF180MCU Run 3**
+
+提出基準日: clean GDS 2026-12-16 11:59 PM AoE（購入前に事業者へ再確認）
+
+状態: 回路構成とMPW事業者は凍結済み。Slot、pad mapping、supply、PDK exact revisionは未確定。
 
 言語: **日本語** | [English version](PROTOTYPE_SPECIFICATION.md)
 
@@ -20,6 +24,8 @@
 実習の詳しい手順は[`lecture/README.md`](lecture/README.md)、現在の検証状況は
 [`VERIFICATION_MATRIX.md`](VERIFICATION_MATRIX.md)、テープアウトまでの未完了項目は
 [`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md)を参照する。
+MPW選定根拠と公開済みslot条件は
+[`decisions/0004-wafer-space-run3.md`](decisions/0004-wafer-space-run3.md)に記録する。
 
 本書では要求を次のように分類する。
 
@@ -64,7 +70,7 @@ Tape-out 1では、次の工程を一度最後まで通すことを第一目的�
 → PEX / レイアウト後シミュレーション
 → アナログ・デジタル統合
 → pad ring / package / PCB
-→ MPW事業者への提出
+→ wafer.space GF180MCU Run 3へのclean GDS提出
 → 初回シリコン測定
 ```
 
@@ -87,7 +93,11 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 
 | 項目 | 現在の基準 | 状態 |
 | --- | --- | --- |
-| プロセス | `gf180mcuD` Open PDK。事業者決定後にexact revisionを凍結 | [x] |
+| MPW事業者 | wafer.space GF180MCU Run 3 | [x] |
+| 提出予定 | Clean GDS 2026-12-16、parts shipment Q2 2027。購入前に再確認 | [x] 公開日程 / [ ] 再確認 |
+| プロセス | wafer.space向け`gf180mcuD` Open PDK。exact commitはTBD | [x] process / [ ] commit |
+| Slot/package | `0.5x1` default pad ring + COBを第一候補 | [ ] area/pad review後に凍結 |
+| 公開pad budget | 56 signal I/O（うちanalog 6）+ 16 power pads | [ ] provider mapping確認 |
 | Sampling switch | NMOS+PMOS transmission gate | [x] |
 | Hold capacitor | 各cell 1個、1 pF simulation baseline | [x] |
 | 読み出しMUX | One-hot 4-to-1 analog MUX | [x] |
@@ -424,7 +434,8 @@ Tape-out 1をcomplete-flow実証として成功とする。
 内部構成は4 cells、6 bitで凍結済みである。残る未確定事項は、外部条件または物理設計に
 依存する次の項目である。
 
-1. MPW事業者、run date、slot、提出期限。
+1. 選択済みのwafer.space GF180MCU Run 3提出日を再確認し、暫定候補の`0.5x1`
+   default pad ring + COBをarea/pad review後に凍結する。
 2. 認定されるGF180MCU PDK releaseとmetal stack。
 3. 認定core/analog/I/O supplyとpad/ESD library。
 4. Die area、pad数、pad pitch、seal ring、density/fill要求。

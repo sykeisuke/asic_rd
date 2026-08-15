@@ -1,9 +1,14 @@
 # Provisional top-level interface
 
-Date: 2026-08-11
+Date: 2026-08-14
 
 This interface freezes logical intent only. Pad cells, pad order, voltage
 domains, ESD structures, and package pin numbers remain provider-dependent.
+
+Provider baseline: wafer.space GF180MCU Run 3. The provisional physical target
+is the `0.5x1` default pad ring with COB packaging: 56 signal I/Os, including
+six documented analog pads, plus 16 power pads. See
+[`decisions/0004-wafer-space-run3.md`](decisions/0004-wafer-space-run3.md).
 
 ## Digital control and readout
 
@@ -29,21 +34,28 @@ macro rather than external pads; test multiplexing is still required.
 
 ## Required analog and test pads
 
-| Provisional signal | Purpose |
-| --- | --- |
-| `analog_in` | Sampling-array input |
-| `external_ramp_in` | Mandatory external-ramp bypass |
-| `internal_ramp_mon` | Buffered internal-ramp monitor |
-| `sample_cell0_mon` | Buffered held-voltage monitor |
-| `comparator_test_in_p/n` | Standalone comparator characterization |
-| `comparator_out_mon` | Comparator digital monitor |
-| `sample_clock_in` | External sampling control or test clock |
-| `bias_comp` | Comparator bias test/control |
-| `bias_ramp` | Ramp-current bias test/control |
+The default half-width ring provides six true analog pads. The logical
+interface must therefore be reduced to the following physical-pad budget.
+
+| Priority | Physical pad candidate | Functions |
+| --- | --- | --- |
+| Must | `analog_in` | Sampling-array input |
+| Must | `external_ramp_in` | External-ramp bypass |
+| Debug | `analog_mon_0` | Buffered `VHOLD[0]` or MUX-selected held voltage |
+| Debug | `analog_mon_1` | Buffered internal ramp or MUX bus |
+| Debug | `comparator_test_p` | Comparator positive test input |
+| Debug | `analog_test_mux` | Comparator negative test input or selected bias control/monitor |
+
+`comparator_out_mon` is a digital output. `sample_clock_in` is a digital input.
+Comparator and ramp bias functions shall share `analog_test_mux` or use
+internally generated settings unless provider review makes more analog pads
+available. The test-MUX truth table must be frozen before pad-ring integration.
 
 ## Power domains
 
-At minimum, separate externally measurable `AVDD/AVSS`, `DVDD/DVSS`, and
-`IOVDD/IOVSS` domains are required. Final voltages must follow the selected
-GF180 core and I/O libraries. Domain crossings, clamps, and ESD ownership are
-not frozen until the MPW provider identifies its qualified pad set.
+Separate externally measurable analog and digital currents remain a design
+requirement. The published default ring describes 8 `DVDD` and 8 `DVSS` pads,
+so wafer.space must confirm whether and how those pads may be partitioned into
+`AVDD/AVSS`, `DVDD/DVSS`, and any I/O supply domain. Final voltages, crossings,
+clamps, and ESD ownership remain open until that answer and the qualified pad
+set are received.
