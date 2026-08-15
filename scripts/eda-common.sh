@@ -3,6 +3,13 @@ set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECT_ROOT=$(dirname -- "$script_dir")
+
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    set -a
+    . "$PROJECT_ROOT/.env"
+    set +a
+fi
+
 EDA_IMAGE='docker.io/hpretl/iic-osic-tools:2026.07@sha256:5d6adf1f437cd0f2f8f8614488ec3c247ba8c768f4663a25d5e997b30ccb13b0'
 EDA_CONTAINER='asic-rd-gf180-vnc'
 
@@ -16,4 +23,3 @@ else
 fi
 
 export PROJECT_ROOT EDA_IMAGE EDA_CONTAINER DOCKER_CLI
-

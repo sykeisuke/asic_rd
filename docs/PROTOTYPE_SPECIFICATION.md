@@ -23,7 +23,7 @@ specification and schematic through simulation, layout, signoff, fabrication,
 and measurement. Maximum performance is not the primary acceptance criterion.
 
 The laboratory procedure is in
-[`lecture/ASIC_Lab_Handbook_JP.md`](lecture/ASIC_Lab_Handbook_JP.md), current
+[`lecture/ASIC_Lab_Handbook_EN.md`](lecture/ASIC_Lab_Handbook_EN.md), current
 verification status is in [`VERIFICATION_MATRIX.md`](VERIFICATION_MATRIX.md),
 and unfinished tape-out work is tracked in
 [`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md).
