@@ -10,7 +10,8 @@ MPW事業者: **wafer.space GF180MCU Run 3**
 
 提出基準日: clean GDS 2026-12-16 11:59 PM AoE（購入前に事業者へ再確認）
 
-状態: 回路構成とMPW事業者は凍結済み。Slot、pad mapping、supply、PDK exact revisionは未確定。
+状態: 回路構成、MPW事業者、PDK commit、3.3 V library/supply基準は凍結済み。
+Slotの電源構成とESDの事業者認定は未確定。
 
 言語: **日本語** | [English version](PROTOTYPE_SPECIFICATION.md)
 
@@ -26,6 +27,8 @@ MPW事業者: **wafer.space GF180MCU Run 3**
 [`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md)を参照する。
 MPW選定根拠と公開済みslot条件は
 [`decisions/0004-wafer-space-run3.md`](decisions/0004-wafer-space-run3.md)に記録する。
+Technology、library、supplyの凍結値と事業者への確認事項は
+[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md)で管理する。
 
 本書では要求を次のように分類する。
 
@@ -95,7 +98,12 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | --- | --- | --- |
 | MPW事業者 | wafer.space GF180MCU Run 3 | [x] |
 | 提出予定 | Clean GDS 2026-12-16、parts shipment Q2 2027。購入前に再確認 | [x] 公開日程 / [ ] 再確認 |
-| プロセス | wafer.space向け`gf180mcuD` Open PDK。exact commitはTBD | [x] process / [ ] commit |
+| Provider template | commit `0de7e394337a1f7f5303ac7a3681bf2481b58176` | [x] |
+| プロセス | `gf180mcuD`、PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` | [x] |
+| Analog device/supply | 3.3 V device、`AVDD=3.3 V`、`AVSS=0 V` | [x] |
+| Digital cell/supply | `gf180mcu_as_sc_mcu7t3v3`、`DVDD_CORE=3.3 V` | [x] |
+| Pad library/I/O supply | `gf180mcu_ocd_io`、`IOVDD=3.3 V` | [x] baseline / [ ] 事業者認定 |
+| ESD | 選択pad library内の構造のみ。Analog rating/capacitance/leakageを確認 | [ ] 事業者認定 |
 | Slot/package | `0.5x1` default pad ring + COBを第一候補 | [ ] area/pad review後に凍結 |
 | 公開pad budget | 56 signal I/O（うちanalog 6）+ 16 power pads | [ ] provider mapping確認 |
 | Sampling switch | NMOS+PMOS transmission gate | [x] |
@@ -436,9 +444,9 @@ Tape-out 1をcomplete-flow実証として成功とする。
 
 1. 選択済みのwafer.space GF180MCU Run 3提出日を再確認し、暫定候補の`0.5x1`
    default pad ring + COBをarea/pad review後に凍結する。
-2. 認定されるGF180MCU PDK releaseとmetal stack。
-3. 認定core/analog/I/O supplyとpad/ESD library。
-4. Die area、pad数、pad pitch、seal ring、density/fill要求。
+2. 凍結したPDK/template commitと3.3 V libraryに対するRun 3の書面認定。
+3. Analog padのESD rating/capacitance/leakageと認定I/O cell view。
+4. COB対応ringで3.3 V analog core、digital core、I/O supplyを物理分離する方法。
 5. Package、chip-on-board、wire-bond carrierの選択。
 6. Area、leakage、PEX検討後のcapacitor device/type/value。
 7. PVT、mismatch、post-layout比較後のcomparator variant。

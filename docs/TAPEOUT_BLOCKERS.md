@@ -8,11 +8,13 @@ transfer, and a DRC/LVS-clean digital GDS. It is not yet a tape-out-ready full
 chip. The following items cannot be treated as optional:
 
 1. wafer.space GF180MCU Run 3 is selected. Reconfirm its published 2026-12-16
-   submission deadline and obtain the accepted PDK commit, supply option, GDS
-   checklist, and precheck version.
+   deadline and obtain written acceptance of PDK commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`,
+   the 3.3 V library set, GDS checklist, and precheck version.
 2. Select the provider-qualified I/O and ESD cells and freeze the pad ring,
-   package, and power domains. Validate the provisional `0.5x1` default-ring
-   COB plan and reduce analog functions to its six true analog pads.
+   package, and power domains. The design baseline is `gf180mcu_ocd_io`, but
+   analog ESD limits and separate AVDD/digital-core supply support require
+   provider confirmation. Validate the provisional `0.5x1` default-ring COB
+   plan and reduce analog functions to its six true analog pads.
 3. Draw and verify the analog SCA, mux, ramp, comparator, bias, and test-access
    layouts; run extraction and post-layout simulations.
 4. Complete PVT and mismatch Monte Carlo verification with frozen devices and

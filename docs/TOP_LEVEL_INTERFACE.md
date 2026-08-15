@@ -2,8 +2,9 @@
 
 Date: 2026-08-14
 
-This interface freezes logical intent only. Pad cells, pad order, voltage
-domains, ESD structures, and package pin numbers remain provider-dependent.
+This interface freezes logical intent and the 3.3 V library baseline. Pad
+order, physical power-domain partition, ESD acceptance, and package pin
+numbers remain provider-dependent.
 
 Provider baseline: wafer.space GF180MCU Run 3. The provisional physical target
 is the `0.5x1` default pad ring with COB packaging: 56 signal I/Os, including
@@ -54,8 +55,11 @@ available. The test-MUX truth table must be frozen before pad-ring integration.
 ## Power domains
 
 Separate externally measurable analog and digital currents remain a design
-requirement. The published default ring describes 8 `DVDD` and 8 `DVSS` pads,
-so wafer.space must confirm whether and how those pads may be partitioned into
-`AVDD/AVSS`, `DVDD/DVSS`, and any I/O supply domain. Final voltages, crossings,
-clamps, and ESD ownership remain open until that answer and the qualified pad
-set are received.
+requirement. Nominal `AVDD`, digital-core supply, and I/O supply are frozen at
+3.3 V. The official `0p5x1` template has one core `VDD/VSS` pair and seven I/O
+`DVDD/DVSS` pairs. It does not provide separate analog-core and digital-core
+rails without modification. wafer.space must confirm whether a signal-pad
+position may become another core power pair while preserving COB compatibility.
+Crossings, clamps, ESD ownership, and the physical supply topology remain open
+until that written answer is received. See
+[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).

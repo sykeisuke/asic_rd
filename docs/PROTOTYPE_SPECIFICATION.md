@@ -10,8 +10,8 @@ MPW provider: **wafer.space GF180MCU Run 3**
 
 Submission baseline: clean GDS by 2026-12-16 11:59 PM AoE; reconfirm before purchase
 
-Status: architecture and provider frozen; slot, pad mapping, supplies, and exact
-PDK revision remain open
+Status: architecture, provider, PDK commit, 3.3 V library set, and nominal
+supplies frozen. Slot power topology and provider ESD acceptance remain open.
 
 Language: **English** | [日本語版](PROTOTYPE_SPECIFICATION_JP.md)
 
@@ -28,6 +28,8 @@ and unfinished tape-out work is tracked in
 [`TAPEOUT_BLOCKERS.md`](TAPEOUT_BLOCKERS.md).
 Provider rationale and published slot constraints are recorded in
 [`decisions/0004-wafer-space-run3.md`](decisions/0004-wafer-space-run3.md).
+The controlled technology/library choices and provider questions are in
+[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).
 
 - **Must**: required for Tape-out 1 unless an explicit waiver or scope revision is approved.
 - **Target**: an objective whose miss does not by itself invalidate the flow demonstration.
@@ -94,7 +96,12 @@ formally revised.
 | --- | --- | --- |
 | MPW provider | [x] | wafer.space GF180MCU Run 3 |
 | Schedule | [x] published / [ ] reconfirm | Clean GDS 2026-12-16; parts Q2 2027 |
-| Process | [x] process / [ ] commit | wafer.space `gf180mcuD`; exact accepted commit TBD |
+| Provider template | [x] | Commit `0de7e394337a1f7f5303ac7a3681bf2481b58176` |
+| Process | [x] | `gf180mcuD`, PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` |
+| Analog devices/supply | [x] | 3.3 V devices; `AVDD=3.3 V`, `AVSS=0 V` |
+| Digital cells/supply | [x] | `gf180mcu_as_sc_mcu7t3v3`; `DVDD_CORE=3.3 V` |
+| Pad library/I/O supply | [x] baseline / [ ] provider acceptance | `gf180mcu_ocd_io`; `IOVDD=3.3 V` |
+| ESD | [ ] provider acceptance | Selected-library structures only; analog rating/capacitance/leakage required |
 | Slot/package | [ ] | Provisional `0.5x1` default pad ring plus COB; freeze after area/pad review |
 | Published pad budget | [ ] provider mapping | 56 signal I/Os including 6 analog, plus 16 power pads |
 | Analog channels | [x] | 1 |
@@ -412,9 +419,9 @@ decisions are:
 
 1. Reconfirm the selected wafer.space GF180MCU Run 3 deadline; freeze the
    provisional `0.5x1` default-ring COB slot after area and pad review.
-2. Accepted GF180MCU PDK release and metal stack.
-3. Qualified supplies and pad/ESD libraries.
-4. Die area, pad count/pitch, seal ring, and density rules.
+2. Written Run 3 acceptance of the frozen PDK/template commits and 3.3 V libraries.
+3. Analog-pad ESD rating/capacitance/leakage and accepted I/O-cell views.
+4. Physical separation of 3.3 V analog core, digital core, and I/O supplies in a COB-compatible ring.
 5. Package, chip-on-board, or wire-bond carrier.
 6. Final capacitor type/value after leakage, area, and PEX study.
 7. Final comparator variant after PVT/mismatch/post-layout comparison.

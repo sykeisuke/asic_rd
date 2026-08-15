@@ -46,6 +46,19 @@ slot provides six analog pads and 4.46 mm2 of core area. The current provisional
 analog interface exceeds six signals, so monitor and bias functions must be
 multiplexed or reduced before schematic freeze.
 
+## Technology baseline frozen after template review
+
+- Provider template commit: `0de7e394337a1f7f5303ac7a3681bf2481b58176`.
+- PDK/Ciel commit: `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`.
+- Process: `gf180mcuD`.
+- Analog, digital-core, and I/O nominal voltage: 3.3 V.
+- Digital cells: `gf180mcu_as_sc_mcu7t3v3`.
+- Pad library: `gf180mcu_ocd_io`.
+
+These are the design baseline. Run 3 acceptance, ESD performance, and physical
+power-domain implementation still require written provider confirmation; see
+[`../PDK_PAD_SUPPLY_FREEZE.md`](../PDK_PAD_SUPPLY_FREEZE.md).
+
 ## Required confirmation
 
 - Exact accepted `gf180mcuD` PDK commit and provider precheck version.
