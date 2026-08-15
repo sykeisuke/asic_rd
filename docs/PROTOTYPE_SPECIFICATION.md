@@ -17,7 +17,7 @@ Language: **English** | [日本語版](PROTOTYPE_SPECIFICATION_JP.md)
 
 ## 1. Purpose and document control
 
-This is the controlled specification shared by the student team for Tape-out 1.
+This is the controlled specification shared by the project for Tape-out 1.
 The first priority is a reproducible demonstration of the complete flow from
 specification and schematic through simulation, layout, signoff, fabrication,
 and measurement. Maximum performance is not the primary acceptance criterion.
