@@ -28,6 +28,12 @@ jobs:
 
       - uses: actions/checkout@v4
 
+      # The run scripts bind-mount the checkout into the container, whose
+      # user id differs from the runner's; open up permissions so the
+      # container can write work/ outputs.
+      - name: Make workspace writable by the container user
+        run: chmod -R a+rwX .
+
       - name: Verify pinned EDA environment
         run: make check
 
@@ -49,6 +55,12 @@ jobs:
           df -h /
 
       - uses: actions/checkout@v4
+
+      # The run scripts bind-mount the checkout into the container, whose
+      # user id differs from the runner's; open up permissions so the
+      # container can write work/ outputs.
+      - name: Make workspace writable by the container user
+        run: chmod -R a+rwX .
 
       - name: Verify pinned EDA environment
         run: make check
