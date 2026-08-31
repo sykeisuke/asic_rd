@@ -29,8 +29,9 @@ jobs:
       - uses: actions/checkout@v4
 
       # The run scripts bind-mount the checkout into the container, whose
-      # user id differs from the runner's; open up permissions so the
-      # container can write work/ outputs.
+      # user id differs from the runner's. Open up existing files, and run
+      # the make steps with umask 000 so host-created work/ directories are
+      # writable by the container user too.
       - name: Make workspace writable by the container user
         run: chmod -R a+rwX .
 
@@ -38,10 +39,10 @@ jobs:
         run: make check
 
       - name: Digital unit tests and GF180 mapping
-        run: make counter gray-counter controller digital-top
+        run: umask 000 && make counter gray-counter controller digital-top
 
       - name: Mixed-signal co-simulation and phase sweep
-        run: make cosim four-cell-cosim phase-sweep
+        run: umask 000 && make cosim four-cell-cosim phase-sweep
 
   analog-regression:
     name: Full analog regression (weekly / manual)
@@ -57,8 +58,9 @@ jobs:
       - uses: actions/checkout@v4
 
       # The run scripts bind-mount the checkout into the container, whose
-      # user id differs from the runner's; open up permissions so the
-      # container can write work/ outputs.
+      # user id differs from the runner's. Open up existing files, and run
+      # the make steps with umask 000 so host-created work/ directories are
+      # writable by the container user too.
       - name: Make workspace writable by the container user
         run: chmod -R a+rwX .
 
@@ -66,7 +68,7 @@ jobs:
         run: make check
 
       - name: Analog regression
-        run: make analog-regression
+        run: umask 000 && make analog-regression
 
       - name: RTL and co-simulation regression
-        run: make counter gray-counter controller digital-top cosim four-cell-cosim phase-sweep
+        run: umask 000 && make counter gray-counter controller digital-top cosim four-cell-cosim phase-sweep
