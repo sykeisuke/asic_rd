@@ -54,12 +54,18 @@ available. The test-MUX truth table must be frozen before pad-ring integration.
 
 ## Power domains
 
-Separate externally measurable analog and digital currents remain a design
-requirement. Nominal `AVDD`, digital-core supply, and I/O supply are frozen at
-3.3 V. The official `0p5x1` template has one core `VDD/VSS` pair and seven I/O
-`DVDD/DVSS` pairs. It does not provide separate analog-core and digital-core
-rails without modification. wafer.space must confirm whether a signal-pad
-position may become another core power pair while preserving COB compatibility.
-Crossings, clamps, ESD ownership, and the physical supply topology remain open
-until that written answer is received. See
+Nominal `AVDD`, digital-core supply, and I/O supply are frozen at 3.3 V. The
+official `0p5x1` template has one core `VDD/VSS` pair and seven I/O
+`DVDD/DVSS` pairs and does not provide separate analog-core and digital-core
+rails without modification.
+
+Revised 2026-08-30: all grounds are tied together on the provider's default
+COB breakout, so a separately measurable analog ground is not achievable in
+this package. The separate-current requirement is reduced to **`AVDD` only**;
+`AVSS`, `DVSS_CORE`, and `IOVSS` share the common ground. Whether one
+bidirectional pad position may be re-typed into a second core `vdd/vss` pair
+while preserving COB compatibility is being resolved empirically through the
+provider platform's automated precheck and COB checks (wafer.space issues no
+written confirmations). Crossings, clamps, ESD ownership, and the physical
+supply topology remain open until that experiment passes. See
 [`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).

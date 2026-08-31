@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly full analog regression, Monday 06:00 UTC (Sunday 20:00 HST).
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+# The run scripts execute inside the pinned IIC-OSIC-TOOLS container
+# (scripts/eda-common.sh pins the image by tag and digest), so CI reproduces
+# the same environment as a developer machine. The image is large; the free
+# disk space step below keeps the runner from filling up.
+
+jobs:
+  rtl:
+    name: RTL simulation, synthesis, and co-simulation
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/checkout@v4
+
+      - name: Verify pinned EDA environment
+        run: make check
+
+      - name: Digital unit tests and GF180 mapping
+        run: make counter gray-counter controller digital-top
+
+      - name: Mixed-signal co-simulation and phase sweep
+        run: make cosim four-cell-cosim phase-sweep
+
+  analog-regression:
+    name: Full analog regression (weekly / manual)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/checkout@v4
+
+      - name: Verify pinned EDA environment
+        run: make check
+
+      - name: Analog regression
+        run: make analog-regression
+
+      - name: RTL and co-simulation regression
+        run: make counter gray-counter controller digital-top cosim four-cell-cosim phase-sweep
