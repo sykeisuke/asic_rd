@@ -27,13 +27,6 @@ The long-term objective (multi-GSa/s, 8 channels, 12-bit — an IRSX-class
 sampler for physics instrumentation) is documented in the specification but
 is explicitly **not** a Tape-out 1 pass/fail criterion.
 
-Roles: the project lead owns the specification and requirements; the design
-team executes the circuit design. The controlled English documents in this
-repository are the single source of truth for scope and interfaces. The
-Japanese documents are educational translations intended for future
-Japanese-speaking students; they are not a working channel and do not
-override the English versions.
-
 ## 2. Hard deadlines (wafer.space Run 3, reconfirm at purchase)
 
 | Milestone | Date |
