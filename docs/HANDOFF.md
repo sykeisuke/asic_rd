@@ -3,7 +3,7 @@
 Date: 2026-08-31
 
 Audience: new design-team members joining the Tape-out 1 effort (first
-reader: the UH design student starting September 2026).
+reader: the first design-team member starting September 2026).
 
 ## 1. What this project is
 
@@ -27,10 +27,12 @@ The long-term objective (multi-GSa/s, 8 channels, 12-bit — an IRSX-class
 sampler for physics instrumentation) is documented in the specification but
 is explicitly **not** a Tape-out 1 pass/fail criterion.
 
-Collaboration: UH Physics & Astronomy (K. Yoshihara — PI, specification and
-requirements) with Prof. Boris Murmann's group (circuit design execution).
-The controlled English documents in this repository are the interface
-between the two sides.
+Roles: the project lead owns the specification and requirements; the design
+team executes the circuit design. The controlled English documents in this
+repository are the single source of truth for scope and interfaces. The
+Japanese documents are educational translations intended for future
+Japanese-speaking students; they are not a working channel and do not
+override the English versions.
 
 ## 2. Hard deadlines (wafer.space Run 3, reconfirm at purchase)
 
@@ -155,5 +157,5 @@ Workflow rules (see README "Working agreement"):
   `#digital`, `#questions`, `#project-template`. Searchable public archive:
   <https://discord.wafer.space>. Two questions are currently posted (pad
   re-typing precedent in `#cob`; `asig_5p0` silicon experience in `#analog`).
-- platform.wafer.space — automated precheck/CoB checks (PI holds the
-  account).
+- platform.wafer.space — automated precheck/CoB checks (the project lead
+  holds the account).
