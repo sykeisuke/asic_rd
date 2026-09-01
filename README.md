@@ -109,5 +109,9 @@ not copy a PDK into Git; record its source and exact revision in
 - Update the verification matrix when a requirement or interface changes.
 - Do not commit PDK files, `work/`, `runs/`, RAW files, or local credentials.
 
-No reuse license has been selected yet. Until a `LICENSE` file is approved,
-this repository is shared for project collaboration, not as a general IP grant.
+## License
+
+This repository is released under the [Apache License 2.0](LICENSE), matching
+the GF180MCU PDK, the wafer.space project template, and the rest of the
+open-silicon ecosystem it builds on. Contributions are accepted under the
+same license.
