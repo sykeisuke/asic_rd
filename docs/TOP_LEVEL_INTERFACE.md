@@ -62,10 +62,11 @@ rails without modification.
 Revised 2026-08-30: all grounds are tied together on the provider's default
 COB breakout, so a separately measurable analog ground is not achievable in
 this package. The separate-current requirement is reduced to **`AVDD` only**;
-`AVSS`, `DVSS_CORE`, and `IOVSS` share the common ground. Whether one
-bidirectional pad position may be re-typed into a second core `vdd/vss` pair
-while preserving COB compatibility is being resolved empirically through the
-provider platform's automated precheck and COB checks (wafer.space issues no
-written confirmations). Crossings, clamps, ESD ownership, and the physical
-supply topology remain open until that experiment passes. See
-[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).
+`AVSS`, `DVSS_CORE`, and `IOVSS` share the common ground. The `bidir[43:42]`
+positions of the `0p5x1` ring are re-typed into a second core `vdd/vss` pair
+(`gf180mcu_ocd_io__vdd`/`__vss`) carrying `AVDD`; this ring passed the
+provider platform's CoB precheck on 2026-08-31 (wafer.space issues no written
+confirmations, so the automated check is the authority). The supply topology
+is therefore frozen; domain crossings, clamps, and ESD ownership between the
+`AVDD` and digital-core domains are now design work for the top-level
+integration. See [`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).

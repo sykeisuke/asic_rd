@@ -48,7 +48,7 @@ is replaced by three pillars:
 | I/O supply target | [x] | `IOVDD = 3.3 V`, `IOVSS = 0 V` |
 | Digital standard cells | [x] | `gf180mcu_as_sc_mcu7t3v3` |
 | Pad library | [x] design baseline | `gf180mcu_ocd_io` dual-voltage I/O library |
-| Slot candidate | [ ] | `0p5x1` default ring plus COB, pending power/ESD answer |
+| Slot/ring | [x] platform-verified 2026-08-31 | `0p5x1` default ring plus COB, with `bidir[43:42]` re-typed as a second core `vdd/vss` pair for `AVDD` |
 
 The repository's earlier digital physical result uses
 `gf180mcu_fd_sc_mcu7t5v0` and a 5 V physical corner. It is flow evidence only,
@@ -69,7 +69,7 @@ ties must be verified against the installed views at the frozen PDK commit.
 | Analog signal | `gf180mcu_ocd_io__asig_5p0` as instantiated by the official template |
 | Corner/filler/break cells | Provider-template generated cells; do not hand-select before padring build |
 
-## Power-ring conflict requiring provider confirmation
+## Power-ring conflict and its resolution
 
 The published `0p5x1` default configuration contains:
 
