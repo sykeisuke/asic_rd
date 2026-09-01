@@ -17,13 +17,14 @@ shall not displace its Must-level flow and observability requirements.
   (matched as of 2026-08-30; re-verify at purchase and before submission).
 - [ ] Decide the early-bird purchase (2026-09-30 deadline) with the
   collaboration.
-- [~] Padring experiment (local PASS 2026-08-31): the `0p5x1` ring with
-  `bidir[43:42]` re-typed as a second core `vdd/vss` pair passes
-  `gf180mcu-precheck --cob` (COB pad mask, antenna, Magic and KLayout DRC all
-  clean; only empty-core density artifacts). This empirically supports the
-  AVDD-separation plan (all grounds are common on the default COB breakout,
-  so only `AVDD` can be separately measured). Remaining: upload the same GDS
-  to platform.wafer.space for the authoritative run.
+- [x] Padring experiment (platform-verified 2026-08-31): the `0p5x1` ring
+  with `bidir[43:42]` re-typed as a second core `vdd/vss` pair passes the
+  platform.wafer.space CoB precheck (Check #800, precheck 1.7.3: pad mask,
+  antenna, Magic and KLayout DRC all clean). The "Not Manufacturable"
+  verdict stems only from empty-core minimum-density errors, which fill
+  insertion resolves in a real build. The AVDD-separation plan is therefore
+  frozen (all grounds are common on the default COB breakout, so only `AVDD`
+  is separately measured).
 - Freeze the reference container and tool versions.
 
 Exit criterion: a passing padring-experiment GDS, a purchased slot, and a
