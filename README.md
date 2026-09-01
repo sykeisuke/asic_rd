@@ -5,6 +5,7 @@ Wilkinson ADC, targeting the GF180MCU process and a future wafer.space MPW run.
 
 ## Primary documentation
 
+- [Project handoff / design-team onboarding](docs/HANDOFF.md) — start here
 - [Prototype specification (English)](docs/PROTOTYPE_SPECIFICATION.md)
 - [ASIC Lab Handbook (English, Markdown)](docs/lecture/ASIC_Lab_Handbook_EN.md)
 - [ASIC Lab Handbook (English, PDF)](docs/lecture/ASIC_Lab_Handbook_EN.pdf)
