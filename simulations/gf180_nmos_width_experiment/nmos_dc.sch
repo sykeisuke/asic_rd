@@ -7,7 +7,7 @@ F {}
 E {}
 B 2 580 -540 1170 -80 {flags=graph
 y1=-0.00001
-y2=0.0012
+y2=0.003
 x1=0
 x2=3.3
 node="i(vd) -1 *"
@@ -43,7 +43,7 @@ write nmos_dc.raw
 C {devices/title.sym} 160 -30 0 0 {name=l5 author="ASIC R&D"}
 C {symbols/nfet_03v3.sym} 110 -410 0 0 {name=M1
 L=0.28u
-W=3u
+W=5u
 nf=1
 m=1
 ad="'int((nf+1)/2) * W/nf * 0.18u'"
