@@ -1,13 +1,39 @@
 # PDK, Pad, ESD, and Supply Freeze
 
-Date: 2026-08-14
+Date: 2026-08-14 (Gate A redefined 2026-08-30)
 
 Provider: wafer.space GF180MCU Run 3
 
 This sheet separates design choices that can be frozen from public provider
-files from items that require written wafer.space confirmation.
+files from items that require validation against the provider's automated
+checks.
 The same values are machine-readable in
 [`../config/wafer_space_run3.mk`](../config/wafer_space_run3.mk).
+
+## Gate A redefinition (2026-08-30)
+
+A direct provider inquiry was answered by wafer.space (Tim Ansell,
+2026-08-30) as follows: wafer.space provides no design support and issues no
+written confirmations; it performs DRC checking only and gives no guarantee
+that any IP works or is cross-compatible; COB packaging is granted to any
+design that passes the COB checks on <https://platform.wafer.space>, with all
+devices bonded identically to the fixed pad positions.
+
+Gate A therefore no longer waits for written provider answers. Its authority
+is replaced by three pillars:
+
+1. **Automated checks are the arbiter.** Acceptance questions are resolved by
+   running the candidate GDS (a padring-only build is sufficient) through the
+   public `gf180mcu-precheck` and the platform's precheck and COB checks.
+2. **ESD is a conservative design rule, not a provider datum.** No analog-pad
+   ESD characterization will be provided. The GF180MCU design-manual rules are
+   adopted as requirements: analog signal pads carry HBM protection diodes
+   only; any pad wired to a gate shall add a local secondary/CDM network
+   (CDM diode perimeter greater than 25 um, series poly resistor greater than
+   50 ohm) next to the protected devices.
+3. **Community evidence replaces qualification data.** Silicon experience with
+   the selected cells is gathered from prior-run projects (`ws-run1`,
+   `ws-run2` repositories) and the provider's Discord community.
 
 ## Frozen design baseline
 
@@ -58,8 +84,24 @@ The official template keeps `VDD/VSS` separate from `DVDD/DVSS` when
 digital-core rails. Therefore `AVDD` and `DVDD_CORE` cannot yet be claimed as
 separately measurable with an unchanged `0p5x1` default ring.
 
-Until wafer.space responds, use 3.3 V in all simulations but do not freeze the
-physical power net topology or start the final pad ring.
+Two findings from the public COB repository
+(`wafer-space/chip-on-board-wire-bonded-pcbs`, 2026-08-30) bound this
+requirement:
+
+- **All grounds are tied together on the default breakout COB package.**
+  Separately measurable `AVSS` is therefore physically impossible with the
+  default COB. The supply-separation requirement is reduced to `AVDD` only.
+- The Run 1 breakout pad map designates `VDD Core` and `PWR Aux` positions,
+  and the COB rules fix only the wirebonding layout, PCB footprint, and
+  connector position while leaving traces, signal types, and net assignments
+  user-definable. An additional core supply pair therefore appears feasible.
+
+Whether one bidirectional pad position may be re-typed into a second
+`gf180mcu_ocd_io__vdd/vss` pair (keeping every bond-pad position unchanged) is
+resolved empirically: build the modified padring from the provider template
+and pass it through the platform precheck and COB checks. Until that
+experiment passes, use 3.3 V in all simulations but do not freeze the physical
+power net topology or start the final pad ring.
 
 ## ESD status
 
@@ -69,49 +111,42 @@ support proves that the cells can be instantiated by the flow; it does not by
 itself establish the analog pad's guaranteed ESD level, allowed voltage/current,
 input capacitance, leakage, or suitability for the COB service.
 
-## Information required from wafer.space
+## Gate A information items and their resolution
 
-This is the controlled information list, not an email draft. Record each
-written answer, response date, provider contact, and supporting file or URL in
-the table below before closing Gate A.
+Originally a written-confirmation list. Re-scoped 2026-08-30: wafer.space
+issues no written confirmations, so each item is closed by public-repository
+evidence, by a conservative design rule, or by an automated platform check.
 
-| ID | Required information | Status | Evidence |
+| ID | Required information | Status | Evidence / closure route |
 | --- | --- | --- | --- |
-| WS-01 | Exact accepted PDK/Ciel commit | [ ] | Pending |
-| WS-02 | Accepted project-template commit | [ ] | Pending |
-| WS-03 | Approved 3.3 V standard-cell and I/O-library combination | [ ] | Pending |
-| WS-04 | Accepted I/O cell names and signoff views | [ ] | Pending |
-| WS-05 | Analog-pad ESD, clamp, leakage, and capacitance limits | [ ] | Pending |
-| WS-06 | Permission to add a core supply pair in the `0p5x1` ring | [ ] | Pending |
-| WS-07 | Alternative slot/ring if separate supplies are unsupported | [ ] | Pending |
-| WS-08 | COB fixed pad constraints, schematic, and connector pinout | [ ] | Pending |
-| WS-09 | Rail limits and required power-up sequence | [ ] | Pending |
-| WS-10 | Authoritative precheck image and signoff checklist | [ ] | Pending |
+| WS-01 | Exact accepted PDK/Ciel commit | [x] public, re-verify at submission | Template `main` Makefile pins `PDK_COMMIT ?= f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` (matches this repo's freeze). The pin is updated periodically; re-check at purchase and again before submission |
+| WS-02 | Accepted project-template commit | [x] public | Frozen commit `0de7e394` is `main` HEAD as of 2026-08-30 |
+| WS-03 | Approved 3.3 V standard-cell and I/O-library combination | [~] template-supported | `SCL=gf180mcu_as_sc_mcu7t3v3` and `PAD=gf180mcu_ocd_io` are official template build options (`macros_3v3.yaml`, `pdn_3v3_sram.tcl`). Final acceptance = passing platform precheck; no written approval exists |
+| WS-04 | Accepted I/O cell names and signoff views | [x] public | Template `src/chip_top.sv` instantiates exactly `gf180mcu_ocd_io__{vdd,vss,dvdd,dvss,in_s,in_c,bi_24t,asig_5p0}` (clock uses `in_s`; reset and inputs use `in_c`) |
+| WS-05 | Analog-pad ESD, clamp, leakage, and capacitance limits | [x] closed by design rule | No data will be provided. Adopt GF180MCU DRM rules: HBM diodes only on `asig` pads; add local CDM secondary protection (diode perimeter > 25 um, poly series R > 50 ohm) at every gate-connected pad; no reliance on characterized limits |
+| WS-06 | Extra core supply pair in the `0p5x1` ring | [x] platform-verified 2026-08-31 | Padring experiment (template fork, branch `avdd-core-pair-experiment`): `bidir[43:42]` re-typed to a second `gf180mcu_ocd_io__vdd/vss` pair with the 3.3 V library set. platform.wafer.space Check #800 (precheck 1.7.3, CoB variant): hash verified, CoB pad-mask check passed, Magic/KLayout DRC and antenna clean. Overall verdict "Not Manufacturable" is caused solely by the 4 empty-core minimum-density errors (`DCF.1b`, `PL.8`, `M1.4`, `M2.4`), which fill insertion resolves in a real chip build. The pad re-typing itself is accepted |
+| WS-07 | Alternative slot/ring if separate supplies are unsupported | [x] fallback documented | `1x1` full slot exposes two `VDD Core` positions and two `PWR Aux` positions on the Run 1 breakout map |
+| WS-08 | COB fixed pad constraints, schematic, and connector pinout | [~] public, run-specific | `wafer-space/chip-on-board-wire-bonded-pcbs` publishes the Run 1 `0p5x1` KiCad schematic/PCB, the 74-pad map, and the 70-pin mezzanine connector (LCSC C19089236 / C19089262). Marked run-specific; watch for a Run 3 revision. All grounds are common on the breakout |
+| WS-09 | Rail limits and required power-up sequence | [~] datasheet only | GF180MCU PDK datasheet absolute maxima apply; no provider-specific sequencing data exists. Design for simultaneous 3.3 V ramp of all rails |
+| WS-10 | Authoritative precheck image and signoff checklist | [x] public | `wafer-space/gf180mcu-precheck` (latest tag 1.7.3) runs top-cell/origin/DBU/layer/slot-size, density, antenna, Magic DRC, and KLayout DRC. The platform's own run at submission is authoritative |
 
-### Detailed acceptance questions
+### Remaining community questions
 
-1. Is PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`
-   the required Run 3 submission version? If not, provide the exact commit.
-2. Is template commit `0de7e394337a1f7f5303ac7a3681bf2481b58176`
-   an accepted Run 3 baseline?
-3. Is the 3.3 V combination `gf180mcu_as_sc_mcu7t3v3` plus
-   `gf180mcu_ocd_io` accepted for fabrication, precheck, and COB?
-4. Are `gf180mcu_ocd_io__in_c`, `in_s`, `bi_24t`, `asig_5p0`, `vdd/vss`,
-   and `dvdd/dvss` the accepted cell names and views at that commit?
-5. What ESD topology/rating, clamp range, leakage, and capacitance apply to
-   `gf180mcu_ocd_io__asig_5p0`? Is it approved for analog input and monitor output?
-6. For `0p5x1` COB, may a signal-pad position be replaced by an additional
-   `vdd/vss` cell to create separately measurable AVDD and digital-core VDD?
-7. If not, which supported slot/default-ring configuration permits separate
-   analog-core, digital-core, and I/O supplies while retaining at least six
-   analog signal pads?
-8. Must all default power-pad positions and nets remain unchanged for the COB
-   breakout PCB? Provide its schematic and connector pinout.
-9. What are the nominal and absolute-maximum values for core and I/O rails,
-   and what power-up sequence is required?
-10. Which local precheck image/version and signoff checks are authoritative for Run 3?
+The only items still worth asking (on the provider's Discord, addressed to
+prior-run participants rather than to the provider):
+
+1. Has any prior-run project re-typed a bidirectional pad position into an
+   extra `vdd/vss` core pair on a default ring and passed the platform COB
+   checks?
+2. Any silicon experience with `gf180mcu_ocd_io__asig_5p0` as analog input or
+   buffered monitor output (leakage, capacitance, ESD behavior)?
+3. Any precheck or COB-breakout gotchas for all-3.3 V designs
+   (`gf180mcu_as_sc_mcu7t3v3` everywhere)?
 
 ## Exit criterion
 
-Gate A closes only when the provider response is stored in the repository and
-the specification, pad map, power-domain schematic, and PCB assumptions agree.
+Gate A closes when (a) the padring experiment GDS — including the extra core
+supply pair, or the documented fallback if it fails — passes the public
+precheck and the platform precheck/COB checks, (b) the run is purchased, and
+(c) the specification, pad map, power-domain schematic, and PCB assumptions
+agree with the passing configuration and are recorded in this repository.

@@ -8,14 +8,27 @@ shall not displace its Must-level flow and observability requirements.
 
 - [x] Select wafer.space GF180MCU Run 3 as the MPW route.
 - [x] Record the published 2026-12-16 clean-GDS deadline and Q2 2027 shipment.
-- [ ] Reconfirm the dates directly with wafer.space before purchase.
-- Obtain the exact GF180MCU variant and accepted PDK release.
-- Validate the provisional `0.5x1` default pad ring and COB choice against area,
-  six-analog-pad mapping, supply partitioning, and provider signoff rules.
+- [x] Provider contact (2026-08-30): wafer.space issues no written
+  confirmations and performs DRC-only checking; acceptance authority is the
+  automated precheck and COB checks on platform.wafer.space. Gate A was
+  redefined accordingly in
+  [`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).
+- [x] Confirm the PDK/template commits against the public template `main`
+  (matched as of 2026-08-30; re-verify at purchase and before submission).
+- [ ] Decide the early-bird purchase (2026-09-30 deadline) with the
+  collaboration.
+- [x] Padring experiment (platform-verified 2026-08-31): the `0p5x1` ring
+  with `bidir[43:42]` re-typed as a second core `vdd/vss` pair passes the
+  platform.wafer.space CoB precheck (Check #800, precheck 1.7.3: pad mask,
+  antenna, Magic and KLayout DRC all clean). The "Not Manufacturable"
+  verdict stems only from empty-core minimum-density errors, which fill
+  insertion resolves in a real build. The AVDD-separation plan is therefore
+  frozen (all grounds are common on the default COB breakout, so only `AVDD`
+  is separately measured).
 - Freeze the reference container and tool versions.
 
-Exit criterion: a written submission-constraint sheet and a reproducible tool
-environment.
+Exit criterion: a passing padring-experiment GDS, a purchased slot, and a
+reproducible tool environment.
 
 ## Phase 1: Analog flow bring-up
 
