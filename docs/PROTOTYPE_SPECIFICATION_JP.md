@@ -1,8 +1,8 @@
 # 波形サンプリングASICプロトタイプ仕様書
 
-版: 0.3（管理基準仕様）
+版: 0.4（管理基準仕様）
 
-日付: 2026-08-14
+日付: 2026-08-31
 
 プロセス基準: GF180MCU（`gf180mcuD`）
 
@@ -10,8 +10,10 @@ MPW事業者: **wafer.space GF180MCU Run 3**
 
 提出基準日: clean GDS 2026-12-16 11:59 PM AoE（購入前に事業者へ再確認）
 
-状態: 回路構成、MPW事業者、PDK commit、3.3 V library/supply基準は凍結済み。
-Slotの電源構成とESDの事業者認定は未確定。
+状態: 回路構成、MPW事業者、PDK commit、3.3 V library/supply基準、slot電源構成は凍結済み。
+第2 core supply pairを追加した`0.5x1` COB ringは事業者platformのCoB precheckに合格
+（2026-08-31）。事業者は書面認定を発行しないため、ESDは設計ルールで対応する。
+未確定はslot購入（early-bird 2026-09-30）のみ。
 
 言語: **日本語** | [English version](PROTOTYPE_SPECIFICATION.md)
 
@@ -103,10 +105,10 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | プロセス | `gf180mcuD`、PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` | [x] |
 | Analog device/supply | 3.3 V device、`AVDD=3.3 V`、`AVSS=0 V` | [x] |
 | Digital cell/supply | `gf180mcu_as_sc_mcu7t3v3`、`DVDD_CORE=3.3 V` | [x] |
-| Pad library/I/O supply | `gf180mcu_ocd_io`、`IOVDD=3.3 V` | [x] baseline / [ ] 事業者認定 |
-| ESD | 選択pad library内の構造のみ。Analog rating/capacitance/leakageを確認 | [ ] 事業者認定 |
-| Slot/package | `0.5x1` default pad ring + COBを第一候補 | [ ] area/pad review後に凍結 |
-| 公開pad budget | 56 signal I/O（うちanalog 6）+ 16 power pads | [ ] provider mapping確認 |
+| Pad library/I/O supply | `gf180mcu_ocd_io`、`IOVDD=3.3 V`。事業者の書面認定は存在せず、platformの自動checkが判定基準 | [x] platform precheck合格 |
+| ESD | 選択pad library内の構造のみ（`asig` padはDVDD/DVSSへのHBM diodeのみ、buffer無し）。Gate接続padには局所CDM二次保護（diode周長 > 25 um、直列poly R > 50 ohm）を追加。事業者からの特性データは提供されない | [x] 設計ルール |
+| Slot/package | `0.5x1` default pad ring + COB。`bidir[43:42]`位置を`AVDD`用の第2 core `vdd/vss` pairに変更 | [x] platform CoB precheck合格（2026-08-31） |
+| 公開pad budget | 56 signal I/O（うちanalog 6）+ 16 power pads。Run 1のCOB pinoutは公開済み（run固有、Run 3版の改訂に注意） | [x] |
 | Sampling switch | NMOS+PMOS transmission gate | [x] |
 | Hold capacitor | 各cell 1個、1 pF simulation baseline | [x] |
 | 読み出しMUX | One-hot 4-to-1 analog MUX | [x] |
@@ -314,7 +316,8 @@ PVT、mismatch、PEX、package効果、測定不確かさを含めるまでは�
 - Conversion clock入力と分周clockまたはstatus monitor。
 - Analog crossingに依存しないcounter/digital test mode。
 - 全capture codeへの直接またはserial access。
-- Analog、digital、I/O電源電流を個別に測定できる接続。
+- VDD側でanalog core（`AVDD`）、digital core、I/O電源電流を個別に測定できる接続。
+  default COB breakoutでは全groundが共通のため、ground電流は分離できない。
 - MOSまたはcapacitorのcharacterization用replicaを少なくとも1個。
 
 テスト用の観測手段は、保存段数、分解能、serializer機能の追加より優先する。
@@ -409,9 +412,12 @@ Tape-out 1をcomplete-flow実証として成功とする。
 
 ### Gate A: 外部条件の凍結
 
-- MPW事業者、run、提出日、die area、認定PDK revisionを確定する。
-- Supply option、認定I/O cell、package/COB option、pad templateを確認する。
+- MPW事業者、run、提出日、die area、PDK revisionを確定する。
+- Supply option、I/O cell、package/COB option、pad templateを確認する。事業者は
+  書面認定を発行しないため、platform.wafer.spaceの自動precheck/CoB checkが判定基準
+  （[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md)参照）。
 - Provider deliverableとopen-source公開条件を文書化する。
+- 技術項目は2026-08-31に完了。slot購入でgateを閉じる。
 
 ### Gate B: 回路図の凍結
 
@@ -443,17 +449,20 @@ Tape-out 1をcomplete-flow実証として成功とする。
 内部構成は4 cells、6 bitで凍結済みである。残る未確定事項は、外部条件または物理設計に
 依存する次の項目である。
 
-1. 選択済みのwafer.space GF180MCU Run 3提出日を再確認し、暫定候補の`0.5x1`
-   default pad ring + COBをarea/pad review後に凍結する。
-2. 凍結したPDK/template commitと3.3 V libraryに対するRun 3の書面認定。
-3. Analog padのESD rating/capacitance/leakageと認定I/O cell view。
-4. COB対応ringで3.3 V analog core、digital core、I/O supplyを物理分離する方法。
-5. Package、chip-on-board、wire-bond carrierの選択。
-6. Area、leakage、PEX検討後のcapacitor device/type/value。
-7. PVT、mismatch、post-layout比較後のcomparator variant。
-8. 外部・内部ramp電圧範囲とmonitor pad実装。
-9. Silicon testにおけるsampling clockとconversion clockの正式上限。
-10. Evaluation PCB、FPGA board、connector、I/O電圧とprotocol。
+2026-08-31に解決済み（詳細は[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md)）:
+`0.5x1` default pad ring + COB slotを凍結。PDK/template commitは公開templateの
+pinと一致。3.3 V libraryとI/O cellはplatform precheckに合格（書面認定は存在しない）。
+Analog padのESDは設計ルールで対応。`AVDD`は第2 core supply pairで分離し、
+groundは全て共通。PackageはCOB。
+
+1. Run 3 slotを購入する（early-bird 2026-09-30、購入締切 2026-12-09）。購入時と
+   提出前にPDK/template pinを再確認する。
+2. Area、leakage、PEX検討後のcapacitor device/type/value。
+3. PVT、mismatch、post-layout比較後のcomparator variant。
+4. 外部・内部ramp電圧範囲とmonitor pad実装。
+5. Silicon testにおけるsampling clockとconversion clockの正式上限。
+6. Evaluation PCB（事業者COB mezzanineに接続）、FPGA board、connector、
+   I/O電圧とprotocol。
 
 ## 13. 仕様変更管理
 

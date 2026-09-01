@@ -1,6 +1,6 @@
 # Tape-out closure blockers
 
-Date: 2026-08-11
+Date: 2026-08-31 (originally 2026-08-11)
 
 The repository now demonstrates the architecture through transistor-level
 four-cell conversion, synthesizable control/readout, mixed-signal timing
@@ -14,13 +14,14 @@ chip. The following items cannot be treated as optional:
    automated precheck and COB checks on platform.wafer.space. The PDK/template
    commits match the public template `main` as of 2026-08-30; re-verify at
    purchase (early-bird 2026-09-30) and before submission.
-2. Freeze the pad ring, package, and power domains via the padring
-   experiment: the `0p5x1` ring with a second core `vdd/vss` pair must pass
-   the platform checks. All grounds are common on the default COB breakout,
-   so only `AVDD` can be separately measurable. Analog ESD follows the
+2. Pad ring, package, and power domains are frozen: the `0p5x1` ring with a
+   second core `vdd/vss` pair (`bidir[43:42]` positions) passed the platform
+   CoB precheck on 2026-08-31. All grounds are common on the default COB
+   breakout, so only `AVDD` is separately measurable. Analog ESD follows the
    conservative GF180MCU DRM rules (HBM-only pads plus local CDM secondary
-   protection) instead of provider data. Reduce analog functions to the six
-   true analog pads.
+   protection) instead of provider data. Remaining: reduce analog functions
+   to the six true analog pads (test-MUX truth table) and design the
+   `AVDD`/digital-core domain crossings and clamps.
 3. Draw and verify the analog SCA, mux, ramp, comparator, bias, and test-access
    layouts; run extraction and post-layout simulations.
 4. Complete PVT and mismatch Monte Carlo verification with frozen devices and
@@ -32,5 +33,6 @@ chip. The following items cannot be treated as optional:
 7. Run provider signoff and archive a clean-checkout submission package.
 
 Changing foundry or standard-cell/I/O libraries after item 2 will invalidate a
-substantial part of physical signoff. Provider confirmation is therefore the
-next external decision gate.
+substantial part of physical signoff. The slot purchase (early-bird
+2026-09-30) is therefore the next external decision gate; the technical
+provider constraints are closed.

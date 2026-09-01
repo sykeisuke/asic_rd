@@ -68,3 +68,25 @@ power-domain implementation still require written provider confirmation; see
 - Allowed reassignment of default bidirectional/input pads and exact COB pin map.
 - COB board schematic, connector/pinout, current limits, and analog bandwidth.
 - GDS top-cell name, seal-ring ownership, density/fill, waiver, and license rules.
+
+## Update 2026-08-31: how the confirmations were resolved
+
+wafer.space (Tim Ansell, 2026-08-30) stated that it issues no written
+confirmations and provides no design support: it performs DRC checking only,
+gives no IP or cross-compatibility guarantees, and grants COB packaging to any
+design passing the CoB checks on platform.wafer.space. The "Required
+confirmation" list above was therefore closed by public-repository evidence,
+conservative design rules, and an empirical padring experiment; the record is
+in [`../PDK_PAD_SUPPLY_FREEZE.md`](../PDK_PAD_SUPPLY_FREEZE.md). Key outcomes:
+
+- PDK/template commits match the public template `main` pin (re-verify at
+  purchase and before submission).
+- The `0.5x1` default ring with `bidir[43:42]` re-typed into a second core
+  `vdd/vss` pair passed the platform CoB precheck (Check #800, precheck
+  1.7.3); the slot and packaging choice is now frozen, not provisional.
+- All grounds are common on the default COB breakout; only `AVDD` is
+  separately measurable.
+- Analog-pad ESD is handled by GF180MCU DRM design rules, not provider data.
+- The top cell is `chip_top`; precheck enforces origin, DBU, slot size,
+  density, antenna, and DRC. Density is a hard failure, so fill is required.
+- License: Apache-2.0 adopted for this repository (full open publication).

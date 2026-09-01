@@ -1,8 +1,8 @@
 # Waveform-Sampling ASIC Prototype Specification
 
-Version: 0.3 (controlled baseline)
+Version: 0.4 (controlled baseline)
 
-Date: 2026-08-14
+Date: 2026-08-31
 
 Process baseline: GF180MCU (`gf180mcuD`)
 
@@ -10,8 +10,11 @@ MPW provider: **wafer.space GF180MCU Run 3**
 
 Submission baseline: clean GDS by 2026-12-16 11:59 PM AoE; reconfirm before purchase
 
-Status: architecture, provider, PDK commit, 3.3 V library set, and nominal
-supplies frozen. Slot power topology and provider ESD acceptance remain open.
+Status: architecture, provider, PDK commit, 3.3 V library set, nominal
+supplies, and slot power topology frozen. The `0.5x1` COB ring with a second
+core supply pair passed the provider platform's CoB precheck (2026-08-31);
+ESD is handled by design rule because the provider issues no written
+acceptance. The slot purchase (early-bird 2026-09-30) remains open.
 
 Language: **English** | [日本語版](PROTOTYPE_SPECIFICATION_JP.md)
 
@@ -102,10 +105,10 @@ formally revised.
 | Process | [x] | `gf180mcuD`, PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` |
 | Analog devices/supply | [x] | 3.3 V devices; `AVDD=3.3 V`, `AVSS=0 V` |
 | Digital cells/supply | [x] | `gf180mcu_as_sc_mcu7t3v3`; `DVDD_CORE=3.3 V` |
-| Pad library/I/O supply | [x] baseline / [ ] provider acceptance | `gf180mcu_ocd_io`; `IOVDD=3.3 V` |
-| ESD | [ ] provider acceptance | Selected-library structures only; analog rating/capacitance/leakage required |
-| Slot/package | [ ] | Provisional `0.5x1` default pad ring plus COB; freeze after area/pad review |
-| Published pad budget | [ ] provider mapping | 56 signal I/Os including 6 analog, plus 16 power pads |
+| Pad library/I/O supply | [x] platform precheck passed | `gf180mcu_ocd_io`; `IOVDD=3.3 V`. No written provider acceptance exists; the platform's automated checks are the authority |
+| ESD | [x] design rule | Selected-library structures only (`asig` pads: HBM diodes to DVDD/DVSS, no buffer). Local CDM secondary protection (diode perimeter > 25 um, series poly R > 50 ohm) at every gate-connected pad. No provider characterization will be issued |
+| Slot/package | [x] | `0.5x1` default pad ring plus COB, with the `bidir[43:42]` positions re-typed as a second core `vdd/vss` pair for `AVDD`; passed the platform CoB precheck 2026-08-31 |
+| Published pad budget | [x] | 56 signal I/Os including 6 analog, plus 16 power pads; Run 1 COB pinout published (run-specific, watch for a Run 3 revision) |
 | Analog channels | [x] | 1 |
 | Storage | [x] | Four sampling cells, one hold capacitor per cell |
 | Sampling switch | [x] | Transmission gate |
@@ -309,7 +312,9 @@ Subject to the final pad budget, the top shall provide:
 - Conversion-clock input and divided-clock/status monitor.
 - Digital test mode independent of the analog crossing.
 - Access to all captured codes.
-- Separately measurable analog, digital, and I/O supply currents.
+- Separately measurable analog-core (`AVDD`), digital-core, and I/O supply
+  currents on the VDD side. All grounds are common on the default COB
+  breakout, so ground currents are not separable.
 - At least one replica MOS/capacitor characterization structure.
 
 Test access takes priority over additional depth, resolution, or serializer
@@ -389,8 +394,12 @@ is conclusively isolated through test access:
 
 ### Gate A: External constraints
 
-Confirm MPW run/date, die area, PDK revision, supplies, qualified I/O cells,
-package/COB option, pad template, and provider deliverables.
+Confirm MPW run/date, die area, PDK revision, supplies, I/O cells,
+package/COB option, pad template, and provider deliverables. The provider
+issues no written confirmations; the authority is the automated precheck and
+CoB checks on platform.wafer.space (see
+[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md)). Technical items
+closed 2026-08-31; the slot purchase closes the gate.
 
 ### Gate B: Schematic
 
@@ -419,17 +428,23 @@ waivers, checksums, Git tag, and measurement plan are archived.
 The internal architecture is frozen at four cells and six bits. Remaining
 decisions are:
 
-1. Reconfirm the selected wafer.space GF180MCU Run 3 deadline; freeze the
-   provisional `0.5x1` default-ring COB slot after area and pad review.
-2. Written Run 3 acceptance of the frozen PDK/template commits and 3.3 V libraries.
-3. Analog-pad ESD rating/capacitance/leakage and accepted I/O-cell views.
-4. Physical separation of 3.3 V analog core, digital core, and I/O supplies in a COB-compatible ring.
-5. Package, chip-on-board, or wire-bond carrier.
-6. Final capacitor type/value after leakage, area, and PEX study.
-7. Final comparator variant after PVT/mismatch/post-layout comparison.
-8. Ramp ranges and monitor implementation.
-9. Formal silicon sampling and conversion-clock limits.
-10. Evaluation PCB, FPGA, connectors, and I/O voltage levels.
+Resolved 2026-08-31 (details in
+[`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md)): the `0.5x1`
+default-ring COB slot is frozen; PDK/template commits match the public
+template pin; the 3.3 V library set and I/O cells passed the platform
+precheck (no written acceptance exists); analog-pad ESD is handled by design
+rule; `AVDD` is separated through a second core supply pair while all grounds
+are common; packaging is COB.
+
+1. Purchase the Run 3 slot (early-bird 2026-09-30, purchase deadline
+   2026-12-09); re-verify the PDK/template pins at purchase and before
+   submission.
+2. Final capacitor type/value after leakage, area, and PEX study.
+3. Final comparator variant after PVT/mismatch/post-layout comparison.
+4. Ramp ranges and monitor implementation.
+5. Formal silicon sampling and conversion-clock limits.
+6. Evaluation PCB (mating the provider's COB mezzanine), FPGA, connectors,
+   and I/O voltage levels.
 
 ## 13. Change control
 

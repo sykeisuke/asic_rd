@@ -1,6 +1,6 @@
 # Prototype verification matrix
 
-Date: 2026-08-13
+Date: 2026-08-31
 
 | Domain | Verification | Status | Reproducible target |
 | --- | --- | --- | --- |
@@ -21,6 +21,8 @@ Date: 2026-08-13
 | Analog PVT | Process, voltage, temperature matrix | OPEN | TBD |
 | Mismatch | Comparator Monte Carlo | OPEN | TBD |
 | Analog layout | DRC/LVS/extracted SCA + comparator + ramp | OPEN | TBD |
-| Chip top | Analog/digital integration and pad ring | BLOCKED | MPW constraints |
-| Package/PCB | Package and evaluation board | BLOCKED | provider package |
-| Fabrication | MPW submission and silicon test | BLOCKED | provider schedule |
+| Digital layout | Regenerate at 3.3 V (`gf180mcu_as_sc_mcu7t3v3`) | OPEN | `make digital-physical` after retarget |
+| Pad ring | `0p5x1` CoB ring with second core pair: platform precheck (pad mask, DRC, antenna) | PASS (density: empty-core artifact) | `run-experiment.sh` in template fork, platform Check #800 |
+| Chip top | Analog/digital integration, fill, top DRC/LVS | OPEN | analog layout first |
+| Package/PCB | Evaluation board mating the provider COB mezzanine | OPEN | Run 3 COB pinout revision |
+| Fabrication | MPW submission and silicon test | BLOCKED | slot purchase (early-bird 2026-09-30) |
