@@ -17,6 +17,9 @@ collaboration.
 
 ## Supporting Japanese documentation
 
+Educational translations for future Japanese-speaking students. The English
+documents remain the controlled versions.
+
 - [Prototype specification (Japanese)](docs/PROTOTYPE_SPECIFICATION_JP.md)
 - [ASIC Lab Handbook (Japanese, Markdown)](docs/lecture/ASIC_Lab_Handbook_JP.md)
 - [ASIC Lab Handbook (Japanese, PDF)](docs/lecture/ASIC_Lab_Handbook_JP.pdf)
