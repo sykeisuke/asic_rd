@@ -145,8 +145,8 @@ Workflow rules (see README "Working agreement"):
 - Every change ships with its reproducing command, acceptance criterion, and
   evidence.
 - Never commit PDK files, `work/`, `runs/`, RAW files, or credentials.
-- No license has been selected yet — do not redistribute until the LICENSE
-  decision (pending PI/collaboration approval) lands.
+- The repository is released under Apache-2.0 (decided 2026-08-31, full open
+  publication); contributions are accepted under the same license.
 
 ## 7. Channels
 
