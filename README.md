@@ -73,6 +73,13 @@ make check
 make nmos-dc
 ```
 
+Install the version-pinned Python EDA add-ons (gdsfactory GF180 PDK plugin)
+into the git-ignored `.eda-tools/` directory, once per checkout:
+
+```sh
+make tools
+```
+
 Run the integrated milestones:
 
 ```sh
