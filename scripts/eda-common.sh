@@ -22,4 +22,8 @@ else
     exit 1
 fi
 
-export PROJECT_ROOT EDA_IMAGE EDA_CONTAINER DOCKER_CLI
+# Repository-local, git-ignored user site for pinned Python EDA add-ons
+# (gdsfactory PDK plugin etc.). Populate with: make tools
+EDA_TOOLS_DIR="$PROJECT_ROOT/.eda-tools"
+
+export PROJECT_ROOT EDA_IMAGE EDA_CONTAINER DOCKER_CLI EDA_TOOLS_DIR

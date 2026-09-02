@@ -110,7 +110,11 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
 3. **Dense transfer test** before any no-missing-code claim.
 4. **Analog layout** (sampling cells, MUX, ramp, comparator, bias, test
    access) with DRC/LVS/PEX and post-layout simulation — the critical-path
-   item for the December deadline.
+   item for the December deadline. Layout generation uses **gdsfactory**
+   (in the pinned container, with the `gf180mcu` PDK plugin installed by
+   `make tools`) so layouts are parametric Python under version control;
+   signoff stays on the frozen PDK's KLayout DRC, Magic DRC, Netgen LVS, and
+   Magic PEX. Pilot block: the sampling cell.
 5. **Test-MUX truth table freeze** — the logical interface exceeds the six
    true analog pads; monitor/bias functions must be multiplexed (see
    [`TOP_LEVEL_INTERFACE.md`](TOP_LEVEL_INTERFACE.md)).
@@ -126,6 +130,7 @@ hosts both work; no tool installation beyond Docker:
 ```sh
 ./scripts/check-host.sh   # host sanity (macOS)
 make check                # verify the pinned EDA environment
+make tools                # once per checkout: pinned gdsfactory GF180 PDK plugin into .eda-tools/
 make nmos-dc              # first GF180 simulation (Lab 0)
 make course-regression    # everything pre-layout
 make vnc                  # browser-based Xschem/Magic desktop (see README)

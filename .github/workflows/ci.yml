@@ -38,6 +38,9 @@ jobs:
       - name: Verify pinned EDA environment
         run: make check
 
+      - name: Install pinned Python EDA add-ons
+        run: umask 000 && make tools
+
       - name: Digital unit tests and GF180 mapping
         run: umask 000 && make counter gray-counter controller digital-top
 

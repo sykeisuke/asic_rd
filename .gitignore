@@ -9,3 +9,4 @@ digital/**/work/
 mixed_signal/**/work/
 digital/**/physical/runs/
 pdk/
+.eda-tools/
