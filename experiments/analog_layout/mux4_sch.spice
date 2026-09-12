@@ -1,0 +1,12 @@
+* Schematic-side reference for LVS of the 4-to-1 analog MUX (four_cell_mux.spice devices).
+.subckt mux4 hold0 hold1 hold2 hold3 sel0 sel1 sel2 sel3 sel_b0 sel_b1 sel_b2 sel_b3 mux_bus bus_reset vdd vss
+XM0N hold0 sel0 mux_bus vss nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM0P hold0 sel_b0 mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM1N hold1 sel1 mux_bus vss nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM1P hold1 sel_b1 mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM2N hold2 sel2 mux_bus vss nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM2P hold2 sel_b2 mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XM3N hold3 sel3 mux_bus vss nfet_03v3 L=0.28u W=5u nf=5 m=1
+XM3P hold3 sel_b3 mux_bus vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+XBUS_RESET mux_bus bus_reset vss vss nfet_03v3 L=0.5u W=5u nf=5 m=1
+.ends mux4

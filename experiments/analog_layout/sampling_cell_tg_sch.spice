@@ -1,0 +1,9 @@
+* Schematic-side reference for LVS of the gdsfactory sampling cell.
+* Devices and sizes follow simulations/gf180_sampling_cell/transmission_gate.spice;
+* the ideal 1 pF hold capacitor is represented by the PDK MIM-B model that Magic
+* extracts for a Metal4/Metal5 MIM (22.4 x 22.4 um at ~2 fF/um^2 ~ 1.0 pF).
+.subckt sampling_cell_tg in sample sample_b hold vdd vss
+XSWN in sample hold vss nfet_03v3 L=0.28u W=10u nf=10 m=1
+XSWP in sample_b hold vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+XCHOLD hold vss cap_mim_2f0_m4m5_noshield c_length=22.4u c_width=22.4u
+.ends sampling_cell_tg
