@@ -37,7 +37,7 @@ def _shapes(c, layer):
 def _bbox_um(b, dbu):
     return b.left * dbu, b.bottom * dbu, b.right * dbu, b.top * dbu
 
-def _surgery(c: gf.Component, w_gate: float, kind: str) -> dict:
+def _surgery(c: gf.Component, w_gate: float, kind: str, gate_side: str = "both") -> dict:
     ly = c.kcl.layout; dbu = ly.dbu
     stats = {"ring_shapes_removed": 0, "gate_pads_moved": 0, "tap_contacts": 0}
     rect = lambda layer, x0, y0, x1, y1: c.add_polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)], layer=layer)
@@ -96,6 +96,9 @@ def _surgery(c: gf.Component, w_gate: float, kind: str) -> dict:
         if abs((x1 - x0) - 0.34) < 1e-3 and abs((y1 - y0) - 0.23) < 1e-3:
             m1.erase(s)
     for (gx, y0, y1, up) in gate_cons:
+        if gate_side == "top" and not up:
+            stats["gate_pads_dropped"] = stats.get("gate_pads_dropped", 0) + 1
+            continue                                  # contact and pad already erased
         sgn = 1 if up else -1
         ny0, ny1 = y0 + sgn * SHIFT, y1 + sgn * SHIFT
         rect(L["contact"], gx - CON / 2, min(ny0, ny1), gx + CON / 2, max(ny0, ny1))
@@ -112,22 +115,23 @@ def _surgery(c: gf.Component, w_gate: float, kind: str) -> dict:
         stats["gate_pads_moved"] += 1
     return stats
 
-def _fixed(kind: str, w_gate: float, l_gate: float, nf: int, **kw) -> gf.Component:
+def _fixed(kind: str, w_gate: float, l_gate: float, nf: int, gate_side: str = "both", **kw) -> gf.Component:
     c = gf.Component()
     c << PDK.get_component(kind, l_gate=l_gate, w_gate=w_gate, nf=nf, volt="3.3V", bulk="None", **kw)
     c.flatten()
-    c.info.update(_surgery(c, w_gate, kind))
+    c.info.update(_surgery(c, w_gate, kind, gate_side))
     c.info.update(dict(w_finger_um=w_gate, nf=nf, w_total_um=w_gate * nf, l_um=l_gate))
     return c
 
 @gf.cell
-def nfet_fixed(w_gate: float = 1.0, l_gate: float = 0.28, nf: int = 10, **kw) -> gf.Component:
-    """w_gate is the per-finger width (plugin convention); total W = w_gate * nf."""
-    return _fixed("nfet", w_gate, l_gate, nf, **kw)
+def nfet_fixed(w_gate: float = 1.0, l_gate: float = 0.28, nf: int = 10, gate_side: str = "both", **kw) -> gf.Component:
+    """w_gate is the per-finger width (plugin convention); total W = w_gate * nf.
+    gate_side="top" keeps gate contacts only above the device (frees the bottom for routing)."""
+    return _fixed("nfet", w_gate, l_gate, nf, gate_side, **kw)
 
 @gf.cell
-def pfet_fixed(w_gate: float = 2.0, l_gate: float = 0.28, nf: int = 10, **kw) -> gf.Component:
-    return _fixed("pfet", w_gate, l_gate, nf, **kw)
+def pfet_fixed(w_gate: float = 2.0, l_gate: float = 0.28, nf: int = 10, gate_side: str = "both", **kw) -> gf.Component:
+    return _fixed("pfet", w_gate, l_gate, nf, gate_side, **kw)
 
 if __name__ == "__main__":
     t = gf.Component()
