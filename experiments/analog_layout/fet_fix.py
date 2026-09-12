@@ -96,23 +96,31 @@ def _surgery(c: gf.Component, w_gate: float, kind: str, gate_side: str = "both")
         gx = (x0 + x1) / 2
         if abs((y1 - y0) - 0.23) < 1e-3 and abs((y0 + y1) / 2) > w_gate / 2 and any(b[0] - 0.02 <= gx <= b[2] + 0.02 for b in pb):
             m1.erase(s)
+    # group gate contacts by (side, finger): a wide gate (large L) carries several
+    # contacts side by side, which must share ONE pad and ONE poly extension
+    def finger_of(gx):
+        hits = [b for b in pb if b[0] - 0.02 <= gx <= b[2] + 0.02 and (b[3] - b[1]) >= w_gate]
+        return round(min(hits, key=lambda b: b[2] - b[0])[0], 3) if hits else round(gx, 1)
+    groups = {}
     for (gx, y0, y1, up) in gate_cons:
+        groups.setdefault((up, finger_of(gx)), []).append((gx, y0, y1))
+    for (up, _fid), cons in groups.items():
         if gate_side == "top" and not up:
-            stats["gate_pads_dropped"] = stats.get("gate_pads_dropped", 0) + 1
-            continue                                  # contact and pad already erased
+            stats["gate_pads_dropped"] = stats.get("gate_pads_dropped", 0) + len(cons)
+            continue                                  # contacts and pads already erased
         sgn = 1 if up else -1
+        xs = [g for g, _, _ in cons]
+        gx0, gx1 = min(xs), max(xs)
+        y0, y1 = cons[0][1], cons[0][2]
         ny0, ny1 = y0 + sgn * SHIFT, y1 + sgn * SHIFT
-        rect(L["contact"], gx - CON / 2, min(ny0, ny1), gx + CON / 2, max(ny0, ny1))
-        # poly head under this contact: extend outward by SHIFT so CO.3 (0.07) holds
-        heads = [b for b in pb if b[0] - 0.2 <= gx <= b[2] + 0.2 and ((b[3] > 0) if up else (b[1] < 0))]
-        if heads:
-            hy = max(b[3] for b in heads) if up else min(b[1] for b in heads)
-        else:                                       # fall back to the global poly extent
-            hy = py1 if up else py0
-        rect(L["poly2"], gx - 0.18, min(hy, hy + sgn * SHIFT), gx + 0.18, max(hy, hy + sgn * SHIFT))
+        for g in xs:
+            rect(L["contact"], g - CON / 2, min(ny0, ny1), g + CON / 2, max(ny0, ny1))
+        heads = [b for b in pb if b[0] - 0.2 <= gx0 and gx1 <= b[2] + 0.2 and ((b[3] > 0) if up else (b[1] < 0))]
+        hy = (max(b[3] for b in heads) if up else min(b[1] for b in heads)) if heads else (py1 if up else py0)
+        rect(L["poly2"], gx0 - 0.18, min(hy, hy + sgn * SHIFT), gx1 + 0.18, max(hy, hy + sgn * SHIFT))
         inner = (ny0 - 0.005) if up else (ny1 + 0.005)
         outer = inner + sgn * PAD_H
-        rect(L["metal1"], gx - PAD_W / 2, min(inner, outer), gx + PAD_W / 2, max(inner, outer))
+        rect(L["metal1"], gx0 - PAD_W / 2, min(inner, outer), gx1 + PAD_W / 2, max(inner, outer))
         stats["gate_pads_moved"] += 1
     return stats
 

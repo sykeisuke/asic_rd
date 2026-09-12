@@ -33,8 +33,8 @@ def fet_geom(cell: gf.Component, w_finger: float) -> dict:
     for sh in kc.shapes(ly.layer(34, 0)).each():
         b = sh.bbox(); x0, y0, x1, y1 = b.left * dbu, b.bottom * dbu, b.right * dbu, b.top * dbu
         W, H = x1 - x0, y1 - y0; cx = (x0 + x1) / 2
-        if abs(W - 0.34) < 1e-3 and abs(H - 0.5) < 1e-3:
-            pads.append((cx, y0, y1))
+        if abs(H - 0.5) < 1e-3 and min(abs(y0), abs(y1)) > w_finger / 2:   # gate pads (any width: wide gates merge several)
+            pads.append((cx, y0, y1, x0, x1))
         elif W < 0.5 and abs(H - 2 * (w_finger / 2 - 0.01)) < 0.03:
             straps.append(cx)
         elif W < 0.5 and H > w_finger:
@@ -44,12 +44,13 @@ def fet_geom(cell: gf.Component, w_finger: float) -> dict:
     return dict(straps=straps, taps=taps, hw=w_finger / 2,
                 pad_y0=min(p[1] for p in top_pads), pad_y1=max(p[2] for p in top_pads),
                 pad_x=[p[0] for p in top_pads],
+                pad_x0=min(p[3] for p in top_pads), pad_x1=max(p[4] for p in top_pads),
                 tap_half=max(abs(y) for y in [w_finger / 2 + 0.415]))
 
 def route_fet(c, g, yoff, net_gate, label):
     """Route one fet placed with its centre at y=yoff. Returns (y_a, y_b)."""
     xs = g["straps"]; hw = g["hw"]
-    _rect(c, M1, min(g["pad_x"]) - 0.17, yoff + g["pad_y1"] - 0.25, max(g["pad_x"]) + 0.17, yoff + g["pad_y1"])
+    _rect(c, M1, g["pad_x0"], yoff + g["pad_y1"] - 0.25, g["pad_x1"], yoff + g["pad_y1"])
     label(net_gate, (0, yoff + g["pad_y1"] - 0.12), M1_PIN)
     odd = xs[1::2]; even = xs[0::2]
     for x in odd:
