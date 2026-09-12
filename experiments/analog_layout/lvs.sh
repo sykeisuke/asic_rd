@@ -28,7 +28,7 @@ quit -noprompt
 TCL
         magic -dnull -noconsole -rcfile /foss/pdks/gf180mcuD/libs.tech/magic/gf180mcuD.magicrc work/lvs/extract.tcl > work/lvs/magic.log 2>&1 || true
         test -s work/lvs/${top}_layout.spice
-        echo '--- extracted layout netlist ---'; grep -vE '^\*|^\s*$' work/lvs/${top}_layout.spice | head -30
+        echo '--- extracted layout netlist (head) ---'; { grep -vE '^\*|^\s*$' work/lvs/${top}_layout.spice || true; } | head -30 || true
         echo '--- netgen ---'
         netgen -batch lvs \"work/lvs/${top}_layout.spice $top\" \"$sch $top\" \
             /foss/pdks/gf180mcuD/libs.tech/netgen/gf180mcuD_setup.tcl work/lvs/${top}_lvs.report > work/lvs/netgen.log 2>&1 || true

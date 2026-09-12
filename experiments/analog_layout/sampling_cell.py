@@ -57,8 +57,11 @@ def _stack_m2_m5(c, x, y):
 
 @gf.cell
 def sampling_cell_tg(w_nmos_f: float = W_NMOS_F, w_pmos_f: float = W_PMOS_F, nf: int = NF,
-                     mim_side: float = MIM_SIDE, l_gate: float = L_GATE) -> gf.Component:
+                     mim_side: float = MIM_SIDE, l_gate: float = L_GATE, labels: bool = True) -> gf.Component:
     c = gf.Component()
+    def label(name, pos, layer):
+        if labels:
+            c.add_label(name, position=pos, layer=layer)
     n = c << nfet_fixed(w_gate=w_nmos_f, l_gate=l_gate, nf=nf, gate_side="top")
     p = c << pfet_fixed(w_gate=w_pmos_f, l_gate=l_gate, nf=nf, gate_side="top")
     hn, hp = w_nmos_f / 2, w_pmos_f / 2           # strap half-heights (0.49 / 0.99 ~ w/2)
@@ -69,7 +72,7 @@ def sampling_cell_tg(w_nmos_f: float = W_NMOS_F, w_pmos_f: float = W_PMOS_F, nf:
     def route_device(yoff, hw, gate_pad_y0, gate_pad_y1, net_gate):
         # gate bar over the top pads (pads are 0.34 wide at finger centres, y gate_pad_y0..y1)
         _rect(c, M1, FINGER_X[0] - 0.17, yoff + gate_pad_y1 - 0.25, FINGER_X[-1] + 0.17, yoff + gate_pad_y1)
-        c.add_label(net_gate, position=(0, yoff + gate_pad_y1 - 0.12), layer=M1_PIN)
+        label(net_gate, (0, yoff + gate_pad_y1 - 0.12), M1_PIN)
         # odd columns -> hold: via at strap centre, M2 rail at y=yoff
         for k, x in enumerate(STRAP_X):
             if k % 2 == 1:
@@ -92,11 +95,11 @@ def sampling_cell_tg(w_nmos_f: float = W_NMOS_F, w_pmos_f: float = W_PMOS_F, nf:
     _rect(c, M2, xl - M2_W / 2, y_in_p - M2_W / 2, xl + M2_W / 2, y_in_n + M2_W / 2)
     _rect(c, M2, STRAP_X[0] - 0.19, y_in_n - M2_W / 2, xl + M2_W / 2, y_in_n + M2_W / 2)      # nfet in rail -> left
     _rect(c, M2, STRAP_X[0] - 0.19, y_in_p - M2_W / 2, xl + M2_W / 2, y_in_p + M2_W / 2)      # pfet in rail -> left
-    c.add_label("in", position=(xl, (y_in_n + y_in_p) / 2), layer=M2_PIN)
+    label("in", (xl, (y_in_n + y_in_p) / 2), M2_PIN)
     _rect(c, M2, xr - M2_W / 2, py - M2_W / 2, xr + M2_W / 2, 0 + M2_W / 2)
     _rect(c, M2, STRAP_X[-2] - 0.19, -M2_W / 2, xr + M2_W / 2, M2_W / 2)                       # nfet hold rail -> right
     _rect(c, M2, STRAP_X[-2] - 0.19, py - M2_W / 2, xr + M2_W / 2, py + M2_W / 2)              # pfet hold rail -> right
-    c.add_label("hold", position=(xr, py / 2), layer=M2_PIN)
+    label("hold", (xr, py / 2), M2_PIN)
 
     # body taps: nfet legs -> vss bar (M2 below the nfet 'in' rail), pfet legs -> vdd bar
     def tap_bar(yoff, leg_half, y_bar, net):
@@ -105,7 +108,7 @@ def sampling_cell_tg(w_nmos_f: float = W_NMOS_F, w_pmos_f: float = W_PMOS_F, nf:
             _rect(c, M1, x - 0.115, min(yoff - leg_half, y_bar) - 0.19, x + 0.115, yoff - leg_half + 0.05)
             _via(c, M1, V1, M2, x, y_bar)
         _rect(c, M2, -TAP_X - 0.19, y_bar - M2_W / 2, TAP_X + 0.19, y_bar + M2_W / 2)
-        c.add_label(net, position=(0, y_bar), layer=M2_PIN)
+        label(net, (0, y_bar), M2_PIN)
     y_vss = y_in_n - 0.75
     y_vdd = y_in_p - 0.75
     tap_bar(0.0, 0.905, y_vss, "vss")
@@ -136,7 +139,9 @@ def sampling_cell_tg(w_nmos_f: float = W_NMOS_F, w_pmos_f: float = W_PMOS_F, nf:
     _rect(c, M3, TAP_X - 0.19, y_vss - M2_W / 2, sbx + 0.19, y_vss + M2_W / 2)  # M3 horizontal, crosses hold (M2)
     _rect(c, M3, sbx - M2_W / 2, y_vss - M2_W / 2, sbx + M2_W / 2, by + 0.19)  # M3 vertical into the stack
 
-    c.info.update(dict(w_nmos_um=w_nmos_f * nf, w_pmos_um=w_pmos_f * nf, mim_side_um=mim_side))
+    c.info.update(dict(w_nmos_um=w_nmos_f * nf, w_pmos_um=w_pmos_f * nf, mim_side_um=mim_side,
+                       xl=xl, xr=xr, py=py, y_in_n=y_in_n, y_in_p=y_in_p, y_vss=y_vss, y_vdd=y_vdd,
+                       y_gate_n=1.205 - 0.12, y_gate_p=py + 1.705 - 0.12))
     return c
 
 
