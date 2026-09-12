@@ -69,5 +69,28 @@ experiments/analog_layout/pex.sh                                # PEX + pre/post
   substrate nodes before trusting it.
 - Assembling the blocks into one analog macro (with LEF for LibreLane), the
   test-access MUX (truth table not frozen), and chip-top integration remain.
-- Transient-noise simulation: VACASK is in the container but its GF180 support
-  (`gf180tovc.py`) is only in newer upstream versions — see the project notes.
+
+## Transient-noise simulation with VACASK (2026-09-12)
+
+VACASK (Bűrmen, Univ. Ljubljana) is an open-source simulator whose transient
+analysis can inject the devices' own thermal/shot/flicker noise — the first
+open tool to do this. It is already in our container; only its GF180 model
+converter was too old. `vacask.sh` fetches the upstream converter, converts the
+GF180 BSIM4 models (3 s), and runs the sampling cell 41 times (1 noiseless +
+40 noisy seeds) in about one second:
+
+| | value |
+| --- | --- |
+| spread of the sampled hold voltage (40 seeds) | **61.4 µV rms** |
+| kT/C limit for 1 pF at 300 K | 64.4 µV rms |
+| ratio | 0.95 |
+
+That is the expected physics (sampled noise = kT/C), so the tool chain is
+trustworthy. Next uses: comparator input-referred noise and timing jitter
+(the dominant contributors to code error beyond the static offset), and the
+ramp generator's noise — exactly the "dynamic" error terms we could not
+quantify with ngspice.
+
+Caveats: the container binary is older than the converter, so two harmless
+patches are applied (salicide-block resistors linearised; the converted MIM
+model's size parameters are not overridable yet, an ideal 1 pF is used).
