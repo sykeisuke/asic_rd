@@ -21,3 +21,7 @@ elif which == "capM3":
 elif which == "nfet_nobulk":
     c = PDK.get_component("nfet", l_gate=0.28, w_gate=2.0, volt="3.3V", bulk="None")
     c.write_gds("work/probe_nfet_nobulk.gds"); print("wrote")
+if which == "rst":
+    from fet_fix import nfet_fixed
+    c = nfet_fixed(w_gate=1.0, l_gate=0.5, nf=5, gate_side="top")
+    c.write_gds("work/probe_rst.gds"); print("wrote", dict(c.info))
