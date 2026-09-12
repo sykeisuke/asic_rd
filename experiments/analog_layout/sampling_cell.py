@@ -120,17 +120,21 @@ def sampling_cell_tg(w_nmos_f: float = W_NMOS_F, w_pmos_f: float = W_PMOS_F, nf:
     # via stacks must keep their Metal4 pads >= 1.2 um from the MIM bottom plate (MIMTM.1):
     # place them 1.5 um beyond the terminals and bridge with M5 (top-metal strips, >= 0.44 wide).
     GAP = 1.5
-    sx, sy = tx + GAP, py / 2                                                  # hold stack (right of the cap)
+    # hold stack right of the cap. Its M2 feed runs at sy, deliberately ABOVE the
+    # cap centre line where the vss stack's M2 pad sits (they must not share y).
+    sx, sy = tx + GAP, py / 2 + 2.5
     _rect(c, M2, xr - M2_W / 2, sy - M2_W / 2, sx + 0.19, sy + M2_W / 2)      # M2 from the hold column
     _stack_m2_m5(c, sx, sy)
     _rect(c, M5, tx - 0.4, ty - M5_W / 2, sx + M5_W / 2, ty + M5_W / 2)       # M5 terminal -> stack x
     _rect(c, M5, sx - M5_W / 2, min(sy, ty) - M5_W / 2, sx + M5_W / 2, max(sy, ty) + M5_W / 2)
-    # vss: cap bottom terminal (M5) -> stack down (left of the cap) -> M2 -> vss bar
+    # vss: cap bottom terminal (M5) -> stack down (left of the cap) -> M3 -> vss bar.
+    # The link runs in M3 because it must cross the vertical M2 'hold' column at xr.
     sbx = bx - GAP
     _stack_m2_m5(c, sbx, by)
     _rect(c, M5, sbx - M5_W / 2, by - M5_W / 2, bx + 0.4, by + M5_W / 2)
-    _rect(c, M2, sbx - M2_W / 2, y_vss - M2_W / 2, sbx + M2_W / 2, by + 0.19)
-    _rect(c, M2, TAP_X - 0.19, y_vss - M2_W / 2, sbx + M2_W / 2, y_vss + M2_W / 2)
+    _via(c, M2, V2, M3, TAP_X, y_vss, pad_w=0.38, pad_h=0.38)                  # vss bar (M2) -> M3
+    _rect(c, M3, TAP_X - 0.19, y_vss - M2_W / 2, sbx + 0.19, y_vss + M2_W / 2)  # M3 horizontal, crosses hold (M2)
+    _rect(c, M3, sbx - M2_W / 2, y_vss - M2_W / 2, sbx + M2_W / 2, by + 0.19)  # M3 vertical into the stack
 
     c.info.update(dict(w_nmos_um=w_nmos_f * nf, w_pmos_um=w_pmos_f * nf, mim_side_um=mim_side))
     return c
@@ -138,6 +142,10 @@ def sampling_cell_tg(w_nmos_f: float = W_NMOS_F, w_pmos_f: float = W_PMOS_F, nf:
 
 if __name__ == "__main__":
     comp = sampling_cell_tg()
-    comp.write_gds("work/sampling_cell_tg.gds")
+    # LVS/Magic want a stable top-cell name: wrap the cached (auto-named) cell.
+    top = gf.Component(name="sampling_cell_tg")
+    top << comp
+    top.flatten()                       # bring pin labels to the top level for Magic/Netgen
+    top.write_gds("work/sampling_cell_tg.gds")
     bb = comp.dbbox()
-    print(f"wrote work/sampling_cell_tg.gds; bbox {bb.width():.2f} x {bb.height():.2f} um")
+    print(f"wrote work/sampling_cell_tg.gds (top cell sampling_cell_tg); bbox {bb.width():.2f} x {bb.height():.2f} um")
