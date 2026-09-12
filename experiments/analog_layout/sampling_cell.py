@@ -9,6 +9,7 @@ Run inside the pinned container:  experiments/analog_layout/run.sh experiments/a
 import gdsfactory as gf
 import gf180mcu
 from mim_cap import mim_cap_b
+from fet_fix import nfet_fixed, pfet_fixed
 
 PDK = gf180mcu.PDK
 PDK.activate()
@@ -28,10 +29,10 @@ def sampling_cell_tg(w_nmos: float = W_NMOS, w_pmos: float = W_PMOS,
     argument set and derives a unique cell name from the arguments."""
     c = gf.Component()
 
-    nmos = c << PDK.get_component("nfet", l_gate=l_gate, w_gate=w_nmos,
-                                  volt="3.3V", bulk="Bulk Tie")
-    pmos = c << PDK.get_component("pfet", l_gate=l_gate, w_gate=w_pmos,
-                                  volt="3.3V", bulk="Bulk Tie")
+    # DRC-clean wrappers around the plugin fets (see fet_fix.py); body ties are
+    # not part of the device cell and will be added per cell row.
+    nmos = c << nfet_fixed(w_gate=w_nmos, l_gate=l_gate)
+    pmos = c << pfet_fixed(w_gate=w_pmos, l_gate=l_gate)
     # Layer-drawn MIM-B cap (Metal4 / FuseTop / Via4 / Metal5): the plugin's cap_mim
     # is MIM-A only and fails the gf180mcuD deck. See mim_cap.py.
     chold = c << mim_cap_b(w=mim_side, l=mim_side)
