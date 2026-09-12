@@ -1,5 +1,8 @@
 # What is on this branch, in plain language
 
+(A detailed Japanese study guide with exercises is in
+`docs/lecture/ANALOG_LAYOUT_STUDY_GUIDE_JP.md`.)
+
 Branch `keisuke/analog-explore` — exploration of analog layout with gdsfactory.
 Written 2026-09-12 so the work can be followed without reading the code.
 
