@@ -8,6 +8,7 @@ Run inside the pinned container:  experiments/analog_layout/run.sh experiments/a
 """
 import gdsfactory as gf
 import gf180mcu
+from mim_cap import mim_cap_b
 
 PDK = gf180mcu.PDK
 PDK.activate()
@@ -16,7 +17,7 @@ PDK.activate()
 L_GATE = 0.28          # um, minimum for 3.3 V devices
 W_NMOS = 2.0           # um
 W_PMOS = 4.0           # um, ~2x NMOS for balanced TG on-resistance
-MIM_OPTION = "B"       # wafer.space Run 3 precheck reports MIM option B
+MIM_OPTION = "B"       # gf180mcuD = MIM option B (Metal4/FuseTop/Metal5); see mim_cap.py
 MIM_SIDE = 22.4        # um; ~2 fF/um^2 -> 22.4^2 * 2 fF ≈ 1.0 pF (check DRM value)
 
 
@@ -31,8 +32,9 @@ def sampling_cell_tg(w_nmos: float = W_NMOS, w_pmos: float = W_PMOS,
                                   volt="3.3V", bulk="Bulk Tie")
     pmos = c << PDK.get_component("pfet", l_gate=l_gate, w_gate=w_pmos,
                                   volt="3.3V", bulk="Bulk Tie")
-    chold = c << PDK.get_component("cap_mim", mim_option=MIM_OPTION,
-                                   metal_level="M4", lc=mim_side, wc=mim_side)
+    # Layer-drawn MIM-B cap (Metal4 / FuseTop / Via4 / Metal5): the plugin's cap_mim
+    # is MIM-A only and fails the gf180mcuD deck. See mim_cap.py.
+    chold = c << mim_cap_b(w=mim_side, l=mim_side)
 
     # Coarse placement: TG devices side by side, hold cap to the right.
     pmos.dmovex(nmos.dxmax - pmos.dxmin + 2.0)
