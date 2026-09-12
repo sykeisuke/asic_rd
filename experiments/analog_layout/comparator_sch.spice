@@ -1,0 +1,12 @@
+* Schematic-side reference for LVS of the NMOS-input comparator (comparator.spice devices).
+.subckt comparator sample ramp bias dout vdd vss
+XINP left sample tail vss nfet_03v3 L=0.5u W=20u nf=10 m=1
+XINN outa ramp tail vss nfet_03v3 L=0.5u W=20u nf=10 m=1
+XLOADD left left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XLOADM outa left vdd vdd pfet_03v3 L=0.5u W=40u nf=10 m=1
+XTAIL tail bias vss vss nfet_03v3 L=1u W=20u nf=10 m=1
+XBUF1 outb outa vss vss nfet_03v3 L=0.28u W=4u nf=4 m=1
+XBUF2 outb outa vdd vdd pfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF3 dout outb vss vss nfet_03v3 L=0.28u W=8u nf=4 m=1
+XBUF4 dout outb vdd vdd pfet_03v3 L=0.28u W=16u nf=4 m=1
+.ends comparator
