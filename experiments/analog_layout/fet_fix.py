@@ -91,9 +91,10 @@ def _surgery(c: gf.Component, w_gate: float, kind: str, gate_side: str = "both")
             con.erase(s); stats["ring_shapes_removed"] += 1      # stray ring contact
     stats["core_x"] = (round(core_x0, 3), round(core_x1, 3))
     _, m1 = _shapes(c, L["metal1"])
-    for s in list(m1.each()):                       # plugin gate pads: 0.34 x 0.23
+    for s in list(m1.each()):                       # plugin gate pads: short (0.23) metal1 beyond the active on a finger
         x0, y0, x1, y1 = _bbox_um(s.bbox(), dbu)
-        if abs((x1 - x0) - 0.34) < 1e-3 and abs((y1 - y0) - 0.23) < 1e-3:
+        gx = (x0 + x1) / 2
+        if abs((y1 - y0) - 0.23) < 1e-3 and abs((y0 + y1) / 2) > w_gate / 2 and any(b[0] - 0.02 <= gx <= b[2] + 0.02 for b in pb):
             m1.erase(s)
     for (gx, y0, y1, up) in gate_cons:
         if gate_side == "top" and not up:

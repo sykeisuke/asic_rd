@@ -16,7 +16,7 @@ PDK = gf180mcu.PDK; PDK.activate()
 M1, M2, M3 = (34, 0), (36, 0), (42, 0)
 V1, V2 = (35, 0), (38, 0)
 M1_PIN, M2_PIN = (34, 10), (36, 10)
-VIA = 0.26; M2_W = 0.30
+VIA = 0.26; M2_W = 0.38   # rails as tall as the via pads so nothing protrudes (M2.2a)
 
 def _rect(c, layer, x0, y0, x1, y1):
     c.add_polygon([(x0, y0), (x1, y0), (x1, y1), (x0, y1)], layer=layer)
@@ -78,7 +78,7 @@ def tg_switch(w_n: float = 1.0, w_p: float = 2.0, nf: int = 5, l_gate: float = 0
     y_a_n, y_b_n = route_fet(c, gn_, 0.0, ngn, label)
     y_a_p, y_b_p = route_fet(c, gp_, py, ngp, label)
     tap_x = max(gn_["taps"] + gp_["taps"])
-    xl, xr = -(tap_x + 0.65), (tap_x + 0.65)
+    xl, xr = -(tap_x + 0.80), (tap_x + 0.80)   # >= 0.28 M2 gap to the tap-bar ends
     # a: left vertical join; b: right vertical join
     _rect(c, M2, xl - M2_W / 2, y_a_p - M2_W / 2, xl + M2_W / 2, y_a_n + M2_W / 2)
     for y, g in ((y_a_n, gn_), (y_a_p, gp_)):
