@@ -34,19 +34,30 @@ DEVICES = [
     ("XBUF3",  "nfet", 2.0, 4,  0.28, "vss",  "dout", "outb"),
     ("XBUF4",  "pfet", 4.0, 4,  0.28, "vdd",  "dout", "outb"),
 ]
+# PMOS-input variant (comparator_offset_pmos.spice): input pair and tail in PMOS, loads in NMOS
+DEVICES_P = [
+    ("XINP",   "pfet", 4.0, 10, 0.5,  "tail", "left", "sample"),
+    ("XINN",   "pfet", 4.0, 10, 0.5,  "tail", "outa", "ramp"),
+    ("XLOADD", "nfet", 2.0, 10, 0.5,  "vss",  "left", "left"),
+    ("XLOADM", "nfet", 2.0, 10, 0.5,  "vss",  "outa", "left"),
+    ("XTAIL",  "pfet", 2.0, 10, 1.0,  "vdd",  "tail", "bias"),
+    ("XBUF1",  "nfet", 1.0, 4,  0.28, "vss",  "outb", "outa"),
+    ("XBUF2",  "pfet", 2.0, 4,  0.28, "vdd",  "outb", "outa"),
+    ("XBUF3",  "nfet", 2.0, 4,  0.28, "vss",  "dout", "outb"),
+    ("XBUF4",  "pfet", 4.0, 4,  0.28, "vdd",  "dout", "outb"),
+]
 NETS = ["vdd", "vss", "sample", "ramp", "bias", "tail", "left", "outa", "outb", "dout"]
 PINS = ["sample", "ramp", "bias", "dout", "vdd", "vss"]
 
 
-@gf.cell
-def comparator_n() -> gf.Component:
+def _build(devices) -> gf.Component:
     c = gf.Component()
     def nolabel(name, pos, layer): pass
     # place devices top-down
     blocks = []
     y = 0.0
     xmax = 0.0
-    for (name, kind, wf, nf, L, s_net, d_net, g_net) in DEVICES:
+    for (name, kind, wf, nf, L, s_net, d_net, g_net) in devices:
         cell = (nfet_fixed if kind == "nfet" else pfet_fixed)(w_gate=wf, l_gate=L, nf=nf, gate_side="top")
         g = fet_geom(cell, wf)
         h = cell.dbbox().height()
@@ -88,8 +99,19 @@ def comparator_n() -> gf.Component:
             c.add_label(net, position=(xb, 0.3), layer=M3_PIN)
     return c
 
+@gf.cell
+def cmp_nmos() -> gf.Component:
+    return _build(DEVICES)
+
+@gf.cell
+def cmp_pmos() -> gf.Component:
+    return _build(DEVICES_P)
+
 
 if __name__ == "__main__":
-    k = comparator_n()
-    top = gf.Component(name="comparator"); top << k; top.flatten(); top.write_gds("work/comparator.gds")
-    b = k.dbbox(); print(f"wrote work/comparator.gds; {b.width():.1f} x {b.height():.1f} um = {b.width()*b.height()/1e6:.4f} mm^2")
+    import sys
+    variant = sys.argv[1] if len(sys.argv) > 1 else "n"
+    k = cmp_pmos() if variant == "p" else cmp_nmos()
+    name = "comparator_p" if variant == "p" else "comparator"
+    top = gf.Component(name=name); top << k; top.flatten(); top.write_gds(f"work/{name}.gds")
+    b = k.dbbox(); print(f"wrote work/{name}.gds; {b.width():.1f} x {b.height():.1f} um = {b.width()*b.height()/1e6:.4f} mm^2")
