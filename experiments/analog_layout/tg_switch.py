@@ -50,16 +50,22 @@ def fet_geom(cell: gf.Component, w_finger: float) -> dict:
 def route_fet(c, g, yoff, net_gate, label):
     """Route one fet placed with its centre at y=yoff. Returns (y_a, y_b)."""
     xs = g["straps"]; hw = g["hw"]
-    _rect(c, M1, g["pad_x0"], yoff + g["pad_y1"] - 0.25, g["pad_x1"], yoff + g["pad_y1"])
+    if g["pad_x1"] - g["pad_x0"] > 0.35:              # several fingers: metal1 bar joins the pads
+        _rect(c, M1, g["pad_x0"], yoff + g["pad_y1"] - 0.25, g["pad_x1"], yoff + g["pad_y1"])
+    # (a single pad already satisfies M1.3; an extra short bar would violate it)
     label(net_gate, (0, yoff + g["pad_y1"] - 0.12), M1_PIN)
     odd = xs[1::2]; even = xs[0::2]
+    # via patches tall enough that a narrow (W<0.6) strap + patch still satisfies M1.3 (0.1444 um^2)
+    ph = 0.54 if hw < 0.3 else 0.38
+    # on narrow devices shift the centre via down so the taller patch keeps >= 0.23 um from the gate pads
+    yv = yoff - 0.08 if hw < 0.3 else yoff
     for x in odd:
-        _via(c, M1, V1, M2, x, yoff)
+        _via(c, M1, V1, M2, x, yv, pad_h=ph)
     _rect(c, M2, min(odd) - 0.19, yoff - M2_W / 2, max(odd) + 0.19, yoff + M2_W / 2)
     y_a = yoff - hw - 0.55
     for x in even:
         _rect(c, M1, x - 0.115, y_a - 0.19, x + 0.115, yoff - hw + 0.05)
-        _via(c, M1, V1, M2, x, y_a)
+        _via(c, M1, V1, M2, x, y_a, pad_h=ph)
     _rect(c, M2, min(even) - 0.19, y_a - M2_W / 2, max(even) + 0.19, y_a + M2_W / 2)
     return y_a, yoff
 

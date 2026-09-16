@@ -46,6 +46,18 @@ DEVICES_P = [
     ("XBUF3",  "nfet", 2.0, 4,  0.28, "vss",  "dout", "outb"),
     ("XBUF4",  "pfet", 4.0, 4,  0.28, "vdd",  "dout", "outb"),
 ]
+# Minimum-size per-cell comparator (candidate for the 14 fF cell): every device near minimum
+DEVICES_MIN = [
+    ("XINP",   "nfet", 1.0, 1, 0.28, "tail", "left", "sample"),
+    ("XINN",   "nfet", 1.0, 1, 0.28, "tail", "outa", "ramp"),
+    ("XLOADD", "pfet", 2.0, 1, 0.28, "vdd",  "left", "left"),
+    ("XLOADM", "pfet", 2.0, 1, 0.28, "vdd",  "outa", "left"),
+    ("XTAIL",  "nfet", 1.0, 1, 0.5,  "vss",  "tail", "bias"),
+    ("XBUF1",  "nfet", 0.5, 1, 0.28, "vss",  "outb", "outa"),
+    ("XBUF2",  "pfet", 1.0, 1, 0.28, "vdd",  "outb", "outa"),
+    ("XBUF3",  "nfet", 1.0, 1, 0.28, "vss",  "dout", "outb"),
+    ("XBUF4",  "pfet", 2.0, 1, 0.28, "vdd",  "dout", "outb"),
+]
 NETS = ["vdd", "vss", "sample", "ramp", "bias", "tail", "left", "outa", "outb", "dout"]
 PINS = ["sample", "ramp", "bias", "dout", "vdd", "vss"]
 
@@ -107,11 +119,15 @@ def cmp_nmos() -> gf.Component:
 def cmp_pmos() -> gf.Component:
     return _build(DEVICES_P)
 
+@gf.cell
+def cmp_min() -> gf.Component:
+    return _build(DEVICES_MIN)
+
 
 if __name__ == "__main__":
     import sys
     variant = sys.argv[1] if len(sys.argv) > 1 else "n"
-    k = cmp_pmos() if variant == "p" else cmp_nmos()
-    name = "comparator_p" if variant == "p" else "comparator"
+    k = {"p": cmp_pmos, "min": cmp_min}.get(variant, cmp_nmos)()
+    name = {"p": "comparator_p", "min": "comparator_min"}.get(variant, "comparator")
     top = gf.Component(name=name); top << k; top.flatten(); top.write_gds(f"work/{name}.gds")
     b = k.dbbox(); print(f"wrote work/{name}.gds; {b.width():.1f} x {b.height():.1f} um = {b.width()*b.height()/1e6:.4f} mm^2")
