@@ -102,15 +102,22 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
 1. **Retarget the digital physical flow to 3.3 V** (`gf180mcu_as_sc_mcu7t3v3`)
    and regenerate GDS/STA/DRC/LVS — do this before any new digital work so
    nothing is built twice.
-2. **Comparator mismatch Monte Carlo and PVT matrix** — the two OPEN rows in
-   the verification matrix. The comparator's dynamic settling (+6 counts at
-   0.4 V input; unreliable at 1.8 V) is the main analog optimization target;
-   both NMOS and PMOS input variants are candidates for silicon test
-   structures.
+2. **Comparator variant + input window, then Monte Carlo / PVT** — the
+   "unreliable above 1.8 V" result was a testbench artifact (ramp window);
+   `make comparator-range-wide` shows both input-pair variants complete to
+   2.2 V. Over the working window 0.5-2.0 V the NMOS pair's code error spans
+   +1..+3 and the PMOS pair's +1..+6. Decide the 1.5 V window position and the
+   variant together (the window position is free on a 3.3 V supply), then run
+   mismatch Monte Carlo and the PVT matrix on the chosen variant. Both
+   variants exist as DRC/LVS-clean layouts on `keisuke/analog-explore`.
 3. **Dense transfer test** before any no-missing-code claim.
 4. **Analog layout** (sampling cells, MUX, ramp, comparator, bias, test
    access) with DRC/LVS/PEX and post-layout simulation — the critical-path
-   item for the December deadline. Layout generation uses **gdsfactory**
+   item for the December deadline. Block layouts for all six blocks exist on
+   `keisuke/analog-explore` (see its EXPLAINER); remaining: review, PEX of
+   every block, macro assembly + LEF. Scaling note: the 1 pF hold capacitor
+   and the analog MUX are Tape-out 1 choices; later tape-outs move to a
+   comparator per cell (IRSX-style) with far smaller capacitors. Layout generation uses **gdsfactory**
    (in the pinned container, with the `gf180mcu` PDK plugin installed by
    `make tools`) so layouts are parametric Python under version control;
    signoff stays on the frozen PDK's KLayout DRC, Magic DRC, Netgen LVS, and
