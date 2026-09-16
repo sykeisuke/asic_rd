@@ -62,7 +62,7 @@ NETS = ["vdd", "vss", "sample", "ramp", "bias", "tail", "left", "outa", "outb", 
 PINS = ["sample", "ramp", "bias", "dout", "vdd", "vss"]
 
 
-def _build(devices) -> gf.Component:
+def _build(devices, gap_dev: float = GAP_DEV, bus_pitch: float = BUS_PITCH) -> gf.Component:
     c = gf.Component()
     def nolabel(name, pos, layer): pass
     # place devices top-down
@@ -87,10 +87,10 @@ def _build(devices) -> gf.Component:
                            s_net=s_net, d_net=d_net, g_net=g_net,
                            tap_net=("vss" if kind == "nfet" else "vdd")))
         xmax = max(xmax, cell.dbbox().right)
-        y = yoff - h / 2 - GAP_DEV
-    y_bottom = y + GAP_DEV
+        y = yoff - h / 2 - gap_dev
+    y_bottom = y + gap_dev
     # vertical M3 buses on the right
-    bus_x = {net: xmax + 1.2 + i * BUS_PITCH for i, net in enumerate(NETS)}
+    bus_x = {net: xmax + 1.2 + i * bus_pitch for i, net in enumerate(NETS)}
     def to_bus(net, y_row, x_from, layer_from):
         """Extend a horizontal connection at y_row from x_from to the net's bus and drop a via2."""
         xb = bus_x[net]
@@ -123,11 +123,16 @@ def cmp_pmos() -> gf.Component:
 def cmp_min() -> gf.Component:
     return _build(DEVICES_MIN)
 
+@gf.cell
+def cmp_min_compact() -> gf.Component:
+    """Same devices, rows packed to the M2 spacing limit (footprint lower bound for this router style)."""
+    return _build(DEVICES_MIN, gap_dev=0.6, bus_pitch=0.66)
+
 
 if __name__ == "__main__":
     import sys
     variant = sys.argv[1] if len(sys.argv) > 1 else "n"
-    k = {"p": cmp_pmos, "min": cmp_min}.get(variant, cmp_nmos)()
-    name = {"p": "comparator_p", "min": "comparator_min"}.get(variant, "comparator")
+    k = {"p": cmp_pmos, "min": cmp_min, "compact": cmp_min_compact}.get(variant, cmp_nmos)()
+    name = {"p": "comparator_p", "min": "comparator_min", "compact": "comparator_min_compact"}.get(variant, "comparator")
     top = gf.Component(name=name); top << k; top.flatten(); top.write_gds(f"work/{name}.gds")
     b = k.dbbox(); print(f"wrote work/{name}.gds; {b.width():.1f} x {b.height():.1f} um = {b.width()*b.height()/1e6:.4f} mm^2")
