@@ -1,8 +1,8 @@
 # 波形サンプリングASICプロトタイプ仕様書
 
-版: 0.4（管理基準仕様）
+版: 0.5-draft（管理基準仕様、レビュー中の提案）
 
-日付: 2026-08-31
+日付: 2026-09-16
 
 プロセス基準: GF180MCU（`gf180mcuD`）
 
@@ -110,9 +110,11 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | Slot/package | `0.5x1` default pad ring + COB。`bidir[43:42]`位置を`AVDD`用の第2 core `vdd/vss` pairに変更 | [x] platform CoB precheck合格（2026-08-31） |
 | 公開pad budget | 56 signal I/O（うちanalog 6）+ 16 power pads。Run 1のCOB pinoutは公開済み（run固有、Run 3版の改訂に注意） | [x] |
 | Sampling switch | NMOS+PMOS transmission gate | [x] |
-| Hold capacitor | 各cell 1個、1 pF simulation baseline | [x] |
-| 読み出しMUX | One-hot 4-to-1 analog MUX | [x] |
-| ADC方式 | 共有ramp/comparatorによるWilkinson方式 | [x] |
+| Hold capacitor | Tape-out 1 は 1 pF MIM-B（22.4 µm角）。この値は共有バス MUX 構成（バスへの電荷分配）の帰結であり、スケーリング目標ではない。IRSX は cell ごとに comparator を持ち 14 fF。GF180 の MIM 下限は 50 fF（`MIMTM.8a`、上部電極 ≥ 25 µm²）、それ以下は MOM/MOS 容量。Stretch: 小容量テスト構造（50 fF MIM、~15 fF MOM/MOS、comparator 直結） | [x] Tape-out 1 / [ ] scaling |
+| 読み出しMUX | One-hot 4-to-1 analog MUX（comparator 1 個を共有）。**スケーリング経路:** Tape-out 2/3 では MUX を廃し、cell ごとの comparator に共通 ramp を配る IRSX 型並列変換へ移行する（analog MUX は 32k cell にスケールしない） | [x] Tape-out 1 限定 |
+| ADC方式 | 共有ramp/comparatorによるWilkinson方式（Tape-out 1） | [x] |
+| 入力電圧窓 | 幅 1.5 V、IRSX 相当の 0.5–2.0 V を作業仮定。3.3 V 電源では窓の**位置**はフロントエンドの基線で決まる自由変数。comparator 変種と同時に凍結 | [ ] target |
+| Comparator 入力対 | NMOS 入力・PMOS 入力の両変種をレイアウト済み（DRC/LVS クリーン）。ランプ窓を広げた掃引（2026-09-16、`make comparator-range-wide`）: 0.5–2.0 V で NMOS 対のコード誤差 +1〜+3、PMOS 対 +1〜+6（同相上限 ≈ 2.2 V に向かって増加）。両変種とも 2.2 V まで変換完了。窓と変種を同時に決める | [ ] 決定 |
 | Counter capture | 6-bit Gray-safe capture | [x] |
 | Result storage | 6-bit word 4個、合計24 bit | [x] |
 | Readout | 低速同期CMOS serial | [x] |
@@ -457,8 +459,8 @@ groundは全て共通。PackageはCOB。
 
 1. Run 3 slotを購入する（early-bird 2026-09-30、購入締切 2026-12-09）。購入時と
    提出前にPDK/template pinを再確認する。
-2. Area、leakage、PEX検討後のcapacitor device/type/value。
-3. PVT、mismatch、post-layout比較後のcomparator variant。
+2. 入力電圧窓の位置（幅 1.5 V）と comparator 入力対の変種を、広窓掃引データに基づき同時に決定。その後、選択変種の PVT/mismatch/post-layout 確認。
+3. スケーリング経路のための小容量テスト構造（50 fF MIM、~15 fF MOM/MOS）。パッド・面積予算が許す場合。
 4. 外部・内部ramp電圧範囲とmonitor pad実装。
 5. Silicon testにおけるsampling clockとconversion clockの正式上限。
 6. Evaluation PCB（事業者COB mezzanineに接続）、FPGA board、connector、

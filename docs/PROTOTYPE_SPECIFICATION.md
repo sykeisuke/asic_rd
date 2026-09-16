@@ -1,8 +1,8 @@
 # Waveform-Sampling ASIC Prototype Specification
 
-Version: 0.4 (controlled baseline)
+Version: 0.5-draft (controlled baseline; proposal under review)
 
-Date: 2026-08-31
+Date: 2026-09-16
 
 Process baseline: GF180MCU (`gf180mcuD`)
 
@@ -112,9 +112,11 @@ formally revised.
 | Analog channels | [x] | 1 |
 | Storage | [x] | Four sampling cells, one hold capacitor per cell |
 | Sampling switch | [x] | Transmission gate |
-| Hold capacitor | [x] | 1 pF simulation baseline; final PDK device after layout study |
-| Read MUX | [x] | 4-to-1 transmission-gate analog MUX |
-| ADC | [x] | One shared Wilkinson ramp/comparator path |
+| Hold capacitor | [x] Tape-out 1 / [ ] scaling | 1 pF MIM-B (22.4 um square) for Tape-out 1. This value is a consequence of the shared-bus MUX architecture (charge sharing onto the bus), not a scaling target: IRSX uses 14 fF per cell with a comparator inside every cell. The GF180 MIM minimum is 50 fF (`MIMTM.8a`, top plate >= 25 um^2); smaller values need MOM/MOS capacitors. Stretch: small-capacitor test structures (50 fF MIM, ~15 fF MOM/MOS) with a directly attached comparator |
+| Read MUX | [x] Tape-out 1 only | 4-to-1 transmission-gate analog MUX feeding one comparator. **Scaling path:** Tape-out 2/3 replace the MUX by a comparator per storage cell with a broadcast ramp (IRSX-style parallel conversion); the analog MUX does not scale to 32k cells |
+| ADC | [x] | One shared Wilkinson ramp/comparator path (Tape-out 1) |
+| Input voltage window | [ ] target | 1.5 V span, IRSX-like 0.5-2.0 V as the working assumption. On the 3.3 V supply the window *position* is a free variable set by the front-end baseline; freeze it together with the comparator variant (see below) |
+| Comparator input pair | [ ] decide | NMOS- and PMOS-input variants both laid out and DRC/LVS-clean. Widened-window sweep (2026-09-16, `make comparator-range-wide`): over 0.5-2.0 V the NMOS pair's code error spans +1..+3, the PMOS pair's +1..+6 (grows toward its common-mode ceiling ~2.2 V); both complete to 2.2 V. Decide window and variant together |
 | Counter and storage | [x] | 6-bit Gray-safe capture and four 6-bit result registers |
 | Readout | [x] | 24-bit slow synchronous CMOS serial output |
 | Ramp | [x] | Internal ramp plus external debug/bypass path |
@@ -439,8 +441,11 @@ are common; packaging is COB.
 1. Purchase the Run 3 slot (early-bird 2026-09-30, purchase deadline
    2026-12-09); re-verify the PDK/template pins at purchase and before
    submission.
-2. Final capacitor type/value after leakage, area, and PEX study.
-3. Final comparator variant after PVT/mismatch/post-layout comparison.
+2. Input voltage window position (1.5 V span) and comparator input-pair
+   variant, decided together on the widened-window sweep data; then
+   PVT/mismatch/post-layout confirmation of the chosen variant.
+3. Small-capacitor test structures (50 fF MIM; MOM/MOS ~15 fF) for the
+   scaling path, if pad and area budgets allow.
 4. Ramp ranges and monitor implementation.
 5. Formal silicon sampling and conversion-clock limits.
 6. Evaluation PCB (mating the provider's COB mezzanine), FPGA, connectors,
