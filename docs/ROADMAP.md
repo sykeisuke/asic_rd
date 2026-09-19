@@ -92,6 +92,20 @@ production digital path now uses Gray-coded comparator-edge capture and a
 24-bit synchronous serial readout. GF180 mapping and 20 MHz pre-layout STA pass
 for the integrated digital top.
 
+Architecture revision 2026-09-18 (spec 0.6-draft): the design review with
+the collaborating IC-design group removed the analog MUX (comparator per cell,
+parallel conversion), fixed the hold capacitor at the smallest drawable MIM
+(54.5 fF), adopted bottom-plate sampling with the ramp applied to the
+capacitor (fixed comparator reference), and set the ADC to 8 bit. Done since:
+parallel 8-bit controller and 32-bit digital top with self-checking tests,
+GF180 mapping, and 20 MHz STA (`make parallel-controller`, `make digital-top`);
+bottom-plate cell study showing that the comparator must sense the
+first-frozen plate (pedestal spread 0.09 mV, gain error -0.02 %, versus 2-4 LSB
+signal-dependent pedestal and +9 % gain error when sensing the input-side
+plate) — `make bottom-plate-cell`. Remaining in Phase 2: comparator spec
+re-derivation (transient noise, fixed trip), ramp generator for the capacitor
+load, on-chip bottom-first switch delay, new mixed-signal co-simulation.
+
 ## Phase 3: Test macro
 
 - Small sampling array.
@@ -112,3 +126,27 @@ can close.
 - Pad ring, ESD, power domains, decoupling, and seal-ring constraints.
 - Top-level mixed-signal integration and package/PCB co-design.
 - Provider signoff and final reproducibility run.
+
+## Scale constraint for Tape-out 3 (recorded 2026-09-18)
+
+The first drawn GF180 unit cell (input gate, 54.5 fF MIM over the comparator,
+comparator, buffers; no routing) measures 28 x 22 um = 616 um^2, dominated by
+the comparator. Scaling estimates against the provider's slots (0.5x1 core
+4.46 mm^2, 1x1 core ~12.9 mm^2):
+
+| Array | Cells | Cell area only | Fits |
+| --- | ---: | ---: | --- |
+| 8 ch x 32768 (IRSX) | 262k | ~160 mm^2 | no |
+| 1 ch x 32768 | 33k | ~20 mm^2 | no (1x1) |
+| 8 ch x 2048 | 16k | ~10 mm^2 | marginal (1x1) |
+| 1 ch x 4096 | 4k | ~2.5 mm^2 | yes (0.5x1) |
+
+Consequences: (1) the Tape-out 3 depth must be derived from the required
+*time* depth (trigger latency x sampling rate) and the measured cell area,
+not copied from IRSX; (2) GF180's 3.3 V devices (min L 0.28 um) offer no
+shrink path, so an IRSX-class 8 x 32k array at multi-GSa/s implies a finer
+node (open: IHP SG13G2 130 nm; closed: commercial 65-130 nm) — a decision for
+the Tape-out 3 gate, while the architecture, calibration scheme, and flow
+developed here carry over; (3) a compact comparator is the main area lever
+(the register/latch bank is shared per conversion window and does not scale
+with cell count).

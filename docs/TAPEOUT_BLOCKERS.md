@@ -22,7 +22,7 @@ chip. The following items cannot be treated as optional:
    protection) instead of provider data. Remaining: reduce analog functions
    to the six true analog pads (test-MUX truth table) and design the
    `AVDD`/digital-core domain crossings and clamps.
-3. Draw and verify the analog SCA, mux, ramp, comparator, bias, and test-access
+3. Draw and verify the analog SCA (bottom-plate cells), four comparators, ramp, VREF, bias, and test-access
    layouts; run extraction and post-layout simulations.
 4. Complete PVT and mismatch Monte Carlo verification with frozen devices and
    capacitor structures.

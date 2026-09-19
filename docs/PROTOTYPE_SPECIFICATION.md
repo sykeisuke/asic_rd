@@ -1,8 +1,8 @@
 # Waveform-Sampling ASIC Prototype Specification
 
-Version: 0.5-draft (controlled baseline; proposal under review)
+Version: 0.6-draft (controlled baseline; architecture revision of 2026-09-18 under review)
 
-Date: 2026-09-16
+Date: 2026-09-18
 
 Process baseline: GF180MCU (`gf180mcuD`)
 
@@ -10,8 +10,15 @@ MPW provider: **wafer.space GF180MCU Run 3**
 
 Submission baseline: clean GDS by 2026-12-16 11:59 PM AoE; reconfirm before purchase
 
-Status: architecture, provider, PDK commit, 3.3 V library set, nominal
-supplies, and slot power topology frozen. The `0.5x1` COB ring with a second
+Status: provider, PDK commit, 3.3 V library set, nominal supplies, and slot
+power topology frozen. **Architecture revised 2026-09-18** (design review with
+the collaborating IC-design group): the 4-to-1 analog MUX is removed, every
+storage cell has its own comparator and all four cells convert in parallel;
+the hold capacitor is the smallest drawable MIM (54.5 fF); sampling is
+bottom-plate with the ramp applied to the capacitor so the comparators trip
+at a fixed reference; the ADC is 8 bit. The RTL, its tests, and the first
+transistor-level cell study on this repository already follow the revision;
+the analog block schematics/layouts are being re-derived. The `0.5x1` COB ring with a second
 core supply pair passed the provider platform's CoB precheck (2026-08-31);
 ESD is handled by design rule because the provider issues no written
 acceptance. The slot purchase (early-bird 2026-09-30) remains open.
@@ -54,12 +61,11 @@ at deliberately reduced scale:
 
 ```text
 1 analog channel
--> 4 sampling cells
--> 4-to-1 analog MUX
--> shared ramp + comparator
--> 6-bit counter capture
--> four 6-bit registers
--> 24-bit synchronous serial readout
+-> 4 bottom-plate sampling cells (54.5 fF MIM each)
+-> 1 broadcast ramp, 1 comparator per cell (fixed-reference trip)
+-> shared 8-bit Gray counter, 4 parallel captures
+-> four 8-bit registers
+-> 32-bit synchronous serial readout
 ```
 
 ## 3. Tape-out 1 success definition
@@ -79,7 +85,7 @@ specification
 -> first-silicon measurement
 ```
 
-Silicon success includes either correct 4-cell/6-bit operation or conclusive
+Silicon success includes either correct 4-cell/8-bit operation or conclusive
 fault isolation through the required test modes. Achieving 12 bits, 1 GSa/s,
 or 500 MHz is not required for Tape-out 1.
 
@@ -90,9 +96,18 @@ values must be re-frozen after measuring the preceding silicon.
 
 | Stage | Selected now | Purpose | Channels | Cells/ch | ADC | Sampling target | Main additions |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Tape-out 1 | [x] | Demonstrate the complete flow | 1 | 4 | 6 bit | 25 MSa/s baseline | External clocks, extensive test access |
+| Tape-out 1 | [x] | Demonstrate the complete flow with the scalable cell architecture | 1 | 4 | 8 bit | 25 MSa/s baseline | External clocks, extensive test access |
 | Tape-out 2 | [ ] | Increase depth and characterize variation | 1 | 32-128 | 8-10 bit | 100-500 MSa/s target | PVT/mismatch, cell calibration, faster timing generation |
-| Tape-out 3 | [ ] | Approach the IRSX-level research objective | 8 | 128 or more, TBD | 12-bit target | 1 GSa/s or more target | Multi-channel front end, timing/voltage calibration |
+| Tape-out 3 | [ ] | Approach the IRSX-level research objective | 8 | TBD by cell area (see note) | 12-bit target | 1 GSa/s or more target | Multi-channel front end, timing/voltage calibration |
+
+Scale note (2026-09-18): with the first drawn GF180 unit cell (28 x 22 um =
+616 um^2 without routing, comparator-dominated) an IRSX-class array of 8 x
+32768 cells would need ~160 mm^2 and even one 32768-cell channel ~20 mm^2,
+against 12.9 mm^2 of core in the largest provider slot (1x1). The Tape-out 3
+depth and channel count must therefore be set from the measured Tape-out 1/2
+cell area and from the required *time* depth (trigger latency x sampling
+rate), not copied from IRSX; a process/node decision belongs to the
+Tape-out 3 gate.
 
 The following Tape-out 1 choices are frozen unless this specification is
 formally revised.
@@ -110,17 +125,17 @@ formally revised.
 | Slot/package | [x] | `0.5x1` default pad ring plus COB, with the `bidir[43:42]` positions re-typed as a second core `vdd/vss` pair for `AVDD`; passed the platform CoB precheck 2026-08-31 |
 | Published pad budget | [x] | 56 signal I/Os including 6 analog, plus 16 power pads; Run 1 COB pinout published (run-specific, watch for a Run 3 revision) |
 | Analog channels | [x] | 1 |
-| Storage | [x] | Four sampling cells, one hold capacitor per cell |
-| Sampling switch | [x] | Transmission gate |
-| Hold capacitor | [x] Tape-out 1 / [ ] scaling | 1 pF MIM-B (22.4 um square) for Tape-out 1. This value is a consequence of the shared-bus MUX architecture (charge sharing onto the bus), not a scaling target: IRSX uses 14 fF per cell with a comparator inside every cell. The GF180 MIM minimum is 50 fF (`MIMTM.8a`, top plate >= 25 um^2); smaller values need MOM/MOS capacitors. Stretch: small-capacitor test structures (50 fF MIM, ~15 fF MOM/MOS) with a directly attached comparator |
-| Read MUX | [x] Tape-out 1 only | 4-to-1 transmission-gate analog MUX feeding one comparator. **Scaling path:** Tape-out 2/3 replace the MUX by a comparator per storage cell with a broadcast ramp (IRSX-style parallel conversion); the analog MUX does not scale to 32k cells |
-| ADC | [x] | One shared Wilkinson ramp/comparator path (Tape-out 1) |
+| Storage | [x] | Four sampling cells, one hold capacitor and one comparator per cell |
+| Sampling switch | [x] | Bottom-plate sampling: the capacitor switch at the fixed reference opens first, the input transmission gate second (2026-09-18) |
+| Hold capacitor | [x] | **54.5 fF MIM**, the smallest drawable GF180 MIM (FuseTop 27.2 um^2 once the Via4 rules are met; density 2.007 fF/um^2 extracted). Chosen 2026-09-18 over MOS (bias-dependent `cap_nmos`; the accumulation `cap_nmos_03v3_b` is flat but occupies active area) and MOM (~0.57 fF/um^2, occupies M1-M4 over its whole footprint) because the MIM sits in M4/M5 **above** the comparator and costs no cell area. The 1 pF value of v0.5 was a consequence of the removed shared-bus MUX |
+| Read MUX | [x] removed | **None** (2026-09-18). Every cell has its own comparator; one ramp is broadcast to all cells; the four conversions run in parallel (IRSX-style). The v0.5 MUX blocks remain in the repository as legacy reference only |
+| ADC | [x] | Wilkinson: one shared ramp and 8-bit Gray counter, one comparator per cell. **Ramp applied to the storage capacitor** (not to the comparator input): the comparator senses the plate that was frozen first and trips at a fixed reference, so its common-mode dependence does not enter the transfer function |
 | Input voltage window | [ ] target | 1.5 V span, IRSX-like 0.5-2.0 V as the working assumption. On the 3.3 V supply the window *position* is a free variable set by the front-end baseline; freeze it together with the comparator variant (see below) |
-| Comparator input pair | [ ] decide | NMOS- and PMOS-input variants both laid out and DRC/LVS-clean. Widened-window sweep (2026-09-16, `make comparator-range-wide`): over 0.5-2.0 V the NMOS pair's code error spans +1..+3, the PMOS pair's +1..+6 (grows toward its common-mode ceiling ~2.2 V); both complete to 2.2 V. Decide window and variant together |
-| Counter and storage | [x] | 6-bit Gray-safe capture and four 6-bit result registers |
-| Readout | [x] | 24-bit slow synchronous CMOS serial output |
+| Comparator input pair | [ ] re-derive | The fixed-reference trip (2026-09-18) removes the requirement of offset accuracy across 0.5-2.0 V; what remains is that the input pair stays functional while the sensed node moves toward the trip point (see 5.3). The PMOS-input choice made for a moving trip point and the ~150 um^2 / ~50 uW sizing are to be re-derived against the new spec (fixed trip near 2.0 V favours an NMOS pair) |
+| Counter and storage | [x] | Shared 8-bit Gray counter, four comparator-edge capture channels, four 8-bit result registers, per-cell timeout flag |
+| Readout | [x] | 32-bit slow synchronous CMOS serial output `{cell3, cell2, cell1, cell0}` |
 | Ramp | [x] | Internal ramp plus external debug/bypass path |
-| Clocking | [x] | Board-controllable sampling controls and independent 20 MHz conversion clock |
+| Clocking | [x] | Board-controllable sampling controls (with the in-cell bottom-first switch order generated on chip) and independent 20 MHz conversion clock |
 | Test access | [x] | Block isolation and observable internal nodes, subject to pad budget |
 
 Cell count, ADC width, payload format, clock-domain boundary, and analog/digital
@@ -129,101 +144,105 @@ and full regression.
 
 ## 5. Functional requirements
 
-### 5.1 Sampling and hold
+### 5.1 Sampling and hold (bottom-plate sampling)
 
-`VIN` is connected to `VHOLD[i]` through a transmission gate while
-`SAMPLE[i]` is active. `CHOLD[i]` retains the sampled voltage after opening.
-
-```mermaid
-flowchart LR
-    VIN["VIN<br/>shared analog input"]
-    subgraph C0["Sampling cell 0"]
-      SW0["Write transmission gate<br/>SAMPLE[0] / SAMPLE_B[0]"]
-      H0(("VHOLD[0]"))
-      CAP0["CHOLD[0]<br/>hold capacitor"]
-      R0["Read transmission gate<br/>SEL[0] / SEL_B[0]"]
-      SW0 --> H0
-      H0 --- CAP0
-      H0 --> R0
-    end
-    subgraph C1["Sampling cells 1..3 (same structure)"]
-      SWX["Write transmission gate<br/>SAMPLE[i] / SAMPLE_B[i]"]
-      HX(("VHOLD[i]"))
-      CAPX["CHOLD[i]<br/>hold capacitor"]
-      RX["Read transmission gate<br/>SEL[i] / SEL_B[i]"]
-      SWX --> HX
-      HX --- CAPX
-      HX --> RX
-    end
-    VIN --> SW0
-    VIN --> SWX
-    R0 --> BUS["MUX_BUS"]
-    RX --> BUS
-    BUS --> CMP["Comparator<br/>compares MUX_BUS and VRAMP"]
-    RAMP["VRAMP"] --> CMP
-```
-
-`VHOLD[i]` names an electrical node; `CHOLD[i]` names the physical capacitor
-from that node to ground. Ideally, `VHOLD[i]` equals `VIN` when the write switch
-opens, and `CHOLD[i]` preserves that voltage as stored charge.
+Each cell stores its sample on a 54.5 fF capacitor `CHOLD[i]` between two
+nodes: `VTOP[i]` (input side) and `VBOT[i]` (reference side). Three switches
+per cell:
 
 | Name | Type | Function |
 | --- | --- | --- |
 | `VIN` | Analog voltage | Continuous input shared by four cells |
-| `SAMPLE[i]` / `SAMPLE_B[i]` | Complementary digital control | Opens or closes the cell-i write switch |
-| `VHOLD[i]` | Analog node voltage | Sampled voltage currently stored by cell i |
-| `CHOLD[i]` | Physical capacitor | Temporarily stores charge at `VHOLD[i]` |
-| `SEL[i]` / `SEL_B[i]` | Complementary one-hot control | Connects only cell i to `MUX_BUS` |
-| `MUX_BUS` | Analog voltage | Carries the selected stored voltage to the comparator |
+| `SAMPLE[i]` / `SAMPLE_B[i]` | Complementary digital control | Input transmission gate `VIN` -> `VTOP[i]` |
+| `HOLD_REF[i]` | Digital control | Switch `VBOT[i]` -> `VREF` (fixed potential). **Opens before `SAMPLE[i]`** |
+| `RAMP_CONNECT` | Digital control (global) | Switch `VTOP[i]` -> `VRAMP` bus during conversion |
+| `VREF` | Analog reference | Constant potential of the reference plate; also the comparator trip reference |
+| `VRAMP` | Analog voltage | Broadcast ramp, starts at 0 V |
+
+```mermaid
+flowchart LR
+    VIN["VIN<br/>shared analog input"]
+    subgraph C0["Sampling cell i (x4)"]
+      SW["Input transmission gate<br/>SAMPLE[i]"]
+      TOP(("VTOP[i]"))
+      CAP["CHOLD[i] = 54.5 fF"]
+      BOT(("VBOT[i]"))
+      HR["HOLD_REF[i] switch"]
+      RC["RAMP_CONNECT switch"]
+      CMP["Comparator i<br/>VBOT[i] vs VREF"]
+      SW --> TOP
+      TOP --- CAP
+      CAP --- BOT
+      BOT --> HR
+      RC --> TOP
+      BOT --> CMP
+    end
+    VIN --> SW
+    VREF["VREF"] --> HR
+    VRAMP["VRAMP (broadcast)"] --> RC
+```
+
+| Phase | `SAMPLE[i]` | `HOLD_REF[i]` | `RAMP_CONNECT` | State |
+| --- | --- | --- | --- | --- |
+| Track | 1 | 1 | 0 | `VTOP[i]` follows `VIN`, `VBOT[i] = VREF` |
+| Freeze | 1 | 0 | 0 | Reference plate opened first: its charge is frozen with a **signal-independent** injection (the switch always sits at `VREF`) |
+| Hold | 0 | 0 | 0 | Input gate opened; its signal-dependent injection lands on `VTOP[i]`, which is re-driven later and does not enter the result |
+| Convert | 0 | 0 | 1 | `VTOP[i]` driven by `VRAMP`; `VBOT[i] = VREF - (VIN - VRAMP) * C/(C+Cp)` rises toward `VREF` |
+
+Why the sensed plate matters (transistor-level study, `make bottom-plate-cell`,
+2026-09-18): sensing the frozen plate gives a constant -7.8 mV pedestal
+(0.09 mV spread over 0.5-2.0 V), 0.008 LSB linearity, and **-0.02 % gain
+error** because input and ramp share the same capacitive divider. Sensing the
+input-side plate instead (ramp on the reference plate) leaves 10-23 mV of
+signal-dependent pedestal (2-4 LSB) and a +9-10 % parasitic gain error that
+would need per-cell calibration. Either order of physical MIM plates may be
+used; electrically, the comparator must sense the plate whose switch opened
+first.
 
 Must requirements:
 
 - Four cells capture distinguishable input values in the intended order.
-- Each cell has explicit complementary switch control.
-- Acquisition error, edge disturbance, and hold droop have defined measurements.
+- The `HOLD_REF[i]`-before-`SAMPLE[i]` order is generated on chip (fixed
+  delay, target 1-3 ns) and observable in simulation.
+- Acquisition error, pedestal (mean and input dependence), hold droop, and
+  parasitic gain are defined measurements.
 - Non-selected cells are not unintentionally overwritten.
 
-The nominal regression stimuli are approximately 0.5, 0.8, 1.1, and 1.4 V.
-They are not guaranteed silicon input limits.
+The regression stimuli are 0.5, 0.8, 1.1, 1.4, 1.7, and 2.0 V (the working
+input window). They are not guaranteed silicon input limits.
 
-### 5.2 Analog selection
+### 5.2 Parallel conversion (replaces the analog selection of v0.5)
 
-A one-hot transmission-gate MUX connects one stored value to `MUX_BUS`.
+There is no analog MUX. After the last cell is held, the controller connects
+all `VTOP[i]` to `VRAMP` (held at 0 V), waits for settling, then releases the
+ramp and starts the shared counter. Each comparator `i` trips when `VBOT[i]`
+reaches `VREF`, which happens when `VRAMP ~= VIN_i`. All four conversions run
+concurrently and finish within one ramp.
 
-The MUX does not combine four voltages; it selects **exactly one conversion
-input**. When `SEL[2]=1`, only `VHOLD[2]` connects to `MUX_BUS`, while the other
-cells remain high impedance. This lets four cells share one ramp, comparator,
-and counter, reducing area at the cost of sequential conversion time and
-possible read disturbance.
-
-| Phase | `SAMPLE[i]` | `SEL[i]` | `VHOLD[i]` / `MUX_BUS` state |
-| --- | --- | --- | --- |
-| Track | 1 | 0 | `VHOLD[i]` follows `VIN`; disconnected from MUX |
-| Hold | 0 | 0 | `CHOLD[i]` stores voltage; disconnected from MUX |
-| Convert cell i | 0 | Only cell i is 1 | `VHOLD[i]` drives `MUX_BUS` for ramp comparison |
-| Bus reset | 0 | All 0 | All cells disconnect while the bus returns to a known state |
-
-- No more than one `SEL[i]` is active during conversion.
-- A defined bus-reset interval separates cells.
-- MUX settling completes before ramp release.
-- Disturbance of the source hold capacitor is measured.
+- `RAMP_CONNECT` is common to all cells; no cell-selection signal exists.
+- A defined settling interval separates connection and ramp release.
+- The ramp bus load is the sum of the connected cells (4 x (54.5 fF + Cp) in
+  Tape-out 1); the ramp generator specification includes this load and the
+  Tape-out 3 scaling of it.
 
 ### 5.3 Wilkinson conversion
 
-The ramp is reset, one cell is selected, and the counter starts. The comparator
-captures the count when `VRAMP` crosses `MUX_BUS`.
-
 ```text
-ideal_code = floor(crossing_time / conversion_clock_period)
-code range = 0 ... 63
+ideal_code = floor((t_cross - t_ramp_start) / conversion_clock_period)
+code range = 0 ... 255; a cell that never crosses reads 255 with timeout[i] = 1
 ```
 
-- Higher held voltage produces a later crossing and non-decreasing code.
-- Four conversions complete without loss of cell order.
+- Higher held voltage produces a later crossing and a non-decreasing code.
+- Every comparator trips at the fixed reference `VREF` (nominally 2.0 V); its
+  offset is therefore a per-cell constant (pedestal), not a function of the
+  input level. During conversion the sensed node moves from
+  `VREF - (VIN - 0) * C/(C+Cp)` (as low as ~0.15 V for a 2.0 V sample) up to
+  `VREF`; the comparator must remain functional, not accurate, over that swing.
 - Comparator polarity and capture convention are documented.
 - A conversion timeout handles no-crossing cases.
 
-The current nominal integrated signature is `16, 20, 27, 35`. It is a
+The regression signature for the digital path is `16, 20, 27, 200`
+(parallel), replacing the sequential `16, 20, 27, 35` of v0.5. It is a
 regression result, not an INL/DNL guarantee.
 
 ### 5.4 Digital capture and readout
@@ -231,36 +250,39 @@ regression result, not an INL/DNL guarantee.
 The controller sequence is:
 
 ```text
-IDLE -> RESET_RAMP -> SELECT -> CONVERT -> CAPTURE -> NEXT -> DONE
+IDLE (acquire) -> CONNECT -> CONVERT -> [DRAIN on overflow] -> DONE
 ```
 
-- Gray-coded count capture is used at the asynchronous comparator boundary.
-- Four 6-bit results remain associated with their cell numbers.
-- The 24-bit payload is `{cell3, cell2, cell1, cell0}` unless explicitly revised.
-- Serial bit order, active edge, frame start, and data-valid timing are documented.
-- Reset, timeout, and phase-boundary cases have self-checking tests.
+- One shared 8-bit binary counter with Gray encoding; each cell captures the
+  Gray word on its own comparator falling edge (local capture clock) and a
+  toggle synchronizer returns the event to the conversion clock domain.
+- Four 8-bit results remain associated with their cell numbers; per-cell
+  `timeout` flags accompany them.
+- The 32-bit payload is `{cell3, cell2, cell1, cell0}` unless explicitly revised.
+- Serial bit order (LSB first), active edge, frame start, and data-valid
+  timing are documented.
+- Reset, timeout, simultaneous-capture, and last-count cases have
+  self-checking tests (`make parallel-controller`, `make digital-top`).
 
 ### 5.5 Sampling timing and conversion timing
 
-The current four-cell testbench begins the four track pulses at 10, 50, 90,
-and 130 ns. The 40 ns spacing corresponds to a 25 MSa/s aggregate sampling
-rate. Each track pulse is 20 ns wide in this baseline.
+The four track pulses begin at 10, 50, 90, and 130 ns in the testbench
+schedule; the 40 ns spacing corresponds to a 25 MSa/s aggregate sampling
+rate (the design review of 2026-09-18 also discussed 50 MSa/s; the value
+remains a board-controlled parameter for Tape-out 1). Inside each cell the
+reference-plate switch opens 1-3 ns before the input gate.
 
-The 40 ns spacing is a testbench phase schedule. It is not derived from the
-20 MHz conversion clock. A later sequencer could advance one cell per cycle of
-a 25 MHz sampling-system clock, but that clock-generation architecture is not
-yet frozen.
-
-The conversion clock is an independent parameter. At the present 20 MHz
-baseline, `TCOUNT = 50 ns`; one sequential conversion takes about 2.9 us and
-four conversions take about 11.6 us. Tape-out 1 therefore captures one short
-four-sample record and converts it afterward. It is not a continuous dead-time-
-free sampler.
+The conversion clock is an independent parameter. At the 20 MHz baseline,
+`TCOUNT = 50 ns`; one parallel 8-bit conversion of all four cells takes
+256 counts = 12.8 us plus connect/settle overhead. Tape-out 1 therefore
+captures one short four-sample record and converts it afterward. It is not a
+continuous dead-time-free sampler.
 
 ![Tape-out 1 sampling and conversion timing](lecture/assets/tapeout1_sampling_conversion_timing.png)
 
-*Figure: A 5 MHz example input sampled every 40 ns by four cells, followed by
-sequential 6-bit Wilkinson conversion using an independent 20 MHz clock.*
+*Figure (v0.5, to be redrawn): the sampling schedule is unchanged; the
+conversion is now one parallel 12.8 us ramp instead of four sequential
+2.9 us slots.*
 
 ## 6. Provisional electrical specifications by development stage
 
@@ -274,13 +296,13 @@ Tape-out stages. Provider-qualified limits always override this table.
 | Sampling interval | 40 ns baseline | 2-10 ns target | 1 ns or less target |
 | Sampling rate | 25 MSa/s baseline | 100-500 MSa/s target | 1 GSa/s or more target |
 | Record window | 120 ns first-to-last; 160 ns as four-sample depth | Determined by depth and rate | Determined by depth and rate |
-| Analog input | 0.4-1.6 V simulation baseline | Re-freeze after first-silicon measurements | Re-freeze with front end |
+| Analog input | 0.5-2.0 V working window (IRSX-like) | Re-freeze after first-silicon measurements | Re-freeze with front end |
 | Analog bandwidth | DC/low frequency required; 10 MHz measurement target | 50-200 MHz target | 500 MHz target |
-| ADC | 6-bit Wilkinson | 8-10 bit Wilkinson | 12-bit Wilkinson target |
+| ADC | 8-bit Wilkinson, comparator per cell | 8-10 bit Wilkinson | 12-bit Wilkinson target |
 | Conversion clock | Independent 20 MHz baseline | 20-100 MHz candidate | Redesign architecture and parallelism |
-| Conversion/readout | Four cells sequentially in about 11.6 us | Add parallelism for deeper arrays | Support eight-channel throughput |
+| Conversion/readout | Four cells in parallel, one 12.8 us ramp | Add parallelism for deeper arrays | Support eight-channel throughput |
 | Power | Measure analog/digital separately; target below 50 mW excluding I/O | Budget from silicon data | Define system power budget |
-| Calibration | Pedestal and transfer measurement | Per-cell time/voltage calibration | Eight-channel system calibration |
+| Calibration | Per-cell pedestal (constant comparator offset + reference-switch injection) and transfer measurement | Per-cell time/voltage calibration | Eight-channel system calibration |
 
 No value is a silicon guarantee until PVT, mismatch, PEX, package effects, and
 measurement uncertainty are included.
@@ -289,26 +311,27 @@ measurement uncertainty are included.
 
 ### 7.1 Analog blocks
 
-- Four transmission-gate sampling cells and hold capacitors.
-- 4-to-1 analog MUX and bus reset.
-- Ramp generator, reset device, bias, and monitor.
-- Comparator and output buffer.
+- Four bottom-plate sampling cells: input transmission gate, reference-plate
+  switch with on-chip bottom-first delay, 54.5 fF MIM, ramp-connect switch.
+- Four comparators (fixed-reference trip) with output buffers.
+- Ramp generator driving the connected cells, reset device, bias, and monitor.
+- `VREF` generation/decoupling or external `VREF` pad.
 - External ramp injection or bypass.
 - Required analog biasing and supply decoupling.
 
 ### 7.2 Digital blocks
 
-- 6-bit counter and Gray-coded asynchronous capture.
-- Four-cell conversion controller.
-- Four 6-bit result registers.
-- 24-bit synchronous serial readout.
+- Shared 8-bit counter and four Gray-coded asynchronous capture channels.
+- Parallel conversion controller (acquire / connect / convert / drain).
+- Four 8-bit result registers and per-cell timeout flags.
+- 32-bit synchronous serial readout.
 - Reset, test mode, timeout, and status logic.
 
 ### 7.3 Mandatory test access
 
 Subject to the final pad budget, the top shall provide:
 
-- Direct or buffered observation of at least one `VHOLD` node.
+- Direct or buffered observation of at least one storage node (`VBOT[0]` or `VTOP[0]`).
 - External ramp input and buffered internal-ramp monitor.
 - Comparator standalone mode and digital output observation.
 - Conversion-clock input and divided-clock/status monitor.
@@ -452,6 +475,20 @@ are common; packaging is COB.
    and I/O voltage levels.
 
 ## 13. Change control
+
+Revision log:
+
+- **0.6-draft (2026-09-18)** — architecture revision from the design review:
+  analog MUX removed, comparator per cell with parallel conversion,
+  54.5 fF MIM hold capacitor, bottom-plate sampling with the ramp applied to
+  the capacitor and a fixed comparator reference, 8-bit ADC and 32-bit frame.
+  Sensed-plate rule added from the transistor-level study
+  (`simulations/gf180_bottom_plate_cell`). RTL (`parallel_wilkinson_controller`,
+  `asic_digital_top`) and tests updated; analog blocks to be re-derived.
+- 0.5-draft (2026-09-16) — input window 0.5-2.0 V, comparator variant
+  framing, capacitor/MUX scaling path.
+- 0.4 (2026-08-31) — Gate A closure.
+
 
 Changes to interfaces, cell count, ADC width, payload, pads, supplies,
 reliability, or a Must requirement require a version/date update, written
