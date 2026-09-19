@@ -1,7 +1,6 @@
 DESIGN_NAME: asic_digital_top
 VERILOG_FILES:
-  - dir::../../wilkinson_gray_counter/wilkinson_gray_counter.v
-  - dir::../../four_cell_wilkinson_controller/four_cell_wilkinson_controller.v
+  - dir::../../parallel_wilkinson_controller/parallel_wilkinson_controller.v
   - dir::../serial_readout.v
   - dir::../asic_digital_top.v
 CLOCK_PERIOD: 50.0

@@ -1,4 +1,4 @@
-.PHONY: check tools analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-range-wide comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller digital-top digital-physical cosim four-cell-cosim phase-sweep vnc stop
+.PHONY: check tools analog-regression course-regression nmos-dc nmos-width sampling-cell bottom-plate-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-range-wide comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -6,15 +6,18 @@ check:
 tools:
 	./scripts/eda-tools.sh
 
-analog-regression: nmos-dc nmos-width sampling-cell four-cell four-cell-mux ramp-generator comparator comparator-range comparator-offset wilkinson-slice transfer four-cell-wilkinson
+analog-regression: nmos-dc nmos-width sampling-cell bottom-plate-cell four-cell four-cell-mux ramp-generator comparator comparator-range comparator-offset wilkinson-slice transfer four-cell-wilkinson
 
-course-regression: analog-regression counter gray-counter controller digital-top cosim four-cell-cosim phase-sweep
+course-regression: analog-regression counter gray-counter controller parallel-controller digital-top cosim four-cell-cosim phase-sweep
 
 nmos-dc:
 	./scripts/run-nmos-dc.sh
 
 nmos-width:
 	./scripts/run-nmos-width.sh
+
+bottom-plate-cell:
+	./scripts/run-bottom-plate-cell.sh
 
 sampling-cell:
 	./scripts/run-sampling-cell.sh
@@ -54,6 +57,9 @@ counter:
 
 gray-counter:
 	./scripts/run-gray-counter.sh
+
+parallel-controller:
+	./scripts/run-parallel-controller.sh
 
 controller:
 	./scripts/run-controller.sh
