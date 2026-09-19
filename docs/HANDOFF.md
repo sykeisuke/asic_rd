@@ -1,6 +1,6 @@
 # Project handoff — design-team onboarding
 
-Date: 2026-08-31
+Date: 2026-09-18 (architecture revision; first version 2026-08-31)
 
 Audience: new design-team members joining the Tape-out 1 effort (first
 reader: the first design-team member starting September 2026).
@@ -15,12 +15,12 @@ measurement), not performance:
 
 ```text
 1 analog channel
--> 4 sampling cells (transmission gates, 1 pF hold caps)
--> 4-to-1 analog MUX
--> shared ramp + comparator (Wilkinson)
--> 6-bit Gray-coded counter capture
--> four 6-bit registers
--> 24-bit synchronous serial readout
+-> 4 bottom-plate sampling cells (54.5 fF MIM each)
+-> 1 broadcast ramp applied to the capacitors, 1 comparator per cell
+   (fixed-reference trip; no analog MUX)
+-> shared 8-bit Gray counter, 4 parallel captures
+-> four 8-bit registers
+-> 32-bit synchronous serial readout
 ```
 
 The long-term objective (multi-GSa/s, 8 channels, 12-bit — an IRSX-class
@@ -56,23 +56,38 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
    between here and tape-out.
 7. [`decisions/`](decisions/) — why each major choice was made (ADR style).
 
-## 4. State of the project (2026-08-31)
+## 4. State of the project (2026-09-18)
+
+**Architecture revision 2026-09-18** (design review with the collaborating
+IC-design group; spec 0.6-draft): analog MUX removed, comparator per cell
+with parallel conversion, 54.5 fF MIM hold capacitor, bottom-plate sampling
+with the ramp applied to the capacitor, 8-bit ADC. The RTL and its tests are
+updated (`make parallel-controller`, `make digital-top`); a transistor-level
+cell study (`make bottom-plate-cell`) established that the comparator must
+sense the plate whose switch opened first (constant pedestal, no parasitic
+gain error) — see `simulations/gf180_bottom_plate_cell/RESULTS.md`. The
+analog blocks (cell, comparator, ramp) are being re-derived against the new
+spec; the v0.5 blocks listed below remain as legacy references.
+
 
 **Done and reproducible** (all pre-layout, typical corner):
 
-- GF180 transistor-level simulations of every analog block: sampling cell,
-  4-cell array, analog MUX, ramp generator, comparator (NMOS and PMOS
-  variants), single Wilkinson slice, 8-point transfer, and 4-cell sequential
-  conversion. Each has a numeric pass/fail check and a `make` target.
-- Synthesizable RTL: Gray-coded counter capture, 4-cell controller, 24-bit
-  serial readout, integrated `asic_digital_top` — self-checking testbenches,
-  GF180 mapping, 20 MHz pre-layout STA.
+- GF180 transistor-level simulations of the v0.5 analog blocks (legacy):
+  sampling cell, 4-cell array, analog MUX, ramp generator, comparator (NMOS
+  and PMOS variants), single Wilkinson slice, 8-point transfer, and 4-cell
+  sequential conversion. Each has a numeric pass/fail check and a `make`
+  target. New (0.6): the bottom-plate 54.5 fF cell study.
+- Synthesizable RTL (0.6): shared 8-bit Gray counter with four
+  comparator-edge capture channels and parallel controller, 32-bit serial
+  readout, integrated `asic_digital_top` — self-checking testbenches, GF180
+  mapping, 20 MHz pre-layout STA. The sequential 6-bit controller is kept for
+  the legacy co-simulations.
 - File-based mixed-signal co-verification: measured SPICE comparator timings
   drive the real RTL; a ±2 ns clock-phase sweep identified cell 2 as having
   only ~500 ps of CDC margin (known open issue).
-- A complete RTL-to-GDS LibreLane flow of the digital top with zero DRC/LVS
-  violations — **but at 5 V (`gf180mcu_fd_sc_mcu7t5v0`), as flow evidence
-  only**. It must be regenerated at 3.3 V (see next section).
+- A complete RTL-to-GDS LibreLane flow of the (6-bit) digital top with zero
+  DRC/LVS violations — **at 5 V (`gf180mcu_fd_sc_mcu7t5v0`), as flow evidence
+  only**. It must be regenerated for the 8-bit top at 3.3 V (see next section).
 - CI (GitHub Actions): every PR runs the RTL/co-simulation suite in the
   pinned container; the full analog regression runs weekly and on demand.
 
@@ -102,22 +117,20 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
 1. **Retarget the digital physical flow to 3.3 V** (`gf180mcu_as_sc_mcu7t3v3`)
    and regenerate GDS/STA/DRC/LVS — do this before any new digital work so
    nothing is built twice.
-2. **Comparator variant + input window, then Monte Carlo / PVT** — the
-   "unreliable above 1.8 V" result was a testbench artifact (ramp window);
-   `make comparator-range-wide` shows both input-pair variants complete to
-   2.2 V. Over the working window 0.5-2.0 V the NMOS pair's code error spans
-   +1..+3 and the PMOS pair's +1..+6. Decide the 1.5 V window position and the
-   variant together (the window position is free on a 3.3 V supply), then run
-   mismatch Monte Carlo and the PVT matrix on the chosen variant. Both
-   variants exist as DRC/LVS-clean layouts on `keisuke/analog-explore`.
+2. **Comparator re-derivation for the fixed-reference trip** — with the ramp
+   applied to the capacitor, offset accuracy across 0.5-2.0 V is no longer
+   required; the pair must stay functional while the sensed node moves to the
+   ~2.0 V trip (spec 5.3). Re-derive the spec (noise via **transient-noise**
+   simulation against kT/C = 275 uV at 54.5 fF, delay spread, power, area),
+   then Monte Carlo and PVT on the chosen topology. The v0.5 NMOS/PMOS
+   variants and `make comparator-range-wide` are reference material.
 3. **Dense transfer test** before any no-missing-code claim.
-4. **Analog layout** (sampling cells, MUX, ramp, comparator, bias, test
+4. **Analog layout** (bottom-plate cells with the on-chip switch-order
+   delay, four comparators, ramp driving the cell bus, VREF, bias, test
    access) with DRC/LVS/PEX and post-layout simulation — the critical-path
-   item for the December deadline. Block layouts for all six blocks exist on
-   `keisuke/analog-explore` (see its EXPLAINER); remaining: review, PEX of
-   every block, macro assembly + LEF. Scaling note: the 1 pF hold capacitor
-   and the analog MUX are Tape-out 1 choices; later tape-outs move to a
-   comparator per cell (IRSX-style) with far smaller capacitors. Layout generation uses **gdsfactory**
+   item for the December deadline. The v0.5 block layouts on
+   `keisuke/analog-explore` (see its EXPLAINER) are reference material for
+   the generators and the DRC/LVS flow, not for the circuit. Layout generation uses **gdsfactory**
    (in the pinned container, with the `gf180mcu` PDK plugin installed by
    `make tools`) so layouts are parametric Python under version control;
    signoff stays on the frozen PDK's KLayout DRC, Magic DRC, Netgen LVS, and
@@ -125,8 +138,13 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
 5. **Test-MUX truth table freeze** — the logical interface exceeds the six
    true analog pads; monitor/bias functions must be multiplexed (see
    [`TOP_LEVEL_INTERFACE.md`](TOP_LEVEL_INTERFACE.md)).
-6. Cell 2 CDC margin (~500 ps) — phase-specification or sequencing fix plus
-   transistor-level metastability characterization.
+6. Gray-capture metastability characterization at transistor level (the
+   v0.5 phase-sweep finding of a ~500 ps margin on one cell applies to the
+   parallel capture channels as well).
+7. **Ramp generator re-design** for the capacitor load (4 x ~60 fF now, tens
+   of pF to nF in later tape-outs) and the bottom-first switch ordering.
+8. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
+   times into the parallel controller (replacing the legacy MUX co-sim).
 
 ## 6. Environment and daily workflow
 

@@ -1,8 +1,8 @@
 # 波形サンプリングASICプロトタイプ仕様書
 
-版: 0.5-draft（管理基準仕様、レビュー中の提案）
+版: 0.6-draft（管理基準仕様、2026-09-18 の回路構成改訂をレビュー中）
 
-日付: 2026-09-16
+日付: 2026-09-18
 
 プロセス基準: GF180MCU（`gf180mcuD`）
 
@@ -10,7 +10,7 @@ MPW事業者: **wafer.space GF180MCU Run 3**
 
 提出基準日: clean GDS 2026-12-16 11:59 PM AoE（購入前に事業者へ再確認）
 
-状態: 回路構成、MPW事業者、PDK commit、3.3 V library/supply基準、slot電源構成は凍結済み。
+状態: MPW事業者、PDK commit、3.3 V library/supply基準、slot電源構成は凍結済み。**回路構成は 2026-09-18 に改訂**（共同研究先 IC 設計グループとの設計レビュー）: 4-to-1 analog MUX を廃止し、cell ごとに comparator を置いて 4 cell を並列変換する。hold capacitor は描ける最小の MIM（54.5 fF）。bottom-plate sampling とし、ramp は capacitor に印加して comparator は固定基準で判定する。ADC は 8 bit。RTL とそのテスト、最初のトランジスタレベル cell 検討は本改訂に従って更新済み。アナログ回路図・レイアウトは再導出中。
 第2 core supply pairを追加した`0.5x1` COB ringは事業者platformのCoB precheckに合格
 （2026-08-31）。事業者は書面認定を発行しないため、ESDは設計ルールで対応する。
 未確定はslot購入（early-bird 2026-09-30）のみ。
@@ -52,12 +52,11 @@ Tape-out 1では、IRSXと同じ基本的な信号経路を、次の小規模仕
 
 ```text
 アナログ入力 1チャンネル
-→ sampling cell 4個
-→ 4-to-1 analog MUX
-→ 共有ramp + comparator
-→ 6-bit counter capture
-→ 6-bit register 4個
-→ 24-bit同期serial readout
+→ bottom-plate sampling cell 4個（各 54.5 fF MIM）
+→ 共通 ramp 1本、cell ごとに comparator 1個（固定基準で判定）
+→ 共有 8-bit Gray counter、4 並列 capture
+→ 8-bit register 4個
+→ 32-bit 同期 serial readout
 ```
 
 速度、分解能、storage depthは意図的に下げるが、sampling、hold、selection、
@@ -91,9 +90,9 @@ Tape-out 1では、次の工程を一度最後まで通すことを第一目的�
 
 | 開発段階 | 現在選択 | 目的 | Channels | Cells/ch | ADC | Sampling目標 | 主な追加機能 |
 | --- | --- | --- | ---: | ---: | ---: | ---: | --- |
-| Tape-out 1 | [x] | Complete flowとtest accessの実証 | 1 | 4 | 6 bit | 25 MSa/s基準 | 外部clock、内部/外部ramp、24-bit serial |
+| Tape-out 1 | [x] | Complete flowとtest accessの実証（スケール可能な cell 構成で） | 1 | 4 | 8 bit | 25 MSa/s基準 | 外部clock、内部/外部ramp、32-bit serial |
 | Tape-out 2 | [ ] | 深いSCAとcalibrationの実証 | 1 | 32-128 | 8-10 bit | 100-500 MSa/s目標 | PVT/mismatch、cell calibration、高速timing |
-| Tape-out 3 | [ ] | IRSX相当systemへの拡張 | 8 | 128以上を候補 | 12 bit目標 | 1 GSa/s以上を目標 | 8-channel統合、500 MHz帯域、system calibration |
+| Tape-out 3 | [ ] | IRSX相当systemへの拡張 | 8 | cell 面積から決める（下記注） | 12 bit目標 | 1 GSa/s以上を目標 | 8-channel統合、500 MHz帯域、system calibration |
 
 Tape-out 1で凍結する詳細構成は次の通りである。
 
@@ -109,14 +108,14 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | ESD | 選択pad library内の構造のみ（`asig` padはDVDD/DVSSへのHBM diodeのみ、buffer無し）。Gate接続padには局所CDM二次保護（diode周長 > 25 um、直列poly R > 50 ohm）を追加。事業者からの特性データは提供されない | [x] 設計ルール |
 | Slot/package | `0.5x1` default pad ring + COB。`bidir[43:42]`位置を`AVDD`用の第2 core `vdd/vss` pairに変更 | [x] platform CoB precheck合格（2026-08-31） |
 | 公開pad budget | 56 signal I/O（うちanalog 6）+ 16 power pads。Run 1のCOB pinoutは公開済み（run固有、Run 3版の改訂に注意） | [x] |
-| Sampling switch | NMOS+PMOS transmission gate | [x] |
-| Hold capacitor | Tape-out 1 は 1 pF MIM-B（22.4 µm角）。この値は共有バス MUX 構成（バスへの電荷分配）の帰結であり、スケーリング目標ではない。IRSX は cell ごとに comparator を持ち 14 fF。GF180 の MIM 下限は 50 fF（`MIMTM.8a`、上部電極 ≥ 25 µm²）、それ以下は MOM/MOS 容量。Stretch: 小容量テスト構造（50 fF MIM、~15 fF MOM/MOS、comparator 直結） | [x] Tape-out 1 / [ ] scaling |
-| 読み出しMUX | One-hot 4-to-1 analog MUX（comparator 1 個を共有）。**スケーリング経路:** Tape-out 2/3 では MUX を廃し、cell ごとの comparator に共通 ramp を配る IRSX 型並列変換へ移行する（analog MUX は 32k cell にスケールしない） | [x] Tape-out 1 限定 |
-| ADC方式 | 共有ramp/comparatorによるWilkinson方式（Tape-out 1） | [x] |
+| Sampling switch | Bottom-plate sampling: 固定基準側の switch を先に開き、入力 transmission gate を後に開く（2026-09-18） | [x] |
+| Hold capacitor | **54.5 fF MIM**（GF180 で描ける最小の MIM。Via4 規則まで満たす FuseTop は 27.2 µm²、抽出密度 2.007 fF/µm²）。2026-09-18 に MOS（`cap_nmos` はバイアス依存が大、蓄積型 `cap_nmos_03v3_b` は平坦だが活性領域を使う）と MOM（≈0.57 fF/µm²、M1–M4 を footprint 全体で占有）より優先して決定。理由は MIM が M4/M5 で **comparator の上に載り cell 面積を消費しない**こと。v0.5 の 1 pF は廃止した共有バス MUX の帰結だった | [x] |
+| 読み出しMUX | **無し**（2026-09-18）。cell ごとに comparator を置き、ramp を全 cell に配って 4 変換を並列実行する（IRSX 型）。v0.5 の MUX ブロックはレガシー参考としてリポジトリに残す | [x] 廃止 |
+| ADC方式 | Wilkinson: 共有 ramp と 8-bit Gray counter、cell ごとの comparator。**ramp は保持容量に印加**（comparator 入力ではない）: comparator は先に凍結された極板を見て固定基準で判定するため、同相依存が伝達関数に入らない | [x] |
 | 入力電圧窓 | 幅 1.5 V、IRSX 相当の 0.5–2.0 V を作業仮定。3.3 V 電源では窓の**位置**はフロントエンドの基線で決まる自由変数。comparator 変種と同時に凍結 | [ ] target |
-| Comparator 入力対 | NMOS 入力・PMOS 入力の両変種をレイアウト済み（DRC/LVS クリーン）。ランプ窓を広げた掃引（2026-09-16、`make comparator-range-wide`）: 0.5–2.0 V で NMOS 対のコード誤差 +1〜+3、PMOS 対 +1〜+6（同相上限 ≈ 2.2 V に向かって増加）。両変種とも 2.2 V まで変換完了。窓と変種を同時に決める | [ ] 決定 |
-| Counter capture | 6-bit Gray-safe capture | [x] |
-| Result storage | 6-bit word 4個、合計24 bit | [x] |
+| Comparator 入力対 | 固定基準判定（2026-09-18）により「0.5–2.0 V 全域でのオフセット精度」要求は消え、被測定ノードが判定点へ向かって動く間に入力対が動作し続ける耐性だけが残る（5.3 節）。可動判定点を前提に選んだ PMOS 入力と ≈150 µm² / ≈50 µW のサイズは新仕様で再導出する（2.0 V 近傍の固定判定点なら NMOS 対が自然） | [ ] 再導出 |
+| Counter capture | 共有 8-bit Gray counter と cell ごとの comparator-edge capture 4 系統、cell ごとの timeout flag | [x] |
+| Result storage | 8-bit word 4個、合計 32 bit `{cell3, cell2, cell1, cell0}` | [x] |
 | Readout | 低速同期CMOS serial | [x] |
 | Ramp | 内部rampと外部debug/bypass経路 | [x] |
 | Test access | Block単位で故障を切り分け可能 | [x]、最終pad割当はTBD |
@@ -127,144 +126,82 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 
 ## 5. 機能要求
 
-### 5.1 Samplingとhold
+### 5.1 Samplingとhold（bottom-plate sampling）
 
-`SAMPLE[i]`が有効な間、transmission gateを通して`VIN`を`VHOLD[i]`へ接続する。
-Switchを開いた後は、`CHOLD[i]`にsampled voltageを保持する。
-
-```mermaid
-flowchart LR
-    VIN["VIN<br/>共通アナログ入力"]
-    subgraph C0["Sampling cell 0"]
-      SW0["書込みtransmission gate<br/>SAMPLE[0] / SAMPLE_B[0]"]
-      H0(("VHOLD[0]"))
-      CAP0["CHOLD[0]<br/>hold capacitor"]
-      R0["読出しtransmission gate<br/>SEL[0] / SEL_B[0]"]
-      SW0 --> H0
-      H0 --- CAP0
-      H0 --> R0
-    end
-    subgraph C1["Sampling cell 1..3（同じ構成）"]
-      SWX["書込みtransmission gate<br/>SAMPLE[i] / SAMPLE_B[i]"]
-      HX(("VHOLD[i]"))
-      CAPX["CHOLD[i]<br/>hold capacitor"]
-      RX["読出しtransmission gate<br/>SEL[i] / SEL_B[i]"]
-      SWX --> HX
-      HX --- CAPX
-      HX --> RX
-    end
-    VIN --> SW0
-    VIN --> SWX
-    R0 --> BUS["MUX_BUS"]
-    RX --> BUS
-    BUS --> CMP["Comparator<br/>MUX_BUSとVRAMPを比較"]
-    RAMP["VRAMP"] --> CMP
-```
-
-`VHOLD[i]`は配線nodeの名前、`CHOLD[i]`はそのnodeとgroundの間に置くcapacitorという
-部品名である。理想的にはswitchを開いた直後の`VHOLD[i]`がsampling時の`VIN`に等しく、
-その電圧を`CHOLD[i]`が電荷として保持する。
+各 cell は 54.5 fF の `CHOLD[i]` を 2 つのノード `VTOP[i]`（入力側）と `VBOT[i]`（基準側）の間に持ち、switch は 3 個ある。
 
 | 名前 | 種類 | 役割 |
 | --- | --- | --- |
-| `VIN` | Analog voltage | 4 cellへ共通に配る連続入力 |
-| `SAMPLE[i]` / `SAMPLE_B[i]` | Complementary digital control | Cell iの書込みswitchを閉じる/開く |
-| `VHOLD[i]` | Analog node voltage | Cell iが現在保持しているsampled voltage |
-| `CHOLD[i]` | Physical capacitor | `VHOLD[i]`の電荷を一時保存する |
-| `SEL[i]` / `SEL_B[i]` | Complementary one-hot control | Cell iの読出しswitchだけをMUX_BUSへ接続する |
-| `MUX_BUS` | Analog voltage | 選択した1 cellの保持電圧をcomparatorへ運ぶ共通線 |
+| `VIN` | Analog voltage | 4 cell へ共通に配る連続入力 |
+| `SAMPLE[i]` / `SAMPLE_B[i]` | 相補 digital control | 入力 transmission gate `VIN` → `VTOP[i]` |
+| `HOLD_REF[i]` | Digital control | `VBOT[i]` → `VREF`（固定電位）の switch。**`SAMPLE[i]` より先に開く** |
+| `RAMP_CONNECT` | Digital control（全 cell 共通） | 変換中に `VTOP[i]` → `VRAMP` バスへ接続する switch |
+| `VREF` | Analog 基準 | 基準極板の固定電位。comparator の判定基準でもある |
+| `VRAMP` | Analog voltage | 全 cell 共通の ramp。0 V から開始 |
+
+| 動作phase | `SAMPLE[i]` | `HOLD_REF[i]` | `RAMP_CONNECT` | 状態 |
+| --- | --- | --- | --- | --- |
+| Track | 1 | 1 | 0 | `VTOP[i]` は `VIN` を追従、`VBOT[i] = VREF` |
+| Freeze | 1 | 0 | 0 | 基準側極板を先に開く: 電荷が凍結され、switch は常に `VREF` にあるので電荷注入は**信号非依存** |
+| Hold | 0 | 0 | 0 | 入力 gate を開く: その信号依存の電荷注入は `VTOP[i]` に落ちるが、`VTOP[i]` は後で ramp に駆動し直されるため結果に入らない |
+| Convert | 0 | 0 | 1 | `VTOP[i]` を `VRAMP` で駆動。`VBOT[i] = VREF − (VIN − VRAMP)·C/(C+Cp)` が `VREF` へ向かって上昇 |
+
+どの極板を見るかが決定的である（トランジスタレベル検討 `make bottom-plate-cell`、2026-09-18）: 凍結した極板を comparator で見る構成では pedestal は −7.8 mV 一定（0.5–2.0 V での広がり 0.09 mV）、直線性 0.008 LSB、**ゲイン誤差 −0.02 %**（入力と ramp が同じ容量分割を通るため寄生容量が相殺）。逆に入力側極板を見る構成（ramp を基準側極板に印加）では 10–23 mV の信号依存 pedestal（2–4 LSB）と +9〜10 % の寄生ゲイン誤差が残り、cell ごとの校正が必要になる。物理的な MIM の上下極板はどちらを使ってもよいが、電気的には**先に開いた switch の側の極板を comparator が見る**こと。
 
 必須要求:
 
-- 4個のcellが、異なる入力値を意図した順番で保存する。
-- 各cellに明示的なSAMPLE信号と相補switch制御を設ける。
-- Acquisition error、edge disturbance、hold droopの測定方法を定義する。
-- 選択されていないcellを意図せず上書きしない。
+- 4 個の cell が、異なる入力値を意図した順番で保存する。
+- `HOLD_REF[i]` → `SAMPLE[i]` の順序（目標 1–3 ns）をチップ内で生成し、シミュレーションで観測できる。
+- Acquisition error、pedestal（平均と入力依存性）、hold droop、寄生ゲインの測定方法を定義する。
+- 選択されていない cell を意図せず上書きしない。
 
-現在の4-cell nominal試験では、約0.5、0.8、1.1、1.4 Vを保存する。これらは回帰試験用の
-入力値であり、シリコンの保証入力範囲ではない。
+回帰試験の入力値は 0.5、0.8、1.1、1.4、1.7、2.0 V（作業入力窓）。シリコンの保証入力範囲ではない。
 
-### 5.2 アナログ選択
+### 5.2 並列変換（v0.5 のアナログ選択を置き換え）
 
-One-hot制御のtransmission-gate MUXを使い、保持電圧を1個ずつ`MUX_BUS`へ接続する。
+Analog MUX は無い。最後の cell を hold した後、controller は全 `VTOP[i]` を `VRAMP`（0 V に保持）へ接続し、整定を待って ramp を解放し共有 counter を開始する。各 comparator i は `VBOT[i]` が `VREF` に達したとき（`VRAMP ≈ VIN_i` のとき）に判定する。4 変換は同時に進み、1 本の ramp で完了する。
 
-MUXの役割は、4個の電圧を混ぜることではなく、**変換対象を1個だけ選ぶこと**である。
-`SEL[2]=1`なら`VHOLD[2]`だけが`MUX_BUS`へ接続され、他の3 cellはhigh impedanceとなる。
-この構成により、4 cellで1組のramp、comparator、counterを共有でき、面積を減らせる。
-代わりに4 cellを順番に変換するため、conversion時間と読出しによる電圧変化が生じる。
-
-| 動作phase | `SAMPLE[i]` | `SEL[i]` | `VHOLD[i]` / `MUX_BUS`の状態 |
-| --- | --- | --- | --- |
-| Track | 1 | 0 | `VHOLD[i]`は`VIN`を追従、MUXから切離し |
-| Hold | 0 | 0 | `CHOLD[i]`が電圧を保持、MUXから切離し |
-| Convert cell i | 0 | Cell iだけ1 | `VHOLD[i]`を`MUX_BUS`へ接続してrampと比較 |
-| Bus reset | 0 | 全て0 | 全cellを切離し、次の選択前にbusを既知状態へ戻す |
-
-必須要求:
-
-- 変換中に有効となる`SEL[i]`は最大1本とする。
-- Cell間に、定義されたbus reset期間を設ける。
-- Rampを開始する前にMUXのsettlingを完了させる。
-- 読み出しによるhold capacitorの電圧変化を測定する。
+- `RAMP_CONNECT` は全 cell 共通。cell 選択信号は存在しない。
+- 接続と ramp 解放の間に定義された整定期間を置く。
+- Ramp バスの負荷は接続 cell の合計（Tape-out 1 で 4 × (54.5 fF + Cp)）。ramp generator 仕様にこの負荷と Tape-out 3 でのスケーリングを含める。
 
 ### 5.3 Wilkinson変換
 
-Rampをresetし、1個のcellを選択して6-bit counterを開始する。`VRAMP`が`MUX_BUS`と
-交差したとき、comparatorがcapture eventを生成する。その時点のcountをADC codeとする。
-
 ```text
-理想code = floor(交差までの時間 / conversion clock周期)
-code範囲 = 0 ... 63
+理想code = floor((t_cross − t_ramp_start) / conversion clock周期)
+code範囲 = 0 ... 255。交差しない cell は 255 を返し timeout[i] = 1
 ```
 
-必須要求:
+- 高い保持電圧ほど交差が遅くなり、code が減少しない。
+- 全 comparator は固定基準 `VREF`（名目 2.0 V）で判定する。したがってオフセットは cell ごとの定数（pedestal）であり、入力レベルの関数ではない。変換中、被測定ノードは `VREF − VIN·C/(C+Cp)`（2.0 V sample で約 0.15 V）から `VREF` まで動く。comparator はこの範囲で「動作し続ける」ことが要求され、「精度」は判定点でのみ要求される。
+- Comparator の極性と capture 規則を文書化する。
+- 交差しない場合の timeout 動作を定義する。
 
-- 高い保持電圧ほど交差が遅くなり、codeが減少しない。
-- Cell順序を失わずに4回の変換を完了する。
-- Comparatorの極性とcapture規則を文書化する。
-- 交差しない場合のtimeout動作を定義する。
-
-現在のnominal統合試験のsignatureは`16, 20, 27, 35`である。これは回帰試験の期待値であり、
-INL/DNLの保証ではない。
+デジタル経路の回帰 signature は並列の `16, 20, 27, 200`（v0.5 の順次 `16, 20, 27, 35` を置き換え）。回帰試験の期待値であり、INL/DNL の保証ではない。
 
 ### 5.4 Digital captureとreadout
 
-非同期のcomparator eventは、Gray-coded count captureを用いてdigital clock domainへ渡す。
-Controllerは次の順番で4 cellを処理する。
+Controller の順序:
 
 ```text
-IDLE → RESET_RAMP → SELECT → CONVERT → CAPTURE → NEXT → DONE
+IDLE（acquire）→ CONNECT → CONVERT → [overflow 時 DRAIN] → DONE
 ```
 
-必須要求:
-
-- 4個の6-bit結果をcell順に保持する。
-- 明示的な変更がない限り、24-bit payloadを`{cell3, cell2, cell1, cell0}`とする。
-- Serialのbit順、使用clock edge、frame開始、data valid timingを文書化する。
-- Resetとconversion timeoutにself-checking RTL testを設ける。
-- Conversion clock境界付近での非同期captureを検証する。
+- 共有 8-bit binary counter を Gray 符号化し、各 cell は自身の comparator 立下がりで Gray word を capture（局所 capture clock）。toggle synchronizer で conversion clock domain へ戻す。
+- 4 個の 8-bit 結果を cell 順に保持し、cell ごとの `timeout` flag を添える。
+- 明示的な変更がない限り、32-bit payload を `{cell3, cell2, cell1, cell0}` とする。
+- Serial の bit 順（LSB first）、使用 clock edge、frame 開始、data valid timing を文書化する。
+- Reset、timeout、同時 capture、最終 count での capture に self-checking test を設ける（`make parallel-controller`、`make digital-top`）。
 
 ### 5.5 Sampling timingとconversion timing
 
-SamplingとWilkinson conversionには、独立した時間parameterを使用する。
+Testbench では `SAMPLE0..3` の開始を 10、50、90、130 ns とし、40 ns 間隔は 25 MSa/s に相当する（2026-09-18 のレビューでは 50 MSa/s も議論され、Tape-out 1 では基板側で制御するパラメータのまま）。各 cell 内では基準側 switch が入力 gate より 1–3 ns 先に開く。
 
-- 現在の4-cell SPICE testbenchでは、`SAMPLE0..3`の開始を10、50、90、130 nsに設定する。
-- Cell間隔は40 nsなので、実効sampling rateは`1 / 40 ns = 25 MSa/s`である。
-- 各switchのtrack pulse幅は20 nsである。
-- 40 nsはtestbenchで直接設定したphase scheduleであり、20 MHz conversion clockから
-  生成された値ではない。
-- 将来、1 clockごとに次cellへ進むsequencerを採用すれば25 MHz system clockで同じ
-  sampling間隔を作れるが、Tape-out 1のsampling clock生成方式はまだ外部条件とともに
-  凍結する必要がある。
-- Conversion clockの現在の基準は20 MHz、すなわち`TCOUNT = 50 ns`で、ADC codeを
-  数えるために使う。Sampling pulseを生成するclockとは別parameterである。
-- 統合testbenchでは1 cellあたり約2.9 us、4 cell全体で約11.6 usを変換に割り当てる。
-  現構成は、この変換中に次のwaveformを連続取得するping-pong構成ではない。
+Conversion clock は独立したパラメータ。20 MHz 基準で `TCOUNT = 50 ns`、4 cell の並列 8-bit 変換は 256 count = 12.8 µs に接続・整定のオーバーヘッドを加えた時間で完了する。Tape-out 1 は短い 4 sample 記録を取得後に変換する構成であり、dead-time-free の連続サンプラではない。
 
 ![Tape-out 1のsamplingとconversion timing](lecture/assets/tapeout1_sampling_conversion_timing.png)
 
-*図1　上段は4 cellを40 ns間隔でsampleする動作、下段は保存後に独立した20 MHz
-conversion clockで4 cellを順次6-bit変換する動作を示す。*
+*図1（v0.5 版、書き直し予定）: sampling schedule は不変。conversion は 4 回の順次 2.9 µs slot ではなく 1 本の並列 12.8 µs ramp になった。*
 
 ## 6. 開発段階ごとの暫定電気仕様
 
@@ -278,11 +215,11 @@ conversion clockで4 cellを順次6-bit変換する動作を示す。*
 | Sampling interval | 40 ns基準 | 2-10 ns目標 | 1 ns以下を目標 |
 | Sampling rate | 25 MSa/s基準 | 100-500 MSa/s目標 | 1 GSa/s以上を目標 |
 | Record window | 最初から最後まで120 ns、4 sample depthとして160 ns相当 | Cell数とrateで決定 | Cell数とrateで決定 |
-| Analog input | 0.4-1.6 V simulation baseline | 前段測定後に再設定 | Front-endを含め再設定 |
+| Analog input | 0.5-2.0 V 作業窓（IRSX 相当） | 前段測定後に再設定 | Front-endを含め再設定 |
 | Analog bandwidth | DC/低周波を必須、10 MHzを測定目標 | 50-200 MHz目標 | 500 MHz目標 |
-| ADC | 6-bit Wilkinson | 8-10 bit Wilkinson | 12-bit Wilkinson目標 |
+| ADC | 8-bit Wilkinson、cell ごとの comparator | 8-10 bit Wilkinson | 12-bit Wilkinson目標 |
 | Conversion clock | 20 MHz基準、samplingと独立 | 20-100 MHz候補 | Architectureと並列度を再設計 |
-| Conversion/readout | 4 cellを約11.6 usで順次変換 | 深いarrayに対応した並列化を検討 | 8-channel throughputへ対応 |
+| Conversion/readout | 4 cell を並列に 1 本の 12.8 µs ramp で変換 | 深いarrayに対応した並列化を検討 | 8-channel throughputへ対応 |
 | Power | Analog/digitalを分離測定、I/O除き50 mW未満を目標 | 測定結果からbudget化 | System power budgetを設定 |
 | Calibration | Pedestal/transfer測定 | Cellごとのtime/voltage calibration | 8-channel system calibration |
 
@@ -293,19 +230,19 @@ PVT、mismatch、PEX、package効果、測定不確かさを含めるまでは�
 
 ### 7.1 アナログ回路
 
-- Transmission-gate sampling cell 4個とhold capacitor。
-- Bus resetを持つ4-to-1 analog MUX。
-- Ramp generator、reset device、bias回路、ramp monitor。
-- Comparatorとoutput buffer。
+- Bottom-plate sampling cell 4 個: 入力 transmission gate、チップ内遅延で先に開く基準側 switch、54.5 fF MIM、ramp 接続 switch。
+- Comparator 4 個（固定基準判定）と output buffer。
+- 接続 cell を駆動する ramp generator、reset device、bias 回路、ramp monitor。
+- `VREF` 生成/decoupling または外部 `VREF` pad。
 - 外部ramp注入またはbypass経路。
 - 実装に必要なanalog biasと電源decoupling。
 
 ### 7.2 デジタル回路
 
-- 6-bit counterとGray-coded asynchronous capture。
-- 4-cell conversion controller。
-- 6-bit result register 4個。
-- 24-bit同期serial readout。
+- 共有 8-bit counter と Gray-coded asynchronous capture 4 系統。
+- 並列 conversion controller（acquire / connect / convert / drain）。
+- 8-bit result register 4 個と cell ごとの timeout flag。
+- 32-bit 同期 serial readout。
 - Reset、test mode、timeout、status logic。
 
 ### 7.3 必須の観測手段

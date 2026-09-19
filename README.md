@@ -32,11 +32,11 @@ before moving to the next lab.
 
 The repository demonstrates this reproducible path:
 
-1. GF180 transistor-level sampling, mux, ramp, and comparator simulation.
+1. GF180 transistor-level sampling-cell, ramp, and comparator simulation (bottom-plate cell study for the 0.6 architecture; the v0.5 MUX path kept as legacy).
 2. Four-cell sequential Wilkinson conversion.
 3. Gray-coded comparator-edge capture and controller RTL.
 4. File-based four-cell analog-to-RTL co-verification.
-5. Slow synchronous 24-bit serial readout.
+5. Slow synchronous 32-bit serial readout (four 8-bit codes).
 6. GF180 synthesis, STA, routed GDS, DRC, and LVS for the digital top.
 
 The digital physical block is complete as a flow demonstration. Analog layout,
