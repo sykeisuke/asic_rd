@@ -1,0 +1,75 @@
+* GF180MCU bottom-plate sampling cell, 54.5 fF, "sense the frozen plate" variant.
+*
+* Sample : top TG (VIN -> top) closed; bottom switch (bot -> VREFB=2.0 V) closed
+* Hold   : bottom switch opens FIRST (TBOT) -> bottom-plate charge frozen with a
+*          signal-independent injection (the switch always sits at VREFB);
+*          top switch opens later (TTOP) -> its signal-dependent injection lands
+*          on the top node, which is re-driven by the ramp afterwards and
+*          therefore does not enter the result.
+* Convert: top node connected to the ramp bus (0 V) at TCON, ramp starts at
+*          TRAMP; the comparator senses the BOTTOM node against VCMP=VREFB.
+*          v_bot = VREFB - (VIN - v_ramp) * CHOLD/(CHOLD+CPAR_BOT) + pedestal
+*          -> crossing when v_ramp ~= VIN (code increases with VIN).
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+.param CHOLD=54.5f
+.param CPAR_TOP=3f
+.param CPAR_BOT=3f
+.param VREFB=2.0
+.param SLOPE=117.1875e3
+.param TCON=200n
+.param TRAMP=300n
+.param TRAMP_END='TRAMP + 2.2/SLOPE'
+.include work/switch_order.spice
+
+VDD vdd 0 {VDD}
+VIN in 0 dc 1.2
+VREF refb 0 {VREFB}
+
+* Top switch: minimum-width transmission gate
+VTOPN topn 0 PULSE({VDD} 0 {TTOP} 0.1n 0.1n 100u 200u)
+VTOPP topp 0 PULSE(0 {VDD} {TTOP} 0.1n 0.1n 100u 200u)
+XTN in topn top 0   nfet_03v3 L=0.28u W=1u
+XTP in topp top vdd pfet_03v3 L=0.28u W=1u
+
+* Bottom switch to the fixed reference (transmission gate, constant potential)
+VBOTN botn 0 PULSE({VDD} 0 {TBOT} 0.1n 0.1n 100u 200u)
+VBOTP botp 0 PULSE(0 {VDD} {TBOT} 0.1n 0.1n 100u 200u)
+XBN refb botn bot 0   nfet_03v3 L=0.28u W=1u
+XBP refb botp bot vdd pfet_03v3 L=0.28u W=1u
+
+* Ramp-connect switch: TOP node to the shared ramp bus
+VCONN cong  0 PULSE(0 {VDD} {TCON} 0.1n 0.1n 100u 200u)
+VCONP congb 0 PULSE({VDD} 0 {TCON} 0.1n 0.1n 100u 200u)
+XCN ramp cong  top 0   nfet_03v3 L=0.28u W=2u
+XCP ramp congb top vdd pfet_03v3 L=0.28u W=2u
+
+VRAMP ramp 0 PWL(0 0 {TRAMP} 0 {TRAMP_END} 2.2)
+
+CHOLD top bot {CHOLD}
+CPT   top 0   {CPAR_TOP}
+CPB   bot 0   {CPAR_BOT}
+
+.options savecurrents
+.tran 50p 20u
+
+.control
+set wr_singlescale
+set wr_vecnames
+foreach vs 0.5 0.8 1.1 1.4 1.7 2.0
+    alter VIN dc = $vs
+    run
+    meas tran v_track FIND v(top) AT=99n
+    meas tran v_hold  FIND v(bot) AT=290n
+    meas tran v_top_hold FIND v(top) AT=290n
+    meas tran t_cross WHEN v(bot)=2.0 RISE=1 TD=300n
+    echo RESULT vs=$vs v_track=$&v_track v_hold=$&v_hold v_top=$&v_top_hold t_cross=$&t_cross
+end
+alter VIN dc = 1.2
+run
+wrdata work/bottom_plate_cell_sense_bottom.csv v(in) v(top) v(bot) v(ramp)
+quit
+.endc
+.end
