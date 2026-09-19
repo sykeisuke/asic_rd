@@ -1,4 +1,11 @@
-# Four-cell Wilkinson controller
+# Four-cell Wilkinson controller (legacy: sequential MUX architecture)
+
+> **Superseded 2026-09-18.** Tape-out 1 now converts all four cells in
+> parallel with one comparator per cell and bottom-plate sampling; see
+> [`../parallel_wilkinson_controller/`](../parallel_wilkinson_controller/).
+> This block is kept because the mixed-signal co-simulations
+> (`make four-cell-cosim`, `make phase-sweep`) still drive it with the
+> MUX-based SPICE testbench.
 
 This synthesizable controller sequences a shared Wilkinson conversion macro:
 

@@ -1,4 +1,10 @@
-# Gray-coded Wilkinson capture
+# Gray-coded Wilkinson capture (single-channel reference)
+
+> Since 2026-09-18 the production path is the four-channel capture inside
+> [`../parallel_wilkinson_controller/`](../parallel_wilkinson_controller/),
+> which uses the same Gray-capture and toggle-synchronizer scheme per cell.
+> This single-channel block remains the reference implementation and feeds
+> the legacy sequential controller.
 
 This production-path counter converts its synchronous binary count to Gray
 code and captures that Gray word directly on the falling comparator edge. A

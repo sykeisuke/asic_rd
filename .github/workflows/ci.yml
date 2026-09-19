@@ -42,7 +42,7 @@ jobs:
         run: umask 000 && make tools
 
       - name: Digital unit tests and GF180 mapping
-        run: umask 000 && make counter gray-counter controller digital-top
+        run: umask 000 && make counter gray-counter controller parallel-controller digital-top
 
       - name: Mixed-signal co-simulation and phase sweep
         run: umask 000 && make cosim four-cell-cosim phase-sweep
@@ -74,4 +74,4 @@ jobs:
         run: umask 000 && make analog-regression
 
       - name: RTL and co-simulation regression
-        run: umask 000 && make counter gray-counter controller digital-top cosim four-cell-cosim phase-sweep
+        run: umask 000 && make counter gray-counter controller parallel-controller digital-top cosim four-cell-cosim phase-sweep

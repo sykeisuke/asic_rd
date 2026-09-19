@@ -9,9 +9,8 @@ mkdir -p "$result_dir"
     -v "$PROJECT_ROOT:/foss/designs:rw" "$EDA_IMAGE" -lc '
         set -euo pipefail
         cd /foss/designs/digital/asic_digital_top
-        gray=../wilkinson_gray_counter/wilkinson_gray_counter.v
-        controller=../four_cell_wilkinson_controller/four_cell_wilkinson_controller.v
-        sources="$gray $controller serial_readout.v asic_digital_top.v"
+        controller=../parallel_wilkinson_controller/parallel_wilkinson_controller.v
+        sources="$controller serial_readout.v asic_digital_top.v"
         iverilog -g2012 -Wall -o work/tb $sources tb_asic_digital_top.v
         vvp work/tb | tee work/simulation.log
         grep -q "PASS: sample-to-serial" work/simulation.log
