@@ -8,5 +8,8 @@ simulations/**/work/
 digital/**/work/
 mixed_signal/**/work/
 digital/**/physical/runs/
+runs/
 pdk/
 .eda-tools/
+.claude/settings.local.json
+asic/
