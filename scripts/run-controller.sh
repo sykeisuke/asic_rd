@@ -19,7 +19,7 @@ mkdir -p "$result_dir"
         vvp work/tb_four_cell_wilkinson_controller | tee work/simulation.log
         grep -q "PASS: four-cell Wilkinson controller" work/simulation.log
 
-        liberty=/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib
+        liberty=/foss/designs/.eda-tools/pdk/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/lib/gf180mcu_as_sc_mcu7t3v3__tt_025C_3v30.lib
         yosys -Q -T -l work/gf180_synthesis.log -p "
             read_liberty -lib $liberty;
             read_verilog $counter four_cell_wilkinson_controller.v;
@@ -31,7 +31,7 @@ mkdir -p "$result_dir"
             write_verilog -noattr work/four_cell_wilkinson_controller_mapped.v
         " >/dev/null
         test -s work/four_cell_wilkinson_controller_mapped.v
-        grep -q "gf180mcu_fd_sc_mcu7t5v0" \
+        grep -q "gf180mcu_as_sc_mcu7t3v3" \
             work/four_cell_wilkinson_controller_mapped.v
     '
 

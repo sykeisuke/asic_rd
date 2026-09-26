@@ -1,17 +1,18 @@
 # Digital-on-top experiment results
 
 Date: 2026-09-25. LibreLane (IIC-OSIC-TOOLS 2026.07 container), `gf180mcuD`,
-standard cells `gf180mcu_fd_sc_mcu7t5v0` (5 V library, flow evidence only, as
-for the digital top), one analog hard macro (`comparator_min`, 11.31 x
+standard cells **`gf180mcu_as_sc_mcu7t3v3` (the frozen 3.3 V library, fetched
+by `make pdk`)**; first passed with the 5 V library earlier the same day with
+identical signoff results. One analog hard macro (`comparator_min`, 11.31 x
 52.24 um) placed at (200, 60) in a 300 x 300 um die.
 
 | Metric | Result |
 | --- | ---: |
-| Instances (std cells + macro) | 3396 |
+| Instances (std cells, fill, macro) | 4194 |
 | Detailed-routing DRC | 0 |
 | Magic DRC / KLayout DRC (full decks) | 0 / 0 |
 | Netgen LVS (macro via its SPICE view) | 0 errors, 0 device differences |
-| Setup / hold violations, 9 corner-RC combinations | 0 / 0 |
+| Setup / hold violations, 9 corner-RC combinations | 0 / 0 (worst slack 42.9 ns / 0.32 ns) |
 | Antenna violating nets / pins | 0 / 0 |
 | Macro power connectivity (PSM check) | all VDD/VSS shapes connected |
 
@@ -67,10 +68,9 @@ over it and reached its Metal3 pins from the top edge). Full metrics:
 
 ## Limits of this experiment
 
-- 5 V standard-cell library (the frozen library is `gf180mcu_as_sc_mcu7t3v3`);
-  no pad ring (the template's `chip_top` wraps this step); one small macro.
-  The next step is the same recipe inside the template fork's `chip_core`
-  with the 3.3 V library, then the real bottom-plate cell / comparator
-  macros as they become available.
+- No pad ring (the template's `chip_top` wraps this step; see the
+  template-fork branch `digital-on-top-chip-core` for the same recipe inside
+  `chip_core` with the 0p5x1 ring); one small macro. Next: the real
+  bottom-plate cell / comparator macros as they become available.
 - The comparator itself is the v0.5 `cmp_min` (ramp at the input); it is a
   placeholder for the integration recipe, not the 0.6 comparator.

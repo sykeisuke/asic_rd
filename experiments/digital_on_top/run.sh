@@ -5,12 +5,13 @@ set -eu
 REPO_ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 . "$REPO_ROOT/scripts/eda-common.sh"
 PROJECT_ROOT="$REPO_ROOT"
-SCL=${SCL:-gf180mcu_fd_sc_mcu7t5v0}
+SCL=${SCL:-gf180mcu_as_sc_mcu7t3v3}
+PDK_ROOT=${PDK_ROOT:-/foss/designs/.eda-tools/pdk}
 "$DOCKER_CLI" run --rm --entrypoint /bin/bash \
     -v "$PROJECT_ROOT:/foss/designs:rw" "$EDA_IMAGE" -lc "
         set -euo pipefail
         cd /foss/designs/experiments/digital_on_top
-        librelane --manual-pdk --pdk-root /foss/pdks -p gf180mcuD -s $SCL \
+        librelane --manual-pdk --pdk-root $PDK_ROOT -p gf180mcuD -s $SCL \
             --run-tag mixed --overwrite --condensed --hide-progress-bar config.yaml
         m=runs/mixed/final/metrics.csv
         test -s runs/mixed/final/gds/mixed_top.gds

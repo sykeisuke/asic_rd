@@ -8,8 +8,8 @@ physical="$PROJECT_ROOT/digital/asic_digital_top/physical"
     -v "$PROJECT_ROOT:/foss/designs:rw" "$EDA_IMAGE" -lc '
         set -euo pipefail
         cd /foss/designs/digital/asic_digital_top/physical
-        librelane --manual-pdk --pdk-root /foss/pdks \
-            -p gf180mcuD -s gf180mcu_fd_sc_mcu7t5v0 \
+        librelane --manual-pdk --pdk-root /foss/designs/.eda-tools/pdk \
+            -p gf180mcuD -s gf180mcu_as_sc_mcu7t3v3 \
             --run-tag gf180_rtl2gds --overwrite --condensed \
             --hide-progress-bar config.yaml
         metrics=runs/gf180_rtl2gds/final/metrics.csv

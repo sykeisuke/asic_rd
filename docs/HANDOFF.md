@@ -85,9 +85,8 @@ spec; the v0.5 blocks listed below remain as legacy references.
 - File-based mixed-signal co-verification: measured SPICE comparator timings
   drive the real RTL; a ±2 ns clock-phase sweep identified cell 2 as having
   only ~500 ps of CDC margin (known open issue).
-- A complete RTL-to-GDS LibreLane flow of the (6-bit) digital top with zero
-  DRC/LVS violations — **at 5 V (`gf180mcu_fd_sc_mcu7t5v0`), as flow evidence
-  only**. It must be regenerated for the 8-bit top at 3.3 V (see next section).
+- A complete RTL-to-GDS LibreLane flow of the 8-bit digital top with zero
+  DRC/LVS/timing/antenna violations at 3.3 V (`gf180mcu_as_sc_mcu7t3v3`).
 - CI (GitHub Actions): every PR runs the RTL/co-simulation suite in the
   pinned container; the full analog regression runs weekly and on demand.
 
@@ -114,9 +113,10 @@ spec; the v0.5 blocks listed below remain as legacy references.
 
 ## 5. Highest-priority open work (proposed order)
 
-1. **Retarget the digital physical flow to 3.3 V** (`gf180mcu_as_sc_mcu7t3v3`)
-   and regenerate GDS/STA/DRC/LVS — do this before any new digital work so
-   nothing is built twice.
+1. ~~Retarget the digital physical flow to 3.3 V~~ — done 2026-09-25: every
+   digital script and the physical flow use `gf180mcu_as_sc_mcu7t3v3`
+   (fetched into `.eda-tools/pdk` by `make pdk`; the container image ships
+   only the 5 V cells). `make digital-physical` is clean at 3.3 V.
 2. **Comparator re-derivation for the fixed-reference trip** — with the ramp
    applied to the capacitor, offset accuracy across 0.5-2.0 V is no longer
    required; the pair must stay functional while the sensed node moves to the
@@ -162,6 +162,7 @@ hosts both work; no tool installation beyond Docker:
 ./scripts/check-host.sh   # host sanity (macOS)
 make check                # verify the pinned EDA environment
 make tools                # once per checkout: pinned gdsfactory GF180 PDK plugin into .eda-tools/
+make pdk                  # once per checkout: 3.3 V cells + pads not in the image, into .eda-tools/pdk
 make nmos-dc              # first GF180 simulation (Lab 0)
 make course-regression    # everything pre-layout
 make vnc                  # browser-based Xschem/Magic desktop (see README)

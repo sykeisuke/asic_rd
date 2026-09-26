@@ -13,7 +13,7 @@ mkdir -p "$result_dir"
             tb_wilkinson_gray_counter.v
         vvp work/tb | tee work/simulation.log
         grep -q "PASS: Gray counter" work/simulation.log
-        liberty=/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib
+        liberty=/foss/designs/.eda-tools/pdk/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/lib/gf180mcu_as_sc_mcu7t3v3__tt_025C_3v30.lib
         yosys -Q -T -l work/gf180_synthesis.log -p "
             read_liberty -lib $liberty;
             read_verilog wilkinson_gray_counter.v;
@@ -25,7 +25,7 @@ mkdir -p "$result_dir"
             write_verilog -noattr work/wilkinson_gray_counter_mapped.v
         " >/dev/null
         test -s work/wilkinson_gray_counter_mapped.v
-        grep -q "gf180mcu_fd_sc_mcu7t5v0" work/wilkinson_gray_counter_mapped.v
+        grep -q "gf180mcu_as_sc_mcu7t3v3" work/wilkinson_gray_counter_mapped.v
     '
 
 printf '%s\n' "Simulation: $result_dir/simulation.log"
