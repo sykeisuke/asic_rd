@@ -145,6 +145,12 @@ spec; the v0.5 blocks listed below remain as legacy references.
    of pF to nF in later tape-outs) and the bottom-first switch ordering.
 8. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
    times into the parallel controller (replacing the legacy MUX co-sim).
+9. **Digital-on-top integration** (review recommendation): the recipe for
+   turning a generator layout into a LibreLane hard macro and the seven
+   pitfalls met on the way are recorded in
+   `experiments/digital_on_top/RESULTS.md` (clean P&R/DRC/LVS/STA with one
+   analog macro, 2026-09-25). Next: same recipe in the template fork's
+   `chip_core` at 3.3 V, then the real cell/comparator macros.
 
 ## 6. Environment and daily workflow
 

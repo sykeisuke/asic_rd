@@ -27,6 +27,7 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | Analog layout | DRC/LVS/extracted SCA + comparator + ramp | OPEN | TBD |
 | Digital layout | Regenerate at 3.3 V (`gf180mcu_as_sc_mcu7t3v3`) | OPEN | `make digital-physical` after retarget |
 | Pad ring | `0p5x1` CoB ring with second core pair: platform precheck (pad mask, DRC, antenna) | PASS (density: empty-core artifact) | `run-experiment.sh` in template fork, platform Check #800 |
+| Integration | Digital-on-top: LibreLane P&R with one analog hard macro (GDS/LEF/lib/spice views from the gdsfactory generator), DRC/LVS/STA/antenna/PDN-connectivity clean | PASS (5 V lib, no pad ring) | `experiments/digital_on_top/run.sh` |
 | Chip top | Analog/digital integration, fill, top DRC/LVS | OPEN | analog layout first |
 | Package/PCB | Evaluation board mating the provider COB mezzanine | OPEN | Run 3 COB pinout revision |
 | Fabrication | MPW submission and silicon test | BLOCKED | slot purchase (early-bird 2026-09-30) |
