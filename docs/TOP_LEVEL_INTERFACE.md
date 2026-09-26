@@ -56,6 +56,12 @@ interface must therefore be reduced to the following physical-pad budget.
 | Debug | `analog_test_mux` | `VREF` override / comparator reference test input or selected bias control/monitor |
 
 `comparator_out_mon` is a digital output. `sample_clock_in` is a digital input.
+
+Analog pad type (2026-09-26 finding, `experiments/digital_on_top`): the
+`asig_5p0` pad exposes only the bond pad and cannot be reached by the digital
+router (no access points), so a digital-on-top flow either needs a hand-made
+wide-metal connection to it or the `bi_a` pad (routable `ANA` pin, but a pass
+device in the path). To be decided with the ESD design rule above.
 Comparator and ramp bias functions shall share `analog_test_mux` or use
 internally generated settings unless provider review makes more analog pads
 available. The test-MUX truth table must be frozen before pad-ring integration.

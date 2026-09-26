@@ -149,8 +149,13 @@ spec; the v0.5 blocks listed below remain as legacy references.
    turning a generator layout into a LibreLane hard macro and the seven
    pitfalls met on the way are recorded in
    `experiments/digital_on_top/RESULTS.md` (clean P&R/DRC/LVS/STA with one
-   analog macro, 2026-09-25). Next: same recipe in the template fork's
-   `chip_core` at 3.3 V, then the real cell/comparator macros.
+   analog macro, 2026-09-25), and the full-chip version (pad ring, 3.3 V,
+   template fork branch `digital-on-top-chip-core`) is clean too. **Watch
+   out:** the template's `asig_5p0` analog pads are not routable by the
+   digital router and LVS passes even with the macro inputs floating; the
+   experiment uses `bi_a` pads with a patched Liberty. Pad type for the real
+   chip is an open decision (spec says `asig`). Next: the real cell /
+   comparator macros.
 
 ## 6. Environment and daily workflow
 

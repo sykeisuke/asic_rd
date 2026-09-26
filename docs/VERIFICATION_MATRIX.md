@@ -27,6 +27,7 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | Analog layout | DRC/LVS/extracted SCA + comparator + ramp | OPEN | TBD |
 | Pad ring | `0p5x1` CoB ring with second core pair: platform precheck (pad mask, DRC, antenna) | PASS (density: empty-core artifact) | `run-experiment.sh` in template fork, platform Check #800 |
 | Integration | Digital-on-top: LibreLane P&R with one analog hard macro (GDS/LEF/lib/spice views from the gdsfactory generator), DRC/LVS/STA/antenna/PDN-connectivity clean, 3.3 V library | PASS (no pad ring) | `experiments/digital_on_top/run.sh` |
-| Chip top | Analog/digital integration, fill, top DRC/LVS | OPEN | analog layout first |
+| Chip top | Pad ring (`0p5x1`, second core pair) + 8-bit digital top + one analog hard macro, 3.3 V: DRC/LVS/antenna/density/timing clean, analog pad nets routed (`bi_a` pads) | PASS (placeholder comparator) | template fork branch `digital-on-top-chip-core`, `./run-chip.sh` |
+| Chip top | Real analog macros (bottom-plate cells, 0.6 comparators, ramp), fill, top DRC/LVS | OPEN | analog layout first |
 | Package/PCB | Evaluation board mating the provider COB mezzanine | OPEN | Run 3 COB pinout revision |
 | Fabrication | MPW submission and silicon test | BLOCKED | slot purchase (early-bird 2026-09-30) |

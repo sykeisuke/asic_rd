@@ -66,6 +66,43 @@ over it and reached its Metal3 pins from the top edge). Full metrics:
   `USE_POWER_PINS` power connections; `PDN_MACRO_CONNECTIONS` in addition
   is harmless.
 
+## Chip level: pad ring + 3.3 V library (provider-template fork)
+
+The same recipe inside the wafer.space template (fork branch
+`digital-on-top-chip-core`, notes in its `CHIP_EXPERIMENT.md`): `chip_core`
+= this digital top + the comparator macro, `0p5x1` ring with the second core
+supply pair, `gf180mcu_as_sc_mcu7t3v3`, `gf180mcu_ocd_io`. Run `chip_bia5`:
+
+| Check | Result |
+| --- | --- |
+| Routing / Magic / KLayout DRC, density | 0 / 0 / 0 / 0 |
+| Antenna | 0 |
+| Netgen LVS | 0, with the three analog pad-to-macro nets routed |
+| Setup / hold, 9 corners (25 MHz pad clock) | 0 / 0 |
+| Instances | 180184 (33599 std cells incl. fill, 7 % utilization) |
+
+Render: [`final_views/chip_top.png`](final_views/chip_top.png).
+
+Additional findings at chip level (details in the fork's notes):
+
+8. **The template's analog pads (`asig_5p0`) are not routable by the
+   digital router**: their only pin is the bond pad (2.54 um Metal2 fingers
+   inside obstructions), TritonRoute finds no access points and crashes if
+   asked. The template leaves those nets SPECIAL and unrouted, and **LVS
+   still passes with the macro inputs floating** (the netlist has the same
+   nets). Always check the routed DEF for the analog nets.
+9. The bidirectional-with-analog pad `bi_a` routes normally through its
+   core-side `ANA` pin, but its Liberty lacks that pin: Yosys needs a Verilog
+   model, OpenROAD's linker needs a patched Liberty (otherwise it silently
+   drops the connection), and the pad-ring terminal list needs the master.
+10. Python-API flows need the LibreLane-matched OpenROAD build in PATH; the
+    KLayout DRC worker count must fit the Docker VM memory on a full die.
+
+Design question raised for the analog owner: `asig_5p0` (diodes only,
+needs a hand-made wide-metal connection or a special-wire step) versus
+`bi_a` (router-friendly, but a pass device in the signal path). The spec
+currently assumes `asig`.
+
 ## Limits of this experiment
 
 - No pad ring (the template's `chip_top` wraps this step; see the
