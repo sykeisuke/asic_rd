@@ -52,8 +52,10 @@ module parallel_wilkinson_controller #(
     assign codes = code_r;
 
     // ---- per-cell asynchronous Gray capture + toggle synchronizer ----------
-    reg  [WIDTH-1:0] captured_gray [0:CELLS-1];
-    reg  [CELLS-1:0] capture_toggle;
+    // Each channel's capture flops live inside its own generate block (one
+    // clock per block) so lint tools see a single driver per register.
+    wire [CELLS*WIDTH-1:0] captured_gray;
+    wire [CELLS-1:0]       capture_toggle;
     reg  [CELLS-1:0] capture_sync1;
     reg  [CELLS-1:0] capture_sync2;
     reg  [CELLS-1:0] capture_seen;
@@ -62,17 +64,21 @@ module parallel_wilkinson_controller #(
     genvar g;
     generate
         for (g = 0; g < CELLS; g = g + 1) begin : capture_channel
+            reg [WIDTH-1:0] gray_q;
+            reg             toggle_q;
             // The comparator edge is a local capture clock. Gray coding limits
             // a clock-boundary ambiguity to one counter bit (adjacent codes).
             always @(negedge compare_high[g] or negedge rst_n) begin
                 if (!rst_n) begin
-                    captured_gray[g]  <= {WIDTH{1'b0}};
-                    capture_toggle[g] <= 1'b0;
+                    gray_q   <= {WIDTH{1'b0}};
+                    toggle_q <= 1'b0;
                 end else if (converting && !captured[g]) begin
-                    captured_gray[g]  <= gray_count;
-                    capture_toggle[g] <= ~capture_toggle[g];
+                    gray_q   <= gray_count;
+                    toggle_q <= ~toggle_q;
                 end
             end
+            assign captured_gray[g*WIDTH +: WIDTH] = gray_q;
+            assign capture_toggle[g] = toggle_q;
         end
     endgenerate
 
@@ -117,7 +123,7 @@ module parallel_wilkinson_controller #(
                 if (capture_event[i]) begin
                     capture_seen[i] <= capture_sync2[i];
                     if (converting && !captured[i]) begin
-                        code_r[i*WIDTH +: WIDTH] <= gray_to_binary(captured_gray[i]);
+                        code_r[i*WIDTH +: WIDTH] <= gray_to_binary(captured_gray[i*WIDTH +: WIDTH]);
                         captured[i] <= 1'b1;
                     end
                 end
