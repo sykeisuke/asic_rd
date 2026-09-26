@@ -80,6 +80,7 @@ supply pair, `gf180mcu_as_sc_mcu7t3v3`, `gf180mcu_ocd_io`. Run `chip_bia5`:
 | Netgen LVS | 0, with the three analog pad-to-macro nets routed |
 | Setup / hold, 9 corners (25 MHz pad clock) | 0 / 0 |
 | Instances | 180184 (33599 std cells incl. fill, 7 % utilization) |
+| wafer.space `gf180mcu-precheck --cob` | slot size and COB pad mask match; density, antenna, Magic DRC, KLayout DRC clear |
 
 Render: [`final_views/chip_top.png`](final_views/chip_top.png).
 
