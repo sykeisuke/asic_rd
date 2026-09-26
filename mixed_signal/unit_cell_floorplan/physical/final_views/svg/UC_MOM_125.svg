@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 659 960" width="659" height="960" role="img" aria-label="UC_MOM_125 floorplan to scale">
+<style>.well{fill:none;stroke-width:1.5;stroke-dasharray:6 4}.nw{stroke:#8a4b12}.lvp{stroke:#2b4a7a}.dev{stroke:#241f1b;stroke-width:1;fill-opacity:.85}.cap{stroke:#1d6a44;stroke-width:1.5;fill-opacity:.6}.keep{fill:none;stroke:#1d6a44;stroke-width:1;stroke-dasharray:3 3}.pr{fill:none;stroke:#241f1b;stroke-width:1.2}.dim{stroke:#6f655d;stroke-width:1}.axis{stroke:#6f655d;stroke-width:1;stroke-dasharray:2 5}.chan{fill:#6f655d;fill-opacity:.12}.rail{fill:#9a2f2f;fill-opacity:.8}.pin{fill:none;stroke:#241f1b;stroke-width:1.2}.lbl{font:600 10.5px ui-sans-serif,system-ui,sans-serif;fill:#241f1b}.sm{font:500 9.5px ui-sans-serif,system-ui,sans-serif;fill:#241f1b}.fing{font:500 8.5px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#241f1b}.dimt{font:500 10px ui-monospace,SFMono-Regular,Menlo,monospace;fill:#6f655d}.wl{font:600 9.5px ui-sans-serif,system-ui,sans-serif;letter-spacing:.06em}.wl.nw{fill:#8a4b12}.wl.lvp{fill:#2b4a7a}.railt{font:600 9.5px ui-sans-serif,system-ui,sans-serif;fill:#9a2f2f;letter-spacing:.06em}</style>
+<rect class="chan" x="92.0" y="459.8" width="474.8" height="41.8"/>
+<text class="dimt" x="562.8" y="483.7" dy="0.00em" text-anchor="end">wiring channel 2.1 um: outa, left, tail, pbias</text>
+<rect class="rail" x="92.0" y="92.0" width="474.8" height="9.0"/>
+<text class="railt" x="96.0" y="88.0" dy="0.00em" text-anchor="start">VDD rail on the n-well ring</text>
+<rect class="rail" x="92.0" y="859.4" width="474.8" height="9.0"/>
+<text class="railt" x="96.0" y="881.4" dy="0.00em" text-anchor="start">VSS rail on the p-well ring</text>
+<rect class="well nw" x="114.0" y="92.0" width="446.8" height="367.8"/>
+<text class="wl nw" x="556.8" y="114.0" dy="0.00em" text-anchor="end">N-WELL, one ring, bulk = vdd</text>
+<rect class="well lvp" x="92.0" y="501.6" width="474.8" height="366.8"/>
+<text class="wl lvp" x="562.8" y="513.6" dy="0.00em" text-anchor="end">P-WELL, one ring, bulk = vss</text>
+<line class="axis" x1="329.4" y1="86.0" x2="329.4" y2="874.4000000000001"/>
+<text class="dimt" x="329.4" y="80.0" dy="0.00em" text-anchor="middle">symmetry axis of the matched core</text>
+<rect class="dev pmos" x="261.4" y="320.8" width="136.0" height="122.0" fill="#ead0a8"/>
+<text class="lbl" x="329.4" y="332.8" dy="0.00em" text-anchor="middle">INP / INN input pair   2 x 8.9u/0.5, 4 fingers of 4.45u + 2 dummies</text>
+<text class="fing" x="278.4" y="384.8" dy="0.00em" text-anchor="middle">D</text>
+<text class="fing" x="298.8" y="384.8" dy="0.00em" text-anchor="middle">A</text>
+<text class="fing" x="319.2" y="384.8" dy="0.00em" text-anchor="middle">B</text>
+<text class="fing" x="339.6" y="384.8" dy="0.00em" text-anchor="middle">B</text>
+<text class="fing" x="360.0" y="384.8" dy="0.00em" text-anchor="middle">A</text>
+<text class="fing" x="380.4" y="384.8" dy="0.00em" text-anchor="middle">D</text>
+<text class="dimt" x="329.4" y="437.8" dy="0.00em" text-anchor="middle">A = INP, B = INN, D = dummy tied off.  ABBA common centroid, two gate bars</text>
+<rect class="dev pmos" x="170.6" y="214.9" width="317.6" height="95.9" fill="#ead0a8"/>
+<text class="lbl" x="178.6" y="262.8" dy="0.00em" text-anchor="start">TAIL half A   39u/1, 10 fingers of 3.9u</text>
+<rect class="dev pmos" x="185.8" y="109.0" width="287.2" height="95.9" fill="#ead0a8"/>
+<text class="lbl" x="193.8" y="156.9" dy="0.00em" text-anchor="start">TAIL half B   35.1u/1, 9 fingers of 3.9u</text>
+<rect class="dev pmos" x="131.0" y="252.9" width="29.6" height="57.9" fill="#ead0a8"/>
+<text class="sm" x="145.8" y="281.8" dy="0.00em" text-anchor="middle">TG P</text>
+<rect class="dev pmos" x="498.2" y="111.4" width="45.6" height="93.5" fill="#ead0a8"/>
+<text class="sm" x="521.0" y="158.1" dy="0.00em" text-anchor="middle">BUF2</text>
+<rect class="dev pmos" x="407.4" y="344.9" width="77.6" height="97.9" fill="#ead0a8"/>
+<text class="sm" x="446.2" y="393.8" dy="-1.15em" text-anchor="middle">BUF4</text>
+<text class="sm" x="446.2" y="393.8" dy="0.00em" text-anchor="middle">16u/0.28</text>
+<text class="sm" x="446.2" y="393.8" dy="1.15em" text-anchor="middle">nf 4</text>
+<rect class="dev nmos" x="281.8" y="517.8" width="95.2" height="107.9" fill="#c8d7ec"/>
+<text class="lbl" x="287.8" y="529.8" dy="0.00em" text-anchor="start">LOADD / LOADM mirror  2 x 4.5u/0.5, 2 x 4.5u + 2 dummies</text>
+<text class="fing" x="298.8" y="574.8" dy="0.00em" text-anchor="middle">D</text>
+<text class="fing" x="319.2" y="574.8" dy="0.00em" text-anchor="middle">A</text>
+<text class="fing" x="339.6" y="574.8" dy="0.00em" text-anchor="middle">B</text>
+<text class="fing" x="360.0" y="574.8" dy="0.00em" text-anchor="middle">D</text>
+<text class="dimt" x="329.4" y="620.7" dy="0.00em" text-anchor="middle">A = LOADD (diode), B = LOADM (out), D = dummy.  One gate net; A/B is the drain strap</text>
+<rect class="dev nmos" x="131.0" y="587.8" width="29.6" height="37.9" fill="#c8d7ec"/>
+<text class="sm" x="145.8" y="606.8" dy="0.00em" text-anchor="middle">TG N</text>
+<rect class="dev nmos" x="387.0" y="567.8" width="77.6" height="57.9" fill="#c8d7ec"/>
+<text class="sm" x="425.8" y="596.8" dy="0.00em" text-anchor="middle">BUF3 8u</text>
+<rect class="dev nmos" x="387.0" y="519.9" width="77.6" height="37.9" fill="#c8d7ec"/>
+<text class="sm" x="425.8" y="538.9" dy="0.00em" text-anchor="middle">BUF1 4u</text>
+<rect class="cap" x="108.2" y="748.9" width="442.4" height="103.2" fill="#b5dcc6"/>
+<text class="lbl" x="329.4" y="800.5" dy="0.00em" text-anchor="middle">4 x MOMU abutted   62.5 fF   M1-M4</text>
+<rect class="cap" x="108.2" y="635.7" width="442.4" height="103.2" fill="#b5dcc6"/>
+<text class="lbl" x="329.4" y="687.3" dy="0.00em" text-anchor="middle">4 x MOMU abutted   62.5 fF   M1-M4</text>
+<line class="pin" x1="92.0" y1="606.8" x2="78.0" y2="606.8"/>
+<text class="sm" x="74.0" y="609.8" dy="0.00em" text-anchor="end">vin, sampled</text>
+<line class="pin" x1="92.0" y1="281.8" x2="78.0" y2="281.8"/>
+<text class="sm" x="74.0" y="284.8" dy="0.00em" text-anchor="end">clk_sample</text>
+<line class="pin" x1="566.8" y1="393.8" x2="580.8" y2="393.8"/>
+<text class="sm" x="584.8" y="396.8" dy="0.00em" text-anchor="start">dout</text>
+<line class="pin" x1="566.8" y1="430.8" x2="580.8" y2="430.8"/>
+<text class="sm" x="584.8" y="433.8" dy="0.00em" text-anchor="start">ramp (inn)</text>
+<text class="dimt" x="337.4" y="66.0" dy="0.00em" text-anchor="start">pbias from the top edge to the tail gate bars</text>
+<rect class="pr" x="92.0" y="92.0" width="474.8" height="776.4"/>
+<line class="dim" x1="92.0" y1="900.4000000000001" x2="566.8" y2="900.4000000000001"/>
+<line class="dim" x1="92.0" y1="895.4000000000001" x2="92.0" y2="905.4000000000001"/>
+<line class="dim" x1="566.8" y1="895.4000000000001" x2="566.8" y2="905.4000000000001"/>
+<text class="dimt" x="329.4" y="913.4" dy="0.00em" text-anchor="middle">23.74 um</text>
+<line class="dim" x1="616.8000000000001" y1="92.0" x2="616.8000000000001" y2="868.4"/>
+<line class="dim" x1="611.8000000000001" y1="868.4" x2="621.8000000000001" y2="868.4"/>
+<line class="dim" x1="611.8000000000001" y1="92.0" x2="621.8000000000001" y2="92.0"/>
+<text class="dimt" transform="translate(628.8,480.2) rotate(-90)" text-anchor="middle">38.82 um</text>
+<text class="lbl" x="92.0" y="48.0" dy="0.00em" text-anchor="start">UC_MOM_125   922 um2   switch 1.00/2.00 um   hold 136.2 fF   DRC 0</text>
+</svg>
