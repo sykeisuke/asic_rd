@@ -38,6 +38,15 @@ jobs:
       - name: Verify pinned EDA environment
         run: make check
 
+      - name: Cache frozen PDK libraries (3.3 V cells, pads)
+        uses: actions/cache@v4
+        with:
+          path: .eda-tools/pdk
+          key: gf180mcu-pdk-f6eeac7d-3v3-v1
+
+      - name: Fetch frozen PDK libraries not in the image
+        run: umask 000 && make pdk
+
       - name: Install pinned Python EDA add-ons
         run: umask 000 && make tools
 
@@ -69,6 +78,15 @@ jobs:
 
       - name: Verify pinned EDA environment
         run: make check
+
+      - name: Cache frozen PDK libraries (3.3 V cells, pads)
+        uses: actions/cache@v4
+        with:
+          path: .eda-tools/pdk
+          key: gf180mcu-pdk-f6eeac7d-3v3-v1
+
+      - name: Fetch frozen PDK libraries not in the image
+        run: umask 000 && make pdk
 
       - name: Analog regression
         run: umask 000 && make analog-regression
