@@ -1,0 +1,138 @@
+# Hard macros of the chip.
+#
+# The five gf180mcu_ws_ip__* cells are required by the provider and come
+# from the template at its pinned commit, fetched into work/template by
+# scripts/run-top-placement.sh (never committed). Their locations are
+# the template's (librelane/macros/macros_5v.yaml).
+#
+# wsa_cmp and wsa_inv are the analog cells wrapped by macros.py into
+# work/macros/. They sit under the north pad row, where analog[0..5] are,
+# with their signal pins on their north and south edges.
+MACROS:
+  gf180mcu_ws_ip__qrcode_id:
+    gds:
+      - dir::../work/template/ip/gf180mcu_ws_ip__qrcode_id/gds/gf180mcu_ws_ip__qrcode_id.gds
+    lef:
+      - dir::../work/template/ip/gf180mcu_ws_ip__qrcode_id/lef/gf180mcu_ws_ip__qrcode_id.lef
+    vh:
+      - dir::../work/template/ip/gf180mcu_ws_ip__qrcode_id/vh/gf180mcu_ws_ip__qrcode_id.v
+    lib:
+      "*":
+        - dir::../work/template/ip/gf180mcu_ws_ip__qrcode_id/lib/gf180mcu_ws_ip__qrcode_id.lib
+    instances:
+      qrcode_id:
+        location: [26, 26]
+        orientation: N
+
+  gf180mcu_ws_ip__shuttle_id:
+    gds:
+      - dir::../work/template/ip/gf180mcu_ws_ip__shuttle_id/gds/gf180mcu_ws_ip__shuttle_id.gds
+    lef:
+      - dir::../work/template/ip/gf180mcu_ws_ip__shuttle_id/lef/gf180mcu_ws_ip__shuttle_id.lef
+    vh:
+      - dir::../work/template/ip/gf180mcu_ws_ip__shuttle_id/vh/gf180mcu_ws_ip__shuttle_id.v
+    lib:
+      "*":
+        - dir::../work/template/ip/gf180mcu_ws_ip__shuttle_id/lib/gf180mcu_ws_ip__shuttle_id.lib
+    instances:
+      shuttle_id:
+        location: [26, 175.6]
+        orientation: E
+
+  gf180mcu_ws_ip__project_id:
+    gds:
+      - dir::../work/template/ip/gf180mcu_ws_ip__project_id/gds/gf180mcu_ws_ip__project_id.gds
+    lef:
+      - dir::../work/template/ip/gf180mcu_ws_ip__project_id/lef/gf180mcu_ws_ip__project_id.lef
+    vh:
+      - dir::../work/template/ip/gf180mcu_ws_ip__project_id/vh/gf180mcu_ws_ip__project_id.v
+    lib:
+      "*":
+        - dir::../work/template/ip/gf180mcu_ws_ip__project_id/lib/gf180mcu_ws_ip__project_id.lib
+    instances:
+      project_id:
+        location: [175.6, 26]
+        orientation: N
+
+  gf180mcu_ws_ip__marker:
+    gds:
+      - dir::../work/template/ip/gf180mcu_ws_ip__marker/gds/gf180mcu_ws_ip__marker.gds
+    lef:
+      - dir::../work/template/ip/gf180mcu_ws_ip__marker/lef/gf180mcu_ws_ip__marker.lef
+    vh:
+      - dir::../work/template/ip/gf180mcu_ws_ip__marker/vh/gf180mcu_ws_ip__marker.v
+    lib:
+      "*":
+        - dir::../work/template/ip/gf180mcu_ws_ip__marker/lib/gf180mcu_ws_ip__marker.lib
+    instances:
+      marker:
+        location: ["expr::($DIE_AREA[2] - (245 + 36))", "expr::($DIE_AREA[3] - (245 + 36))"]
+        orientation: N
+
+  gf180mcu_ws_ip__logo:
+    gds:
+      - dir::../work/template/ip/gf180mcu_ws_ip__logo/gds/gf180mcu_ws_ip__logo.gds
+    lef:
+      - dir::../work/template/ip/gf180mcu_ws_ip__logo/lef/gf180mcu_ws_ip__logo.lef
+    vh:
+      - dir::../work/template/ip/gf180mcu_ws_ip__logo/vh/gf180mcu_ws_ip__logo.v
+    lib:
+      "*":
+        - dir::../work/template/ip/gf180mcu_ws_ip__logo/lib/gf180mcu_ws_ip__logo.lib
+    instances:
+      wafer_space_logo:
+        location: [26, "expr::$DIE_AREA[3] - 169.25"]
+        orientation: N
+
+  wsa_cmp:
+    gds:
+      - dir::../work/macros/wsa_cmp/gds/wsa_cmp.gds
+    lef:
+      - dir::../work/macros/wsa_cmp/lef/wsa_cmp.lef
+    vh:
+      - dir::../work/macros/wsa_cmp/vh/wsa_cmp.v
+    lib:
+      "*":
+        - dir::../work/macros/wsa_cmp/lib/wsa_cmp.lib
+    instances:
+      i_chip_core.u_cmp:
+        location: [1200, 4540]
+        orientation: N
+
+  wsa_inv:
+    gds:
+      - dir::../work/macros/wsa_inv/gds/wsa_inv.gds
+    lef:
+      - dir::../work/macros/wsa_inv/lef/wsa_inv.lef
+    vh:
+      - dir::../work/macros/wsa_inv/vh/wsa_inv.v
+    lib:
+      "*":
+        - dir::../work/macros/wsa_inv/lib/wsa_inv.lib
+    instances:
+      i_chip_core.u_inv:
+        location: [750, 4540]
+        orientation: N
+
+  # The gdsfactory inverter, on core nets (A from the capture-edge mux,
+  # Y to bidir[14]): placed in open core, away from the analog wires
+  # under the north pad row.
+  wsa_inv_gf:
+    gds:
+      - dir::../work/macros/wsa_inv_gf/gds/wsa_inv_gf.gds
+    lef:
+      - dir::../work/macros/wsa_inv_gf/lef/wsa_inv_gf.lef
+    vh:
+      - dir::../work/macros/wsa_inv_gf/vh/wsa_inv_gf.v
+    lib:
+      "*":
+        - dir::../work/macros/wsa_inv_gf/lib/wsa_inv_gf.lib
+    instances:
+      i_chip_core.u_inv_gf:
+        location: [1350, 4300]
+        orientation: N
+
+PDN_MACRO_CONNECTIONS:
+- "i_chip_core.u_cmp VDD VSS VDD VSS"
+- "i_chip_core.u_inv VDD VSS VDD VSS"
+- "i_chip_core.u_inv_gf VDD VSS VDD VSS"
