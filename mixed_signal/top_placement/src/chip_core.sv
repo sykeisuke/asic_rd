@@ -10,25 +10,31 @@
 //
 // Pads (0p5x1 slot, template pad positions unchanged):
 //
-//   input[0]  start          input[2]  test_mode (1: ext_compare drives the capture)
-//   input[1]  shift_en       input[3]  ext_compare
+//   input[0]  start          input[2]  test_mode (1: ext_compare drives capture 0)
+//   input[1]  shift_en       input[3]  ext_compare (also captures 1..3, which have
+//                                      no comparator on this chip)
 //
-//   bidir[0]  serial_data    bidir[6..9]  mux_select[0..3]
-//   bidir[1]  data_ready     bidir[10]    ramp_reset
-//   bidir[2]  conversion_busy bidir[11]   bus_reset
-//   bidir[3]  conversion_done bidir[12]   comparator output (wsa_cmp.dout)
-//   bidir[4]  active_cell[0] bidir[13]    compare_high, as the counter sees it
-//   bidir[5]  active_cell[1] bidir[14]    wsa_inv_gf.Y = NOT compare_high
-//                            bidir[15..] unused: output and input off, pull-down
+//   bidir[0]  serial_data    bidir[4..7]  conversion_timeout[3..0]
+//   bidir[1]  data_ready     bidir[8]     acquire
+//   bidir[2]  conversion_busy bidir[9]    ramp_connect
+//   bidir[3]  conversion_done bidir[10]   ramp_reset
+//                            bidir[11]    comparator output (wsa_cmp.dout)
+//                            bidir[12]    compare_high[0], as the capture sees it
+//                            bidir[13]    wsa_inv_gf.Y = NOT compare_high[0]
+//                            bidir[14..] unused: output and input off, pull-down
 //
-//   analog[0] wsa_cmp.vin    (held voltage / MUX_BUS in standalone mode)
+//   analog[0] wsa_cmp.vin    (held voltage in standalone mode)
 //   analog[1] wsa_cmp.vramp  (external ramp)
 //   analog[2] wsa_cmp.vbias
 //   analog[3] wsa_inv.A      analog[4] wsa_inv.Y      analog[5] spare
 //
+// Digital top: the 8-bit parallel architecture of spec 0.6 (2026-09-18):
+// four capture channels compare_high[3:0], no analog MUX, acquire /
+// ramp_connect / ramp_reset mode outputs, 32-bit frame.
+//
 // Comparator polarity (simulations/gf180_comparator): dout is high while
-// vin > vramp and falls at the crossing, which is the edge
-// wilkinson_gray_counter captures on. So dout drives compare_high as is.
+// vin > vramp and falls at the crossing, which is the edge the capture
+// channel latches on. So dout drives compare_high[0] as is.
 
 `default_nettype none
 
@@ -61,7 +67,7 @@ module chip_core #(
     inout  wire [NUM_ANALOG_PADS-1:0] analog  // Analog
 );
 
-    localparam NUM_OUT = 15;
+    localparam NUM_OUT = 14;
 
     // Pad control. The first NUM_OUT bidirectional pads are outputs; the
     // rest are switched off and pulled down so they do not float.
@@ -110,12 +116,14 @@ module chip_core #(
     );
 
     // Digital test mode independent of the analog crossing (spec 7.3):
-    // the capture edge comes from a pad instead of the comparator.
-    wire compare_high = test_mode ? ext_compare : cmp_dout;
+    // capture 0 comes from a pad instead of the comparator. Captures 1..3
+    // have no comparator on this chip and always take the pad.
+    wire       compare_high0 = test_mode ? ext_compare : cmp_dout;
+    wire [3:0] compare_high  = {ext_compare, ext_compare, ext_compare, compare_high0};
 
     // A simple analog cell on core nets: the gdsfactory inverter inverts
     // the capture edge and drives a pad. With test_mode=1 and a square
-    // wave on ext_compare, bidir[14] shows the inverter working in silicon
+    // wave on ext_compare, bidir[13] shows the inverter working in silicon
     // independent of the comparator. Its pins are ordinary signal nets,
     // routed by LibreLane like the template's SRAM pins.
     wire inv_gf_y;
@@ -125,46 +133,46 @@ module chip_core #(
         .VDD   (VDD),
         .VSS   (VSS),
         `endif
-        .A     (compare_high),
+        .A     (compare_high0),
         .Y     (inv_gf_y)
     );
 
     // Digital top, as is
 
-    wire [3:0] mux_select;
+    wire       acquire;
+    wire       ramp_connect;
     wire       ramp_reset;
-    wire       bus_reset;
     wire       serial_data;
     wire       data_ready;
     wire       conversion_busy;
     wire       conversion_done;
-    wire [1:0] active_cell;
+    wire [3:0] conversion_timeout;
 
     asic_digital_top u_digital (
-        .clk             (clk),
-        .rst_n           (rst_n),
-        .start           (start),
-        .compare_high    (compare_high),
-        .shift_en        (shift_en),
-        .mux_select      (mux_select),
-        .ramp_reset      (ramp_reset),
-        .bus_reset       (bus_reset),
-        .serial_data     (serial_data),
-        .data_ready      (data_ready),
-        .conversion_busy (conversion_busy),
-        .conversion_done (conversion_done),
-        .active_cell     (active_cell)
+        .clk                (clk),
+        .rst_n              (rst_n),
+        .start              (start),
+        .compare_high       (compare_high),
+        .shift_en           (shift_en),
+        .acquire            (acquire),
+        .ramp_connect       (ramp_connect),
+        .ramp_reset         (ramp_reset),
+        .serial_data        (serial_data),
+        .data_ready         (data_ready),
+        .conversion_busy    (conversion_busy),
+        .conversion_done    (conversion_done),
+        .conversion_timeout (conversion_timeout)
     );
 
     assign bidir_out = {
         {(NUM_BIDIR_PADS-NUM_OUT){1'b0}},
         inv_gf_y,
-        compare_high,
+        compare_high0,
         cmp_dout,
-        bus_reset,
         ramp_reset,
-        mux_select,
-        active_cell,
+        ramp_connect,
+        acquire,
+        conversion_timeout,
         conversion_done,
         conversion_busy,
         data_ready,

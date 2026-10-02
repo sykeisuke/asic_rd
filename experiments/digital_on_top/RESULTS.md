@@ -66,6 +66,17 @@ over it and reached its Metal3 pins from the top edge). Full metrics:
   `USE_POWER_PINS` power connections; `PDN_MACRO_CONNECTIONS` in addition
   is harmless.
 
+## Relation to `mixed_signal/top_placement` (design team, merged to main 2026-10-01)
+
+The design team built the same thing independently inside this repository:
+`macros.py` wraps the cicpy/gdsfactory cells with Metal3 pin stubs and Metal4
+supply straps, `analog_routes.tcl` draws the `asig_5p0` pad-to-macro wires
+as fixed special routes (the alternative to `bi_a` for finding 8 below),
+and the full chip is clean at 5 V / `fd_io`. Their findings on the special
+analog nets and the detailed-routing abort match 8 and 10 below. Differences
+worth merging: this experiment runs the frozen 3.3 V / `ocd_io` set and the
+provider precheck; theirs has the drawn analog wires and three macros.
+
 ## Chip level: pad ring + 3.3 V library (provider-template fork)
 
 The same recipe inside the wafer.space template (fork branch
