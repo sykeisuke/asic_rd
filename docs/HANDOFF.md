@@ -63,9 +63,9 @@ IC-design group; spec 0.6-draft): analog MUX removed, comparator per cell
 with parallel conversion, 54.5 fF MIM hold capacitor, bottom-plate sampling
 with the ramp applied to the capacitor, 8-bit ADC. The RTL and its tests are
 updated (`make parallel-controller`, `make digital-top`); a transistor-level
-cell study (`make bottom-plate-cell`) established that the comparator must
+cell method study on the exploration branch `keisuke/analog-explore` established that the comparator must
 sense the plate whose switch opened first (constant pedestal, no parasitic
-gain error) — see `simulations/gf180_bottom_plate_cell/RESULTS.md`. The
+gain error) — see that branch's `simulations/gf180_bottom_plate_cell/RESULTS.md`. The
 analog blocks (cell, comparator, ramp) are being re-derived against the new
 spec; the v0.5 blocks listed below remain as legacy references.
 
@@ -124,7 +124,7 @@ spec; the v0.5 blocks listed below remain as legacy references.
    ~2.0 V trip (spec 5.3). Re-derive the spec (noise via **transient-noise**
    simulation against kT/C = 275 uV at 54.5 fF, delay spread, power, area),
    then Monte Carlo and PVT on the chosen topology. The v0.5 NMOS/PMOS
-   variants and `make comparator-range-wide` are reference material.
+   variants and the widened-window sweep on the exploration branch `keisuke/analog-explore` are reference material.
 3. **Dense transfer test** before any no-missing-code claim.
 4. **Analog layout** (bottom-plate cells with the on-chip switch-order
    delay, four comparators, ramp driving the cell bus, VREF, bias, test

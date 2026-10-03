@@ -102,7 +102,7 @@ GF180 mapping, and 20 MHz STA (`make parallel-controller`, `make digital-top`);
 bottom-plate cell study showing that the comparator must sense the
 first-frozen plate (pedestal spread 0.09 mV, gain error -0.02 %, versus 2-4 LSB
 signal-dependent pedestal and +9 % gain error when sensing the input-side
-plate) — `make bottom-plate-cell`. Remaining in Phase 2: comparator spec
+plate) — method study on the exploration branch `keisuke/analog-explore`. Remaining in Phase 2: comparator spec
 re-derivation (transient noise, fixed trip), ramp generator for the capacitor
 load, on-chip bottom-first switch delay, new mixed-signal co-simulation.
 

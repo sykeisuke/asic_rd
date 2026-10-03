@@ -189,7 +189,7 @@ flowchart LR
 | Hold | 0 | 0 | 0 | Input gate opened; its signal-dependent injection lands on `VTOP[i]`, which is re-driven later and does not enter the result |
 | Convert | 0 | 0 | 1 | `VTOP[i]` driven by `VRAMP`; `VBOT[i] = VREF - (VIN - VRAMP) * C/(C+Cp)` rises toward `VREF` |
 
-Why the sensed plate matters (transistor-level study, `make bottom-plate-cell`,
+Why the sensed plate matters (transistor-level method study on the exploration branch `keisuke/analog-explore`,
 2026-09-18): sensing the frozen plate gives a constant -7.8 mV pedestal
 (0.09 mV spread over 0.5-2.0 V), 0.008 LSB linearity, and **-0.02 % gain
 error** because input and ramp share the same capacitive divider. Sensing the
@@ -483,7 +483,7 @@ Revision log:
   54.5 fF MIM hold capacitor, bottom-plate sampling with the ramp applied to
   the capacitor and a fixed comparator reference, 8-bit ADC and 32-bit frame.
   Sensed-plate rule added from the transistor-level study
-  (`simulations/gf180_bottom_plate_cell`). RTL (`parallel_wilkinson_controller`,
+  (method study on the exploration branch `keisuke/analog-explore`). RTL (`parallel_wilkinson_controller`,
   `asic_digital_top`) and tests updated; analog blocks to be re-derived.
 - 0.5-draft (2026-09-16) — input window 0.5-2.0 V, comparator variant
   framing, capacitor/MUX scaling path.

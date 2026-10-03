@@ -6,7 +6,7 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | --- | --- | --- | --- |
 | Sampling | Ideal, NMOS-only, and transmission-gate comparison | PASS | `make sampling-cell` |
 | Sampling | Four sequential cells (1 pF, v0.5 cell) | PASS (legacy) | `make four-cell` |
-| Sampling | Bottom-plate cell, 54.5 fF: sensed-plate rule, pedestal, gain, linearity | PASS | `make bottom-plate-cell` |
+| Sampling | Bottom-plate cell, 54.5 fF: sensed-plate rule, pedestal, gain, linearity (method study) | PASS (the exploration branch `keisuke/analog-explore`; the design team owns the cell) | branch-only |
 | Read mux | Settling and charge sharing | PASS (legacy, MUX removed 2026-09-18) | `make four-cell-mux` |
 | Comparator | Nominal transient and range | PASS | `make comparator` |
 | Comparator | Static offset separation | PASS | `make comparator-offset` |
