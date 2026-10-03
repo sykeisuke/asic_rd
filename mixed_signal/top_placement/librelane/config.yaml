@@ -27,9 +27,8 @@ DESIGN_NAME: chip_top
 VERILOG_FILES:
 - dir::../src/chip_top.sv
 - dir::../src/chip_core.sv
-# the digital top, unchanged
-- dir::../../../digital/wilkinson_gray_counter/wilkinson_gray_counter.v
-- dir::../../../digital/four_cell_wilkinson_controller/four_cell_wilkinson_controller.v
+# the digital top, unchanged (8-bit parallel architecture, spec 0.6)
+- dir::../../../digital/parallel_wilkinson_controller/parallel_wilkinson_controller.v
 - dir::../../../digital/asic_digital_top/serial_readout.v
 - dir::../../../digital/asic_digital_top/asic_digital_top.v
 VERILOG_INCLUDE_DIRS:
