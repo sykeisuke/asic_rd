@@ -1,0 +1,55 @@
+DESIGN_NAME: mixed_top
+VERILOG_FILES:
+  - dir::../../digital/parallel_wilkinson_controller/parallel_wilkinson_controller.v
+  - dir::../../digital/asic_digital_top/serial_readout.v
+  - dir::../../digital/asic_digital_top/asic_digital_top.v
+  - dir::mixed_top.v
+CLOCK_PERIOD: 50.0
+CLOCK_PORT: clk
+PNR_SDC_FILE: dir::mixed_top.sdc
+SIGNOFF_SDC_FILE: dir::mixed_top.sdc
+
+# As in the wafer.space template: the KLayout stream-out is the primary GDS
+# (Magic's copy carries a PK_$$$CONTEXT_INFO$$$ top cell from the PDK library,
+# which the KLayout render/DRC steps reject as a second top cell).
+PRIMARY_GDSII_STREAMOUT_TOOL: klayout
+
+# Analog hard macro (views built by make_macro.sh)
+MACROS:
+  comparator_min:
+    gds:
+      - dir::macro/comparator_min.gds
+    lef:
+      - dir::macro/comparator_min.lef
+    vh:
+      - dir::macro/comparator_min.v
+    spice:
+      - dir::macro/comparator_min.spice
+    lib:
+      "*":
+        - dir::macro/comparator_min.lib
+    instances:
+      cmp0:
+        location: [200, 60]
+        orientation: N
+PDN_MACRO_CONNECTIONS:
+  - "cmp0 VDD VSS vdd vss"
+PDN_CFG: dir::pdn_cfg.tcl
+
+VDD_NETS: [VDD]
+GND_NETS: [VSS]
+
+FP_SIZING: absolute
+DIE_AREA: [0, 0, 300, 300]
+PL_TARGET_DENSITY_PCT: 40
+MAX_FANOUT_CONSTRAINT: 6
+
+PDN_VOFFSET: 5
+PDN_HOFFSET: 5
+PDN_VWIDTH: 2
+PDN_HWIDTH: 2
+PDN_VPITCH: 40
+PDN_HPITCH: 40
+PDN_SKIPTRIM: true
+PDN_HORIZONTAL_HALO: 4
+PDN_VERTICAL_HALO: 4

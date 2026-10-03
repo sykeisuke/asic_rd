@@ -1,0 +1,75 @@
+* GF180MCU bottom-plate sampling cell, 54.5 fF hold capacitor (Tape-out 1
+* architecture of 2026-09-18). The ramp is applied to the capacitor's bottom
+* plate; the top plate is compared against a fixed reference VCMP.
+*
+*   sample : top switch (TG) closed, bottom switch to AVSS closed -> top = VIN
+*   hold   : bottom switch opens at TBOT, top switch opens at TTOP
+*            (bottom-first is the bottom-plate-sampling order)
+*   convert: ramp-connect switch closes at TCON with the ramp at 0 V, ramp
+*            starts at TRAMP; top plate rises with the ramp and crosses VCMP
+*            when v_ramp = (VCMP - v_hold) * (CHOLD + CPAR_TOP) / CHOLD
+*
+* Ideal code = (t_cross - TRAMP) / TCOUNT with TCOUNT = 50 ns (20 MHz),
+* full scale 1.5 V in 256 counts -> SLOPE = 1.5 V / 12.8 us.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param VDD=3.3
+.param CHOLD=54.5f
+.param CPAR_TOP=3f
+.param CPAR_BOT=2f
+.param VCMP=2.0
+.param SLOPE=117.1875e3
+.param TCON=200n
+.param TRAMP=300n
+.param TRAMP_END='TRAMP + 2.2/SLOPE'
+* Switch-opening order is supplied by the runner (bottom-first or top-first).
+.include work/switch_order.spice
+
+VDD vdd 0 {VDD}
+VIN in 0 dc 1.2
+
+* Top switch: minimum-width transmission gate (small coupling to the 54.5 fF cap)
+VTOPN topn 0 PULSE({VDD} 0 {TTOP} 0.1n 0.1n 100u 200u)
+VTOPP topp 0 PULSE(0 {VDD} {TTOP} 0.1n 0.1n 100u 200u)
+XTN in topn top 0   nfet_03v3 L=0.28u W=1u
+XTP in topp top vdd pfet_03v3 L=0.28u W=1u
+
+* Bottom switch to AVSS (always at 0 V -> signal-independent charge injection)
+VBOT botg 0 PULSE({VDD} 0 {TBOT} 0.1n 0.1n 100u 200u)
+XBN bot botg 0 0 nfet_03v3 L=0.28u W=1u
+
+* Ramp-connect switch (bottom plate to the shared ramp bus)
+VCONN cong  0 PULSE(0 {VDD} {TCON} 0.1n 0.1n 100u 200u)
+VCONP congb 0 PULSE({VDD} 0 {TCON} 0.1n 0.1n 100u 200u)
+XCN ramp cong  bot 0   nfet_03v3 L=0.28u W=2u
+XCP ramp congb bot vdd pfet_03v3 L=0.28u W=2u
+
+* Ideal broadcast ramp: 0 V until TRAMP, then SLOPE
+VRAMP ramp 0 PWL(0 0 {TRAMP} 0 {TRAMP_END} 2.2)
+
+CHOLD top bot {CHOLD}
+CPT   top 0   {CPAR_TOP}
+CPB   bot 0   {CPAR_BOT}
+
+.options savecurrents
+.tran 50p 20u
+
+.control
+set wr_singlescale
+set wr_vecnames
+foreach vs 0.5 0.8 1.1 1.4 1.7 2.0
+    alter VIN dc = $vs
+    run
+    meas tran v_track FIND v(top) AT=99n
+    meas tran v_hold  FIND v(top) AT=290n
+    meas tran v_bot_hold FIND v(bot) AT=290n
+    meas tran t_cross WHEN v(top)=2.0 RISE=1 TD=300n
+    echo RESULT vs=$vs v_track=$&v_track v_hold=$&v_hold v_bot=$&v_bot_hold t_cross=$&t_cross
+end
+alter VIN dc = 1.2
+run
+wrdata work/bottom_plate_cell.csv v(in) v(top) v(bot) v(ramp)
+quit
+.endc
+.end

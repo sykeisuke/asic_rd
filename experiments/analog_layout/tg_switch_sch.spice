@@ -1,0 +1,4 @@
+.subckt tg_switch a gn gp b vdd vss
+XN a gn b vss nfet_03v3 L=0.28u W=5u nf=5 m=1
+XP a gp b vdd pfet_03v3 L=0.28u W=10u nf=5 m=1
+.ends tg_switch
