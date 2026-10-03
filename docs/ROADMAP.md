@@ -15,7 +15,7 @@ shall not displace its Must-level flow and observability requirements.
   [`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).
 - [x] Confirm the PDK/template commits against the public template `main`
   (matched as of 2026-08-30; re-verify at purchase and before submission).
-- [ ] Decide the early-bird purchase (2026-09-30 deadline) with the
+- [ ] Purchase the `1x0.5` slot by 2026-12-09 (early-bird missed; slot changed 2026-10-02) with the
   collaboration.
 - [x] Padring experiment (platform-verified 2026-08-31): the `0p5x1` ring
   with `bidir[43:42]` re-typed as a second core `vdd/vss` pair passes the
@@ -92,6 +92,20 @@ production digital path now uses Gray-coded comparator-edge capture and a
 24-bit synchronous serial readout. GF180 mapping and 20 MHz pre-layout STA pass
 for the integrated digital top.
 
+Architecture revision 2026-09-18 (spec 0.6-draft): the design review with
+the collaborating IC-design group removed the analog MUX (comparator per cell,
+parallel conversion), fixed the hold capacitor at the smallest drawable MIM
+(54.5 fF), adopted bottom-plate sampling with the ramp applied to the
+capacitor (fixed comparator reference), and set the ADC to 8 bit. Done since:
+parallel 8-bit controller and 32-bit digital top with self-checking tests,
+GF180 mapping, and 20 MHz STA (`make parallel-controller`, `make digital-top`);
+bottom-plate cell study showing that the comparator must sense the
+first-frozen plate (pedestal spread 0.09 mV, gain error -0.02 %, versus 2-4 LSB
+signal-dependent pedestal and +9 % gain error when sensing the input-side
+plate) — method study on the exploration branch `keisuke/analog-explore`. Remaining in Phase 2: comparator spec
+re-derivation (transient noise, fixed trip), ramp generator for the capacitor
+load, on-chip bottom-first switch delay, new mixed-signal co-simulation.
+
 ## Phase 3: Test macro
 
 - Small sampling array.
@@ -105,10 +119,39 @@ Progress: the integrated digital top now completes a reproducible GF180
 RTL-to-GDS flow. Post-route multi-corner STA, antenna checks, detailed-routing
 DRC, Magic DRC, KLayout DRC, and Netgen LVS all pass with zero violations. The
 analog macro layout and extracted analog simulation remain before this phase
-can close.
+can close. Digital-on-top integration is proven (2026-09-25): an analog hard
+macro built from the gdsfactory generator (GDS/LEF/lib/blackbox/SPICE views)
+is placed, powered and routed by LibreLane with zero DRC/LVS/timing/antenna
+violations (`mixed_signal/top_placement` by the design team at 5 V, and
+`experiments/digital_on_top` on the exploration branch `keisuke/analog-explore`
+at 3.3 V with the provider precheck).
 
 ## Phase 4: Tape-out integration
 
 - Pad ring, ESD, power domains, decoupling, and seal-ring constraints.
 - Top-level mixed-signal integration and package/PCB co-design.
 - Provider signoff and final reproducibility run.
+
+## Scale constraint for Tape-out 3 (recorded 2026-09-18)
+
+The first drawn GF180 unit cell (input gate, 54.5 fF MIM over the comparator,
+comparator, buffers; no routing) measures 28 x 22 um = 616 um^2, dominated by
+the comparator. Scaling estimates against the provider's slots (0.5x1 core
+4.46 mm^2, 1x1 core ~12.9 mm^2):
+
+| Array | Cells | Cell area only | Fits |
+| --- | ---: | ---: | --- |
+| 8 ch x 32768 (IRSX) | 262k | ~160 mm^2 | no |
+| 1 ch x 32768 | 33k | ~20 mm^2 | no (1x1) |
+| 8 ch x 2048 | 16k | ~10 mm^2 | marginal (1x1) |
+| 1 ch x 4096 | 4k | ~2.5 mm^2 | yes (0.5x1) |
+
+Consequences: (1) the Tape-out 3 depth must be derived from the required
+*time* depth (trigger latency x sampling rate) and the measured cell area,
+not copied from IRSX; (2) GF180's 3.3 V devices (min L 0.28 um) offer no
+shrink path, so an IRSX-class 8 x 32k array at multi-GSa/s implies a finer
+node (open: IHP SG13G2 130 nm; closed: commercial 65-130 nm) — a decision for
+the Tape-out 3 gate, while the architecture, calibration scheme, and flow
+developed here carry over; (3) a compact comparator is the main area lever
+(the register/latch bank is shared per conversion window and does not scale
+with cell count).
