@@ -131,10 +131,11 @@ formally revised.
 | Read MUX | [x] removed | **None** (2026-09-18). Every cell has its own comparator; one ramp is broadcast to all cells; the four conversions run in parallel (IRSX-style). The v0.5 MUX blocks remain in the repository as legacy reference only |
 | ADC | [x] | Wilkinson: one shared ramp and 8-bit Gray counter, one comparator per cell. **Ramp applied to the storage capacitor** (not to the comparator input): the comparator senses the plate that was frozen first and trips at a fixed reference, so its common-mode dependence does not enter the transfer function |
 | Input voltage window | [ ] target | 1.5 V span, IRSX-like 0.5-2.0 V as the working assumption. On the 3.3 V supply the window *position* is a free variable set by the front-end baseline; freeze it together with the comparator variant (see below) |
-| Comparator input pair | [ ] re-derive | The fixed-reference trip (2026-09-18) removes the requirement of offset accuracy across 0.5-2.0 V; what remains is that the input pair stays functional while the sensed node moves toward the trip point (see 5.3). The PMOS-input choice made for a moving trip point and the ~150 um^2 / ~50 uW sizing are to be re-derived against the new spec (fixed trip near 2.0 V favours an NMOS pair) |
+| Comparator input pair | [ ] re-derive | The fixed-reference trip (2026-09-18) removes the requirement of offset accuracy across 0.5-2.0 V; what remains is that the input pair stays functional while the sensed node moves toward the trip point (see 5.3). `V_BL` (trip level) is now a free design variable, so NMOS or PMOS input may be chosen; the ~150 um^2 / ~50 uW sizing is to be re-derived. Review guidance 2026-10-02: matched current-source devices, output inverter balanced for symmetric edges, finger width about 5 um (not 15 um), the PDK width parameter is **per finger**; expected input-offset sigma about 5 mV from the shown sizes; delay result to be corrected and the material kept consistent |
+| Comparator output | [ ] decide | Review recommendation 2026-10-02: the analog cell takes the conversion clock and **latches the comparator output inside the cell**, delivering a clean synchronous flag per cell. The comparator output may be metastable and should not be handed to place-and-route as a chip-level net. If adopted, the digital capture becomes synchronous (see 5.4) |
 | Counter and storage | [x] | Shared 8-bit Gray counter, four comparator-edge capture channels, four 8-bit result registers, per-cell timeout flag |
 | Readout | [x] | 32-bit slow synchronous CMOS serial output `{cell3, cell2, cell1, cell0}` |
-| Ramp | [x] | Internal ramp plus external debug/bypass path |
+| Ramp | [x] redefined | Internal ramp applied to the storage capacitors (load 4 x ~60 fF in Tape-out 1) plus external debug/bypass path. Keep it simple for Tape-out 1 (review 2026-10-02): a current source into a capacitor, possibly external, rather than a precision integrator; the first draft (integrator, 4 pF, 0.5-2.0 V in a few us) is a starting point only |
 | Clocking | [x] | Board-controllable sampling controls (with the in-cell bottom-first switch order generated on chip) and independent 20 MHz conversion clock |
 | Test access | [x] | Block isolation and observable internal nodes, subject to pad budget |
 
@@ -240,6 +241,15 @@ code range = 0 ... 255; a cell that never crosses reads 255 with timeout[i] = 1
   `VREF`; the comparator must remain functional, not accurate, over that swing.
 - Comparator polarity and capture convention are documented.
 - A conversion timeout handles no-crossing cases.
+- **Over-voltage constraint (review 2026-09-25):** the ramp does not stop when
+  a cell trips, so the sensed node keeps moving. With `VREF`, the ramp range
+  and the input range as chosen, the maximum node excursion
+  (`VREF + (ramp end - VIN_min)` for the bottom-sensed arrangement) can exceed
+  3.3 V on the 3.3 V devices (3.7 V was observed in a trial). `V_BL`/`VREF`,
+  ramp start/end, ramp direction (a falling ramp reverses the code,
+  `255 - code`, and the output polarity) and conversion time are therefore
+  one design choice; stopping the ramp at the needed span or clamping the
+  node (diode or soft limit) are the options. Open item for the analog owner.
 
 The regression signature for the digital path is `16, 20, 27, 200`
 (parallel), replacing the sequential `16, 20, 27, 35` of v0.5. It is a
@@ -256,6 +266,11 @@ IDLE (acquire) -> CONNECT -> CONVERT -> [DRAIN on overflow] -> DONE
 - One shared 8-bit binary counter with Gray encoding; each cell captures the
   Gray word on its own comparator falling edge (local capture clock) and a
   toggle synchronizer returns the event to the conversion clock domain.
+  *Alternative under decision (review 2026-10-02):* if the analog cell
+  latches its comparator output with the conversion clock, the capture
+  becomes synchronous — the controller samples the four flags every clock
+  and records the count of the first asserted cycle; Gray coding and the
+  clock-domain crossing disappear from the digital block.
 - Four 8-bit results remain associated with their cell numbers; per-cell
   `timeout` flags accompany them.
 - The 32-bit payload is `{cell3, cell2, cell1, cell0}` unless explicitly revised.

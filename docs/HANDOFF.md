@@ -114,11 +114,21 @@ spec; the v0.5 blocks listed below remain as legacy references.
 
 ## 5. Highest-priority open work (proposed order)
 
+0. **Pin list, top-level schematic and test plan first** (review 2026-10-02):
+   fix the chip context before fine-grained block design. Then keep a script
+   that generates the full-chip GDS at any time, with dummy blocks where
+   needed, and run it as a nightly regression (`mixed_signal/top_placement`
+   is the intended home). Missing commits matter: `main` must build.
+
 1. ~~Retarget the digital physical flow to 3.3 V~~ — done 2026-09-25: every
    digital script and the physical flow use `gf180mcu_as_sc_mcu7t3v3`
    (fetched into `.eda-tools/pdk` by `make pdk`; the container image ships
    only the 5 V cells). `make digital-physical` is clean at 3.3 V.
-2. **Comparator re-derivation for the fixed-reference trip** — with the ramp
+2. **Comparator re-derivation for the fixed-reference trip** (design team;
+   review guidance 2026-10-02: matched current sources, balanced output
+   inverter, ~5 um fingers, width parameter is per finger, fix the delay
+   result, expected offset sigma ~5 mV; latch the output inside the cell)
+   — with the ramp
    applied to the capacitor, offset accuracy across 0.5-2.0 V is no longer
    required; the pair must stay functional while the sensed node moves to the
    ~2.0 V trip (spec 5.3). Re-derive the spec (noise via **transient-noise**
@@ -142,8 +152,10 @@ spec; the v0.5 blocks listed below remain as legacy references.
 6. Gray-capture metastability characterization at transistor level (the
    v0.5 phase-sweep finding of a ~500 ps margin on one cell applies to the
    parallel capture channels as well).
-7. **Ramp generator re-design** for the capacitor load (4 x ~60 fF now, tens
-   of pF to nF in later tape-outs) and the bottom-first switch ordering.
+7. **Ramp generator** for the capacitor load (4 x ~60 fF now, tens of pF to
+   nF in later tape-outs), kept simple for Tape-out 1 (current source into a
+   capacitor, possibly external); together with `V_BL`/`VREF`, ramp range and
+   direction under the over-voltage constraint (spec 5.3).
 8. **Synchronous capture option (review of 2026-10-02):** the collaborating
    group recommends latching the comparator output with the conversion clock
    *inside the analog cell*, so the digital block receives a clean
