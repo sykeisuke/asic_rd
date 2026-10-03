@@ -110,6 +110,7 @@ Consequences: the analog pad budget drops from 6 to 4 (`TOP_LEVEL_INTERFACE.md`
 test-access table to be re-cut: `analog_in`, `external_ramp_in` and two
 debug pads); the padring/AVDD experiment and the digital-on-top chip were
 rebuilt for `1x0.5` on the template fork (branch `slot-1x0p5`): full chip
-clean (DRC/LVS/antenna/density/timing) with the second core pair; provider
-precheck with `--cob` to be recorded there. The `0.5x1` platform project
+clean (DRC/LVS/antenna/density/timing) with the second core pair, and the
+provider precheck with `--cob` (slot size, COB pad mask, density, antenna,
+Magic/KLayout DRC) is clear (2026-10-03). The `0.5x1` platform project
 (`G803UHWS`) is superseded.

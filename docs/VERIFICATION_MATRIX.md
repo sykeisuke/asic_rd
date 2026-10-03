@@ -31,5 +31,5 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | Chip top | Pad ring + 8-bit digital top + one analog hard macro, 3.3 V / `ocd_io`, `bi_a` analog pads, provider precheck incl. COB pad mask clear | PASS (template fork branch `digital-on-top-chip-core`; placeholder comparator) | fork `run-chip.sh` |
 | Chip top | Real analog macros (bottom-plate cells, 0.6 comparators, ramp), fill, top DRC/LVS | OPEN | analog layout first |
 | Package/PCB | Evaluation board mating the provider COB mezzanine | OPEN | Run 3 COB pinout revision |
-| Pad ring | `1x0p5` ring with second core pair (`bidir[45:44]`) + 8-bit top + macro: DRC/LVS/antenna/density/timing clean | PASS (fork branch `slot-1x0p5`; provider precheck pending) | fork `SLOT=1x0p5 ./run-chip.sh` |
+| Pad ring | `1x0p5` ring with second core pair (`bidir[45:44]`) + 8-bit top + macro: DRC/LVS/antenna/density/timing clean | PASS incl. provider precheck with COB pad mask (fork branch `slot-1x0p5`) | fork `SLOT=1x0p5 ./run-chip.sh` |
 | Fabrication | MPW submission and silicon test | BLOCKED | `1x0.5` slot purchase (deadline 2026-12-09) |
