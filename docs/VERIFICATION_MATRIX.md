@@ -19,13 +19,16 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | Mixed signal | Four SPICE timings into RTL (sequential controller) | PASS (legacy) | `make four-cell-cosim` |
 | CDC | Comparator clock phase sweep (sequential controller) | PASS (legacy) | `make phase-sweep` |
 | Readout | Four 8-bit codes through the 32-bit serial output, 20 MHz STA | PASS | `make digital-top` |
-| Digital layout | GF180 GDS, DRC, LVS, post-route STA | STALE (6-bit top; rerun with the 8-bit top and 3.3 V library) | `make digital-physical` |
+| Digital layout | GF180 GDS, DRC, LVS, post-route STA (8-bit top, 3.3 V `gf180mcu_as_sc_mcu7t3v3`) | PASS | `make digital-physical` |
 | Analog PVT | Process, voltage, temperature matrix | OPEN | TBD |
 | Mismatch | Comparator Monte Carlo | OPEN (design-team result 2026-09-18: sigma 2.75 mV, not yet in repo) | TBD |
 | Noise | Comparator transient noise vs kT/C (54.5 fF -> 275 uV) | OPEN | TBD |
 | Mixed signal | Parallel controller driven by bottom-plate cell crossing times | OPEN | TBD |
 | Analog layout | DRC/LVS/extracted SCA + comparator + ramp | OPEN | TBD |
 | Pad ring | `0p5x1` CoB ring with second core pair: platform precheck (pad mask, DRC, antenna) | PASS (density: empty-core artifact) | `run-experiment.sh` in template fork, platform Check #800 |
-| Chip top | Analog/digital integration, fill, top DRC/LVS | OPEN | analog layout first |
+| Integration | Digital-on-top rehearsal with one generator-made analog hard macro, 3.3 V (no pad ring) | PASS (exploration branch `keisuke/analog-explore`, `experiments/digital_on_top`) | branch-only |
+| Chip top | Design-team run: pad ring + 6-bit digital top + three analog hard macros (comparator, two inverters), hand-drawn analog pad wires, 5 V cells / `fd_io`: DRC/LVS/antenna/density/timing clean | PASS (not reproducible from `main` yet: inputs not pushed) | `mixed_signal/top_placement` (its README) |
+| Chip top | Pad ring + 8-bit digital top + one analog hard macro, 3.3 V / `ocd_io`, `bi_a` analog pads, provider precheck incl. COB pad mask clear | PASS (template fork branch `digital-on-top-chip-core`; placeholder comparator) | fork `run-chip.sh` |
+| Chip top | Real analog macros (bottom-plate cells, 0.6 comparators, ramp), fill, top DRC/LVS | OPEN | analog layout first |
 | Package/PCB | Evaluation board mating the provider COB mezzanine | OPEN | Run 3 COB pinout revision |
 | Fabrication | MPW submission and silicon test | BLOCKED | slot purchase (early-bird 2026-09-30) |

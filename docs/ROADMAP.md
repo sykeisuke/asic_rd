@@ -119,7 +119,12 @@ Progress: the integrated digital top now completes a reproducible GF180
 RTL-to-GDS flow. Post-route multi-corner STA, antenna checks, detailed-routing
 DRC, Magic DRC, KLayout DRC, and Netgen LVS all pass with zero violations. The
 analog macro layout and extracted analog simulation remain before this phase
-can close.
+can close. Digital-on-top integration is proven (2026-09-25): an analog hard
+macro built from the gdsfactory generator (GDS/LEF/lib/blackbox/SPICE views)
+is placed, powered and routed by LibreLane with zero DRC/LVS/timing/antenna
+violations (`mixed_signal/top_placement` by the design team at 5 V, and
+`experiments/digital_on_top` on the exploration branch `keisuke/analog-explore`
+at 3.3 V with the provider precheck).
 
 ## Phase 4: Tape-out integration
 

@@ -85,9 +85,8 @@ spec; the v0.5 blocks listed below remain as legacy references.
 - File-based mixed-signal co-verification: measured SPICE comparator timings
   drive the real RTL; a ±2 ns clock-phase sweep identified cell 2 as having
   only ~500 ps of CDC margin (known open issue).
-- A complete RTL-to-GDS LibreLane flow of the (6-bit) digital top with zero
-  DRC/LVS violations — **at 5 V (`gf180mcu_fd_sc_mcu7t5v0`), as flow evidence
-  only**. It must be regenerated for the 8-bit top at 3.3 V (see next section).
+- A complete RTL-to-GDS LibreLane flow of the 8-bit digital top with zero
+  DRC/LVS/timing/antenna violations at 3.3 V (`gf180mcu_as_sc_mcu7t3v3`).
 - CI (GitHub Actions): every PR runs the RTL/co-simulation suite in the
   pinned container; the full analog regression runs weekly and on demand.
 
@@ -114,9 +113,10 @@ spec; the v0.5 blocks listed below remain as legacy references.
 
 ## 5. Highest-priority open work (proposed order)
 
-1. **Retarget the digital physical flow to 3.3 V** (`gf180mcu_as_sc_mcu7t3v3`)
-   and regenerate GDS/STA/DRC/LVS — do this before any new digital work so
-   nothing is built twice.
+1. ~~Retarget the digital physical flow to 3.3 V~~ — done 2026-09-25: every
+   digital script and the physical flow use `gf180mcu_as_sc_mcu7t3v3`
+   (fetched into `.eda-tools/pdk` by `make pdk`; the container image ships
+   only the 5 V cells). `make digital-physical` is clean at 3.3 V.
 2. **Comparator re-derivation for the fixed-reference trip** — with the ramp
    applied to the capacitor, offset accuracy across 0.5-2.0 V is no longer
    required; the pair must stay functional while the sensed node moves to the
@@ -145,6 +145,29 @@ spec; the v0.5 blocks listed below remain as legacy references.
    of pF to nF in later tape-outs) and the bottom-first switch ordering.
 8. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
    times into the parallel controller (replacing the legacy MUX co-sim).
+9. **Digital-on-top integration** (review recommendation) — two implementations
+   now exist and should converge: the design team's
+   `mixed_signal/top_placement/` (in this repository: wrapper generator
+   `macros.py`, hand-drawn analog pad wires `analog_routes.tcl`, full-chip
+   run clean at 5 V / `fd_io`, see its README and RESULTS) and the
+   template-fork run described below (3.3 V / `ocd_io`, `bi_a` pads,
+   provider precheck). Proposed home: `mixed_signal/top_placement`, with
+   the 3.3 V library set and the precheck added. Note that
+   `mixed_signal/top_placement` currently references files that are not in
+   `main` (the `mixed_signal/analog_layout` cells, `comparator_unit_cell`,
+   `scripts/sim.sh`, a `make top-placement` target, ADR 0006/0009), so it
+   cannot be re-run from a fresh checkout until those are pushed. The recipe for
+   turning a generator layout into a LibreLane hard macro and the seven
+   pitfalls met on the way are recorded in
+   `experiments/digital_on_top/RESULTS.md` on the exploration branch
+   `keisuke/analog-explore` (clean P&R/DRC/LVS/STA with one
+   analog macro, 2026-09-25), and the full-chip version (pad ring, 3.3 V,
+   template fork branch `digital-on-top-chip-core`) is clean too. **Watch
+   out:** the template's `asig_5p0` analog pads are not routable by the
+   digital router and LVS passes even with the macro inputs floating; the
+   experiment uses `bi_a` pads with a patched Liberty. Pad type for the real
+   chip is an open decision (spec says `asig`). Next: the real cell /
+   comparator macros.
 
 ## 6. Environment and daily workflow
 
