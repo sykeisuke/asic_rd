@@ -50,7 +50,7 @@ jobs:
       # actions/cache restores .eda-tools/ with the runner's default mode;
       # the container user must still be able to add the Python add-ons.
       - name: Make the tools directory writable by the container user
-        run: chmod -R a+rwX .eda-tools
+        run: sudo chmod -R a+rwX .eda-tools
 
       - name: Install pinned Python EDA add-ons
         run: umask 000 && make tools
@@ -96,7 +96,7 @@ jobs:
       # actions/cache restores .eda-tools/ with the runner's default mode;
       # the container user must still be able to add the Python add-ons.
       - name: Make the tools directory writable by the container user
-        run: chmod -R a+rwX .eda-tools
+        run: sudo chmod -R a+rwX .eda-tools
 
       - name: Analog regression
         run: umask 000 && make analog-regression
