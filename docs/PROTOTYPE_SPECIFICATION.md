@@ -21,7 +21,7 @@ transistor-level cell study on this repository already follow the revision;
 the analog block schematics/layouts are being re-derived. The `0.5x1` COB ring with a second
 core supply pair passed the provider platform's CoB precheck (2026-08-31);
 ESD is handled by design rule because the provider issues no written
-acceptance. The slot purchase (early-bird 2026-09-30) remains open.
+acceptance. **Slot changed 2026-10-02 to `1x0.5`** (the others sold out; ADR 0004 addendum): die 3.932 x 2.531 mm, 4 analog pads, second core pair at `bidir[45:44]`; purchase deadline 2026-12-09.
 
 Language: **English** | [日本語版](PROTOTYPE_SPECIFICATION_JP.md)
 
@@ -122,7 +122,7 @@ formally revised.
 | Digital cells/supply | [x] | `gf180mcu_as_sc_mcu7t3v3`; `DVDD_CORE=3.3 V` |
 | Pad library/I/O supply | [x] platform precheck passed | `gf180mcu_ocd_io`; `IOVDD=3.3 V`. No written provider acceptance exists; the platform's automated checks are the authority |
 | ESD | [x] design rule | Selected-library structures only (`asig` pads: HBM diodes to DVDD/DVSS, no buffer). Local CDM secondary protection (diode perimeter > 25 um, series poly R > 50 ohm) at every gate-connected pad. No provider characterization will be issued |
-| Slot/package | [x] | `0.5x1` default pad ring plus COB, with the `bidir[43:42]` positions re-typed as a second core `vdd/vss` pair for `AVDD`; passed the platform CoB precheck 2026-08-31 |
+| Slot/package | [x] revised 2026-10-02 | **`1x0.5`** default pad ring plus COB (the `0.5x1` ring below is superseded; same approach, second pair at `bidir[45:44]`, platform-verified for `0.5x1` only so far). Previously: `0.5x1` default pad ring plus COB, with the `bidir[43:42]` positions re-typed as a second core `vdd/vss` pair for `AVDD`; passed the platform CoB precheck 2026-08-31 |
 | Published pad budget | [x] | 56 signal I/Os including 6 analog, plus 16 power pads; Run 1 COB pinout published (run-specific, watch for a Run 3 revision) |
 | Analog channels | [x] | 1 |
 | Storage | [x] | Four sampling cells, one hold capacitor and one comparator per cell |
@@ -131,10 +131,11 @@ formally revised.
 | Read MUX | [x] removed | **None** (2026-09-18). Every cell has its own comparator; one ramp is broadcast to all cells; the four conversions run in parallel (IRSX-style). The v0.5 MUX blocks remain in the repository as legacy reference only |
 | ADC | [x] | Wilkinson: one shared ramp and 8-bit Gray counter, one comparator per cell. **Ramp applied to the storage capacitor** (not to the comparator input): the comparator senses the plate that was frozen first and trips at a fixed reference, so its common-mode dependence does not enter the transfer function |
 | Input voltage window | [ ] target | 1.5 V span, IRSX-like 0.5-2.0 V as the working assumption. On the 3.3 V supply the window *position* is a free variable set by the front-end baseline; freeze it together with the comparator variant (see below) |
-| Comparator input pair | [ ] re-derive | The fixed-reference trip (2026-09-18) removes the requirement of offset accuracy across 0.5-2.0 V; what remains is that the input pair stays functional while the sensed node moves toward the trip point (see 5.3). The PMOS-input choice made for a moving trip point and the ~150 um^2 / ~50 uW sizing are to be re-derived against the new spec (fixed trip near 2.0 V favours an NMOS pair) |
+| Comparator input pair | [ ] re-derive | The fixed-reference trip (2026-09-18) removes the requirement of offset accuracy across 0.5-2.0 V; what remains is that the input pair stays functional while the sensed node moves toward the trip point (see 5.3). `V_BL` (trip level) is now a free design variable, so NMOS or PMOS input may be chosen; the ~150 um^2 / ~50 uW sizing is to be re-derived. Review guidance 2026-10-02: matched current-source devices, output inverter balanced for symmetric edges, finger width about 5 um (not 15 um), the PDK width parameter is **per finger**; expected input-offset sigma about 5 mV from the shown sizes; delay result to be corrected and the material kept consistent |
+| Comparator output | [ ] decide | Review recommendation 2026-10-02: the analog cell takes the conversion clock and **latches the comparator output inside the cell**, delivering a clean synchronous flag per cell. The comparator output may be metastable and should not be handed to place-and-route as a chip-level net. If adopted, the digital capture becomes synchronous (see 5.4) |
 | Counter and storage | [x] | Shared 8-bit Gray counter, four comparator-edge capture channels, four 8-bit result registers, per-cell timeout flag |
 | Readout | [x] | 32-bit slow synchronous CMOS serial output `{cell3, cell2, cell1, cell0}` |
-| Ramp | [x] | Internal ramp plus external debug/bypass path |
+| Ramp | [x] redefined | Internal ramp applied to the storage capacitors (load 4 x ~60 fF in Tape-out 1) plus external debug/bypass path. Keep it simple for Tape-out 1 (review 2026-10-02): a current source into a capacitor, possibly external, rather than a precision integrator; the first draft (integrator, 4 pF, 0.5-2.0 V in a few us) is a starting point only |
 | Clocking | [x] | Board-controllable sampling controls (with the in-cell bottom-first switch order generated on chip) and independent 20 MHz conversion clock |
 | Test access | [x] | Block isolation and observable internal nodes, subject to pad budget |
 
@@ -189,7 +190,7 @@ flowchart LR
 | Hold | 0 | 0 | 0 | Input gate opened; its signal-dependent injection lands on `VTOP[i]`, which is re-driven later and does not enter the result |
 | Convert | 0 | 0 | 1 | `VTOP[i]` driven by `VRAMP`; `VBOT[i] = VREF - (VIN - VRAMP) * C/(C+Cp)` rises toward `VREF` |
 
-Why the sensed plate matters (transistor-level study, `make bottom-plate-cell`,
+Why the sensed plate matters (transistor-level method study on the exploration branch `keisuke/analog-explore`,
 2026-09-18): sensing the frozen plate gives a constant -7.8 mV pedestal
 (0.09 mV spread over 0.5-2.0 V), 0.008 LSB linearity, and **-0.02 % gain
 error** because input and ramp share the same capacitive divider. Sensing the
@@ -240,6 +241,15 @@ code range = 0 ... 255; a cell that never crosses reads 255 with timeout[i] = 1
   `VREF`; the comparator must remain functional, not accurate, over that swing.
 - Comparator polarity and capture convention are documented.
 - A conversion timeout handles no-crossing cases.
+- **Over-voltage constraint (review 2026-09-25):** the ramp does not stop when
+  a cell trips, so the sensed node keeps moving. With `VREF`, the ramp range
+  and the input range as chosen, the maximum node excursion
+  (`VREF + (ramp end - VIN_min)` for the bottom-sensed arrangement) can exceed
+  3.3 V on the 3.3 V devices (3.7 V was observed in a trial). `V_BL`/`VREF`,
+  ramp start/end, ramp direction (a falling ramp reverses the code,
+  `255 - code`, and the output polarity) and conversion time are therefore
+  one design choice; stopping the ramp at the needed span or clamping the
+  node (diode or soft limit) are the options. Open item for the analog owner.
 
 The regression signature for the digital path is `16, 20, 27, 200`
 (parallel), replacing the sequential `16, 20, 27, 35` of v0.5. It is a
@@ -256,6 +266,11 @@ IDLE (acquire) -> CONNECT -> CONVERT -> [DRAIN on overflow] -> DONE
 - One shared 8-bit binary counter with Gray encoding; each cell captures the
   Gray word on its own comparator falling edge (local capture clock) and a
   toggle synchronizer returns the event to the conversion clock domain.
+  *Alternative under decision (review 2026-10-02):* if the analog cell
+  latches its comparator output with the conversion clock, the capture
+  becomes synchronous — the controller samples the four flags every clock
+  and records the count of the first asserted cycle; Gray coding and the
+  clock-domain crossing disappear from the digital block.
 - Four 8-bit results remain associated with their cell numbers; per-cell
   `timeout` flags accompany them.
 - The 32-bit payload is `{cell3, cell2, cell1, cell0}` unless explicitly revised.
@@ -461,7 +476,7 @@ precheck (no written acceptance exists); analog-pad ESD is handled by design
 rule; `AVDD` is separated through a second core supply pair while all grounds
 are common; packaging is COB.
 
-1. Purchase the Run 3 slot (early-bird 2026-09-30, purchase deadline
+1. Purchase the Run 3 `1x0.5` slot ($6,500 incl. COB; purchase deadline
    2026-12-09); re-verify the PDK/template pins at purchase and before
    submission.
 2. Input voltage window position (1.5 V span) and comparator input-pair
@@ -483,7 +498,7 @@ Revision log:
   54.5 fF MIM hold capacitor, bottom-plate sampling with the ramp applied to
   the capacitor and a fixed comparator reference, 8-bit ADC and 32-bit frame.
   Sensed-plate rule added from the transistor-level study
-  (`simulations/gf180_bottom_plate_cell`). RTL (`parallel_wilkinson_controller`,
+  (method study on the exploration branch `keisuke/analog-explore`). RTL (`parallel_wilkinson_controller`,
   `asic_digital_top`) and tests updated; analog blocks to be re-derived.
 - 0.5-draft (2026-09-16) — input window 0.5-2.0 V, comparator variant
   framing, capacitor/MUX scaling path.

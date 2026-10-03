@@ -30,7 +30,7 @@ slides of the same day).
 - RTL: `digital/parallel_wilkinson_controller` (shared 8-bit Gray counter,
   four capture channels, timeout flags) and the 32-bit `asic_digital_top`;
   the sequential controller and its co-simulations are legacy.
-- Cell study (`simulations/gf180_bottom_plate_cell`): bottom-plate sampling
+- Cell method study (the exploration branch `keisuke/analog-explore`): bottom-plate sampling
   delivers its promise **only if the comparator senses the plate whose switch
   opened first** and the ramp drives the other plate. Then pedestal spread
   is 0.09 mV and gain error -0.02 % (input and ramp share the same

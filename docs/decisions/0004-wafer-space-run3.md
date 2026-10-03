@@ -11,7 +11,7 @@ The provider currently publishes these milestones:
 
 | Milestone | Published date |
 | --- | --- |
-| Early-bird deadline | 2026-09-30, 11:59 PM AoE |
+| Early-bird deadline | 2026-09-30, 11:59 PM AoE (missed; see addendum 2026-10-02) |
 | Purchase deadline | 2026-12-09, 11:59 PM AoE |
 | Clean-GDS submission deadline | 2026-12-16, 11:59 PM AoE |
 | Parts shipped | Q2 2027 |
@@ -90,3 +90,27 @@ in [`../PDK_PAD_SUPPLY_FREEZE.md`](../PDK_PAD_SUPPLY_FREEZE.md). Key outcomes:
 - The top cell is `chip_top`; precheck enforces origin, DBU, slot size,
   density, antenna, and DRC. Density is a hard failure, so fill is required.
 - License: Apache-2.0 adopted for this repository (full open publication).
+
+## Addendum 2026-10-02: slot changed to `1x0.5`
+
+The early-bird deadline was missed (UH purchase order requires vendor setup
+first). On 2026-10-02 the `1x1`, `0.5x1` and `0.5x0.5` slots were sold out;
+only `1x0.5` (half height) remained. Decision (project meeting 2026-10-02):
+**move to `1x0.5`**, price $5,000 + $1,500 COB = $6,500, purchase deadline
+2026-12-09, clean-GDS deadline 2026-12-16.
+
+| Resource | `1x0.5` baseline (template `slot_1x0p5.yaml`) |
+| --- | --- |
+| Die | 3.932 mm x 2.531 mm |
+| Core area | 3.048 mm x 1.647 mm = 5.02 mm2 |
+| Signal pads | 4 input + 46 bidirectional + **4 analog** (was 6) |
+| Core supply | 1 `vdd/vss` pair by default (west); the AVDD second pair re-types `bidir[45:44]` (north-west corner), bond-pad positions unchanged |
+
+Consequences: the analog pad budget drops from 6 to 4 (`TOP_LEVEL_INTERFACE.md`
+test-access table to be re-cut: `analog_in`, `external_ramp_in` and two
+debug pads); the padring/AVDD experiment and the digital-on-top chip were
+rebuilt for `1x0.5` on the template fork (branch `slot-1x0p5`): full chip
+clean (DRC/LVS/antenna/density/timing) with the second core pair, and the
+provider precheck with `--cob` (slot size, COB pad mask, density, antenna,
+Magic/KLayout DRC) is clear (2026-10-03). The `0.5x1` platform project
+(`G803UHWS`) is superseded.

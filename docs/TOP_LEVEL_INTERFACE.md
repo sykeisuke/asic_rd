@@ -7,8 +7,11 @@ order, physical power-domain partition, ESD acceptance, and package pin
 numbers remain provider-dependent.
 
 Provider baseline: wafer.space GF180MCU Run 3. The provisional physical target
-is the `0.5x1` default pad ring with COB packaging: 56 signal I/Os, including
-six documented analog pads, plus 16 power pads. See
+is the `1x0.5` default pad ring with COB packaging (changed from `0.5x1`
+on 2026-10-02): 4 input + 46 bidirectional + **4 analog** pads, plus 16
+power pads. The six-analog-pad budget below predates the change: with four
+analog pads only `analog_in`, `external_ramp_in` and two debug pads remain,
+so the test-MUX truth table must absorb the rest. See
 [`decisions/0004-wafer-space-run3.md`](decisions/0004-wafer-space-run3.md).
 
 ## Digital control and readout
@@ -57,7 +60,8 @@ interface must therefore be reduced to the following physical-pad budget.
 
 `comparator_out_mon` is a digital output. `sample_clock_in` is a digital input.
 
-Analog pad type (2026-09-26 finding, `experiments/digital_on_top`): the
+Analog pad type (2026-09-26 finding, digital-on-top experiments on the
+exploration branch and in `mixed_signal/top_placement`): the
 `asig_5p0` pad exposes only the bond pad and cannot be reached by the digital
 router (no access points), so a digital-on-top flow either needs a hand-made
 wide-metal connection to it or the `bi_a` pad (routable `ANA` pin, but a pass

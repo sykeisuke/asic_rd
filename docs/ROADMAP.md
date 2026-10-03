@@ -15,7 +15,7 @@ shall not displace its Must-level flow and observability requirements.
   [`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).
 - [x] Confirm the PDK/template commits against the public template `main`
   (matched as of 2026-08-30; re-verify at purchase and before submission).
-- [ ] Decide the early-bird purchase (2026-09-30 deadline) with the
+- [ ] Purchase the `1x0.5` slot by 2026-12-09 (early-bird missed; slot changed 2026-10-02) with the
   collaboration.
 - [x] Padring experiment (platform-verified 2026-08-31): the `0p5x1` ring
   with `bidir[43:42]` re-typed as a second core `vdd/vss` pair passes the
@@ -102,7 +102,7 @@ GF180 mapping, and 20 MHz STA (`make parallel-controller`, `make digital-top`);
 bottom-plate cell study showing that the comparator must sense the
 first-frozen plate (pedestal spread 0.09 mV, gain error -0.02 %, versus 2-4 LSB
 signal-dependent pedestal and +9 % gain error when sensing the input-side
-plate) — `make bottom-plate-cell`. Remaining in Phase 2: comparator spec
+plate) — method study on the exploration branch `keisuke/analog-explore`. Remaining in Phase 2: comparator spec
 re-derivation (transient noise, fixed trip), ramp generator for the capacitor
 load, on-chip bottom-first switch delay, new mixed-signal co-simulation.
 
@@ -122,7 +122,9 @@ analog macro layout and extracted analog simulation remain before this phase
 can close. Digital-on-top integration is proven (2026-09-25): an analog hard
 macro built from the gdsfactory generator (GDS/LEF/lib/blackbox/SPICE views)
 is placed, powered and routed by LibreLane with zero DRC/LVS/timing/antenna
-violations (`experiments/digital_on_top`).
+violations (`mixed_signal/top_placement` by the design team at 5 V, and
+`experiments/digital_on_top` on the exploration branch `keisuke/analog-explore`
+at 3.3 V with the provider precheck).
 
 ## Phase 4: Tape-out integration
 

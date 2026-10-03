@@ -13,8 +13,8 @@ chip. The following items cannot be treated as optional:
    3.3 V library set, and the pad ring is established by passing the
    automated precheck and COB checks on platform.wafer.space. The PDK/template
    commits match the public template `main` as of 2026-08-30; re-verify at
-   purchase (early-bird 2026-09-30) and before submission.
-2. Pad ring, package, and power domains are frozen: the `0p5x1` ring with a
+   purchase (`1x0.5`, deadline 2026-12-09) and before submission.
+2. Pad ring, package, and power domains: the `1x0p5` ring (since 2026-10-02; the `0p5x1` text below is the verified precedent) with a
    second core `vdd/vss` pair (`bidir[43:42]` positions) passed the platform
    CoB precheck on 2026-08-31. All grounds are common on the default COB
    breakout, so only `AVDD` is separately measurable. Analog ESD follows the
@@ -33,6 +33,6 @@ chip. The following items cannot be treated as optional:
 7. Run provider signoff and archive a clean-checkout submission package.
 
 Changing foundry or standard-cell/I/O libraries after item 2 will invalidate a
-substantial part of physical signoff. The slot purchase (early-bird
-2026-09-30) is therefore the next external decision gate; the technical
+substantial part of physical signoff. The slot purchase (`1x0.5`, by
+2026-12-09) is therefore the next external decision gate; the technical
 provider constraints are closed.

@@ -31,7 +31,7 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
 
 | Milestone | Date |
 | --- | --- |
-| Early-bird pricing ($4k for the 0.5x1 slot) | **2026-09-30** |
+| Early-bird pricing | missed (2026-09-30) — slot changed to `1x0.5`, $6,500 incl. COB (2026-10-02) |
 | Slot purchase deadline | 2026-12-09 |
 | Clean-GDS submission deadline | **2026-12-16** |
 | Silicon delivered | Q2 2027 |
@@ -63,9 +63,9 @@ IC-design group; spec 0.6-draft): analog MUX removed, comparator per cell
 with parallel conversion, 54.5 fF MIM hold capacitor, bottom-plate sampling
 with the ramp applied to the capacitor, 8-bit ADC. The RTL and its tests are
 updated (`make parallel-controller`, `make digital-top`); a transistor-level
-cell study (`make bottom-plate-cell`) established that the comparator must
+cell method study on the exploration branch `keisuke/analog-explore` established that the comparator must
 sense the plate whose switch opened first (constant pedestal, no parasitic
-gain error) — see `simulations/gf180_bottom_plate_cell/RESULTS.md`. The
+gain error) — see that branch's `simulations/gf180_bottom_plate_cell/RESULTS.md`. The
 analog blocks (cell, comparator, ramp) are being re-derived against the new
 spec; the v0.5 blocks listed below remain as legacy references.
 
@@ -98,7 +98,8 @@ spec; the v0.5 blocks listed below remain as legacy references.
   (public archive at <https://discord.wafer.space>).
 - Frozen baseline: PDK/Ciel commit `f6eeac7d`, template commit `0de7e394`,
   `gf180mcu_as_sc_mcu7t3v3` cells + `gf180mcu_ocd_io` pads, everything 3.3 V,
-  `0.5x1` slot + chip-on-board (COB) packaging.
+  `1x0.5` slot + chip-on-board (COB) packaging (changed from `0.5x1` on
+  2026-10-02 when the other slots sold out; ADR 0004 addendum).
 - **All grounds are common on the default COB breakout** → only `AVDD` can be
   separately measured. A padring experiment (template fork, branch
   `avdd-core-pair-experiment`) re-typed two bidir positions into a second
@@ -109,21 +110,31 @@ spec; the v0.5 blocks listed below remain as legacy references.
 - Analog pad ESD: `asig` pads carry HBM diodes to DVDD/DVSS only. Design
   rule adopted from the GF180 DRM: add local CDM secondary protection (diode
   perimeter > 25 um, series poly R > 50 ohm) at every gate-connected pad.
-- Platform project exists: Manufacturing ID `G803UHWS` (0.5x1, CoB, private).
+- Platform project exists: Manufacturing ID `G803UHWS` (0.5x1, CoB, private) — to be re-created for `1x0.5`.
 
 ## 5. Highest-priority open work (proposed order)
+
+0. **Pin list, top-level schematic and test plan first** (review 2026-10-02):
+   fix the chip context before fine-grained block design. Then keep a script
+   that generates the full-chip GDS at any time, with dummy blocks where
+   needed, and run it as a nightly regression (`mixed_signal/top_placement`
+   is the intended home). Missing commits matter: `main` must build.
 
 1. ~~Retarget the digital physical flow to 3.3 V~~ — done 2026-09-25: every
    digital script and the physical flow use `gf180mcu_as_sc_mcu7t3v3`
    (fetched into `.eda-tools/pdk` by `make pdk`; the container image ships
    only the 5 V cells). `make digital-physical` is clean at 3.3 V.
-2. **Comparator re-derivation for the fixed-reference trip** — with the ramp
+2. **Comparator re-derivation for the fixed-reference trip** (design team;
+   review guidance 2026-10-02: matched current sources, balanced output
+   inverter, ~5 um fingers, width parameter is per finger, fix the delay
+   result, expected offset sigma ~5 mV; latch the output inside the cell)
+   — with the ramp
    applied to the capacitor, offset accuracy across 0.5-2.0 V is no longer
    required; the pair must stay functional while the sensed node moves to the
    ~2.0 V trip (spec 5.3). Re-derive the spec (noise via **transient-noise**
    simulation against kT/C = 275 uV at 54.5 fF, delay spread, power, area),
    then Monte Carlo and PVT on the chosen topology. The v0.5 NMOS/PMOS
-   variants and `make comparator-range-wide` are reference material.
+   variants and the widened-window sweep on the exploration branch `keisuke/analog-explore` are reference material.
 3. **Dense transfer test** before any no-missing-code claim.
 4. **Analog layout** (bottom-plate cells with the on-chip switch-order
    delay, four comparators, ramp driving the cell bus, VREF, bias, test
@@ -141,11 +152,20 @@ spec; the v0.5 blocks listed below remain as legacy references.
 6. Gray-capture metastability characterization at transistor level (the
    v0.5 phase-sweep finding of a ~500 ps margin on one cell applies to the
    parallel capture channels as well).
-7. **Ramp generator re-design** for the capacitor load (4 x ~60 fF now, tens
-   of pF to nF in later tape-outs) and the bottom-first switch ordering.
-8. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
+7. **Ramp generator** for the capacitor load (4 x ~60 fF now, tens of pF to
+   nF in later tape-outs), kept simple for Tape-out 1 (current source into a
+   capacitor, possibly external); together with `V_BL`/`VREF`, ramp range and
+   direction under the over-voltage constraint (spec 5.3).
+8. **Synchronous capture option (review of 2026-10-02):** the collaborating
+   group recommends latching the comparator output with the conversion clock
+   *inside the analog cell*, so the digital block receives a clean
+   synchronous flag instead of using the comparator edge as a local capture
+   clock. If adopted, `parallel_wilkinson_controller` simplifies to sampling
+   the flags every clock and recording the count at the first asserted
+   cycle (no Gray capture, no CDC in P&R). Decide together with the pin list.
+9. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
    times into the parallel controller (replacing the legacy MUX co-sim).
-9. **Digital-on-top integration** (review recommendation) — two implementations
+10. **Digital-on-top integration** (review recommendation) — two implementations
    now exist and should converge: the design team's
    `mixed_signal/top_placement/` (in this repository: wrapper generator
    `macros.py`, hand-drawn analog pad wires `analog_routes.tcl`, full-chip
@@ -159,7 +179,8 @@ spec; the v0.5 blocks listed below remain as legacy references.
    cannot be re-run from a fresh checkout until those are pushed. The recipe for
    turning a generator layout into a LibreLane hard macro and the seven
    pitfalls met on the way are recorded in
-   `experiments/digital_on_top/RESULTS.md` (clean P&R/DRC/LVS/STA with one
+   `experiments/digital_on_top/RESULTS.md` on the exploration branch
+   `keisuke/analog-explore` (clean P&R/DRC/LVS/STA with one
    analog macro, 2026-09-25), and the full-chip version (pad ring, 3.3 V,
    template fork branch `digital-on-top-chip-core`) is clean too. **Watch
    out:** the template's `asig_5p0` analog pads are not routable by the

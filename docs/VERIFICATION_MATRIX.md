@@ -6,7 +6,7 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | --- | --- | --- | --- |
 | Sampling | Ideal, NMOS-only, and transmission-gate comparison | PASS | `make sampling-cell` |
 | Sampling | Four sequential cells (1 pF, v0.5 cell) | PASS (legacy) | `make four-cell` |
-| Sampling | Bottom-plate cell, 54.5 fF: sensed-plate rule, pedestal, gain, linearity | PASS | `make bottom-plate-cell` |
+| Sampling | Bottom-plate cell, 54.5 fF: sensed-plate rule, pedestal, gain, linearity (method study) | PASS (the exploration branch `keisuke/analog-explore`; the design team owns the cell) | branch-only |
 | Read mux | Settling and charge sharing | PASS (legacy, MUX removed 2026-09-18) | `make four-cell-mux` |
 | Comparator | Nominal transient and range | PASS | `make comparator` |
 | Comparator | Static offset separation | PASS | `make comparator-offset` |
@@ -26,9 +26,10 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | Mixed signal | Parallel controller driven by bottom-plate cell crossing times | OPEN | TBD |
 | Analog layout | DRC/LVS/extracted SCA + comparator + ramp | OPEN | TBD |
 | Pad ring | `0p5x1` CoB ring with second core pair: platform precheck (pad mask, DRC, antenna) | PASS (density: empty-core artifact) | `run-experiment.sh` in template fork, platform Check #800 |
-| Integration | Digital-on-top: LibreLane P&R with one analog hard macro (GDS/LEF/lib/spice views from the gdsfactory generator), DRC/LVS/STA/antenna/PDN-connectivity clean, 3.3 V library | PASS (no pad ring) | `experiments/digital_on_top/run.sh` |
+| Integration | Digital-on-top rehearsal with one generator-made analog hard macro, 3.3 V (no pad ring) | PASS (exploration branch `keisuke/analog-explore`, `experiments/digital_on_top`) | branch-only |
 | Chip top | Design-team run: pad ring + 6-bit digital top + three analog hard macros (comparator, two inverters), hand-drawn analog pad wires, 5 V cells / `fd_io`: DRC/LVS/antenna/density/timing clean | PASS (not reproducible from `main` yet: inputs not pushed) | `mixed_signal/top_placement` (its README) |
-| Chip top | Pad ring (`0p5x1`, second core pair) + 8-bit digital top + one analog hard macro, 3.3 V: DRC/LVS/antenna/density/timing clean, analog pad nets routed (`bi_a` pads), provider precheck incl. COB pad mask clear | PASS (placeholder comparator) | template fork branch `digital-on-top-chip-core`, `./run-chip.sh` |
+| Chip top | Pad ring + 8-bit digital top + one analog hard macro, 3.3 V / `ocd_io`, `bi_a` analog pads, provider precheck incl. COB pad mask clear | PASS (template fork branch `digital-on-top-chip-core`; placeholder comparator) | fork `run-chip.sh` |
 | Chip top | Real analog macros (bottom-plate cells, 0.6 comparators, ramp), fill, top DRC/LVS | OPEN | analog layout first |
 | Package/PCB | Evaluation board mating the provider COB mezzanine | OPEN | Run 3 COB pinout revision |
-| Fabrication | MPW submission and silicon test | BLOCKED | slot purchase (early-bird 2026-09-30) |
+| Pad ring | `1x0p5` ring with second core pair (`bidir[45:44]`) + 8-bit top + macro: DRC/LVS/antenna/density/timing clean | PASS incl. provider precheck with COB pad mask (fork branch `slot-1x0p5`) | fork `SLOT=1x0p5 ./run-chip.sh` |
+| Fabrication | MPW submission and silicon test | BLOCKED | `1x0.5` slot purchase (deadline 2026-12-09) |
