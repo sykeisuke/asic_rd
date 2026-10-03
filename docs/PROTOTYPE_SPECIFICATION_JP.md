@@ -13,7 +13,7 @@ MPW事業者: **wafer.space GF180MCU Run 3**
 状態: MPW事業者、PDK commit、3.3 V library/supply基準、slot電源構成は凍結済み。**回路構成は 2026-09-18 に改訂**（共同研究先 IC 設計グループとの設計レビュー）: 4-to-1 analog MUX を廃止し、cell ごとに comparator を置いて 4 cell を並列変換する。hold capacitor は描ける最小の MIM（54.5 fF）。bottom-plate sampling とし、ramp は capacitor に印加して comparator は固定基準で判定する。ADC は 8 bit。RTL とそのテスト、最初のトランジスタレベル cell 検討は本改訂に従って更新済み。アナログ回路図・レイアウトは再導出中。
 第2 core supply pairを追加した`0.5x1` COB ringは事業者platformのCoB precheckに合格
 （2026-08-31）。事業者は書面認定を発行しないため、ESDは設計ルールで対応する。
-未確定はslot購入（early-bird 2026-09-30）のみ。
+**2026-10-02 に slot を `1x0.5` へ変更**（他は売り切れ、ADR 0004 addendum）: die 3.932 × 2.531 mm、analog pad 4 本、第 2 core pair は `bidir[45:44]`。購入締切 2026-12-09。
 
 言語: **日本語** | [English version](PROTOTYPE_SPECIFICATION.md)
 
@@ -106,7 +106,7 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | Digital cell/supply | `gf180mcu_as_sc_mcu7t3v3`、`DVDD_CORE=3.3 V` | [x] |
 | Pad library/I/O supply | `gf180mcu_ocd_io`、`IOVDD=3.3 V`。事業者の書面認定は存在せず、platformの自動checkが判定基準 | [x] platform precheck合格 |
 | ESD | 選択pad library内の構造のみ（`asig` padはDVDD/DVSSへのHBM diodeのみ、buffer無し）。Gate接続padには局所CDM二次保護（diode周長 > 25 um、直列poly R > 50 ohm）を追加。事業者からの特性データは提供されない | [x] 設計ルール |
-| Slot/package | `0.5x1` default pad ring + COB。`bidir[43:42]`位置を`AVDD`用の第2 core `vdd/vss` pairに変更 | [x] platform CoB precheck合格（2026-08-31） |
+| Slot/package | **`1x0.5`**（2026-10-02 改訂、下記 `0.5x1` の記述は旧）default pad ring + COB。`bidir[43:42]`位置を`AVDD`用の第2 core `vdd/vss` pairに変更 | [x] platform CoB precheck合格（2026-08-31） |
 | 公開pad budget | 56 signal I/O（うちanalog 6）+ 16 power pads。Run 1のCOB pinoutは公開済み（run固有、Run 3版の改訂に注意） | [x] |
 | Sampling switch | Bottom-plate sampling: 固定基準側の switch を先に開き、入力 transmission gate を後に開く（2026-09-18） | [x] |
 | Hold capacitor | **54.5 fF MIM**（GF180 で描ける最小の MIM。Via4 規則まで満たす FuseTop は 27.2 µm²、抽出密度 2.007 fF/µm²）。2026-09-18 に MOS（`cap_nmos` はバイアス依存が大、蓄積型 `cap_nmos_03v3_b` は平坦だが活性領域を使う）と MOM（≈0.57 fF/µm²、M1–M4 を footprint 全体で占有）より優先して決定。理由は MIM が M4/M5 で **comparator の上に載り cell 面積を消費しない**こと。v0.5 の 1 pF は廃止した共有バス MUX の帰結だった | [x] |
@@ -394,7 +394,7 @@ pinと一致。3.3 V libraryとI/O cellはplatform precheckに合格（書面認
 Analog padのESDは設計ルールで対応。`AVDD`は第2 core supply pairで分離し、
 groundは全て共通。PackageはCOB。
 
-1. Run 3 slotを購入する（early-bird 2026-09-30、購入締切 2026-12-09）。購入時と
+1. Run 3 の `1x0.5` slot を購入する（COB 込み $6,500、購入締切 2026-12-09）。購入時と
    提出前にPDK/template pinを再確認する。
 2. 入力電圧窓の位置（幅 1.5 V）と comparator 入力対の変種を、広窓掃引データに基づき同時に決定。その後、選択変種の PVT/mismatch/post-layout 確認。
 3. スケーリング経路のための小容量テスト構造（50 fF MIM、~15 fF MOM/MOS）。パッド・面積予算が許す場合。

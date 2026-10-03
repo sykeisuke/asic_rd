@@ -31,7 +31,7 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
 
 | Milestone | Date |
 | --- | --- |
-| Early-bird pricing ($4k for the 0.5x1 slot) | **2026-09-30** |
+| Early-bird pricing | missed (2026-09-30) — slot changed to `1x0.5`, $6,500 incl. COB (2026-10-02) |
 | Slot purchase deadline | 2026-12-09 |
 | Clean-GDS submission deadline | **2026-12-16** |
 | Silicon delivered | Q2 2027 |
@@ -98,7 +98,8 @@ spec; the v0.5 blocks listed below remain as legacy references.
   (public archive at <https://discord.wafer.space>).
 - Frozen baseline: PDK/Ciel commit `f6eeac7d`, template commit `0de7e394`,
   `gf180mcu_as_sc_mcu7t3v3` cells + `gf180mcu_ocd_io` pads, everything 3.3 V,
-  `0.5x1` slot + chip-on-board (COB) packaging.
+  `1x0.5` slot + chip-on-board (COB) packaging (changed from `0.5x1` on
+  2026-10-02 when the other slots sold out; ADR 0004 addendum).
 - **All grounds are common on the default COB breakout** → only `AVDD` can be
   separately measured. A padring experiment (template fork, branch
   `avdd-core-pair-experiment`) re-typed two bidir positions into a second
@@ -109,7 +110,7 @@ spec; the v0.5 blocks listed below remain as legacy references.
 - Analog pad ESD: `asig` pads carry HBM diodes to DVDD/DVSS only. Design
   rule adopted from the GF180 DRM: add local CDM secondary protection (diode
   perimeter > 25 um, series poly R > 50 ohm) at every gate-connected pad.
-- Platform project exists: Manufacturing ID `G803UHWS` (0.5x1, CoB, private).
+- Platform project exists: Manufacturing ID `G803UHWS` (0.5x1, CoB, private) — to be re-created for `1x0.5`.
 
 ## 5. Highest-priority open work (proposed order)
 
@@ -143,9 +144,16 @@ spec; the v0.5 blocks listed below remain as legacy references.
    parallel capture channels as well).
 7. **Ramp generator re-design** for the capacitor load (4 x ~60 fF now, tens
    of pF to nF in later tape-outs) and the bottom-first switch ordering.
-8. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
+8. **Synchronous capture option (review of 2026-10-02):** the collaborating
+   group recommends latching the comparator output with the conversion clock
+   *inside the analog cell*, so the digital block receives a clean
+   synchronous flag instead of using the comparator edge as a local capture
+   clock. If adopted, `parallel_wilkinson_controller` simplifies to sampling
+   the flags every clock and recording the count at the first asserted
+   cycle (no Gray capture, no CDC in P&R). Decide together with the pin list.
+9. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
    times into the parallel controller (replacing the legacy MUX co-sim).
-9. **Digital-on-top integration** (review recommendation) — two implementations
+10. **Digital-on-top integration** (review recommendation) — two implementations
    now exist and should converge: the design team's
    `mixed_signal/top_placement/` (in this repository: wrapper generator
    `macros.py`, hand-drawn analog pad wires `analog_routes.tcl`, full-chip

@@ -21,7 +21,7 @@ transistor-level cell study on this repository already follow the revision;
 the analog block schematics/layouts are being re-derived. The `0.5x1` COB ring with a second
 core supply pair passed the provider platform's CoB precheck (2026-08-31);
 ESD is handled by design rule because the provider issues no written
-acceptance. The slot purchase (early-bird 2026-09-30) remains open.
+acceptance. **Slot changed 2026-10-02 to `1x0.5`** (the others sold out; ADR 0004 addendum): die 3.932 x 2.531 mm, 4 analog pads, second core pair at `bidir[45:44]`; purchase deadline 2026-12-09.
 
 Language: **English** | [日本語版](PROTOTYPE_SPECIFICATION_JP.md)
 
@@ -122,7 +122,7 @@ formally revised.
 | Digital cells/supply | [x] | `gf180mcu_as_sc_mcu7t3v3`; `DVDD_CORE=3.3 V` |
 | Pad library/I/O supply | [x] platform precheck passed | `gf180mcu_ocd_io`; `IOVDD=3.3 V`. No written provider acceptance exists; the platform's automated checks are the authority |
 | ESD | [x] design rule | Selected-library structures only (`asig` pads: HBM diodes to DVDD/DVSS, no buffer). Local CDM secondary protection (diode perimeter > 25 um, series poly R > 50 ohm) at every gate-connected pad. No provider characterization will be issued |
-| Slot/package | [x] | `0.5x1` default pad ring plus COB, with the `bidir[43:42]` positions re-typed as a second core `vdd/vss` pair for `AVDD`; passed the platform CoB precheck 2026-08-31 |
+| Slot/package | [x] revised 2026-10-02 | **`1x0.5`** default pad ring plus COB (the `0.5x1` ring below is superseded; same approach, second pair at `bidir[45:44]`, platform-verified for `0.5x1` only so far). Previously: `0.5x1` default pad ring plus COB, with the `bidir[43:42]` positions re-typed as a second core `vdd/vss` pair for `AVDD`; passed the platform CoB precheck 2026-08-31 |
 | Published pad budget | [x] | 56 signal I/Os including 6 analog, plus 16 power pads; Run 1 COB pinout published (run-specific, watch for a Run 3 revision) |
 | Analog channels | [x] | 1 |
 | Storage | [x] | Four sampling cells, one hold capacitor and one comparator per cell |
@@ -461,7 +461,7 @@ precheck (no written acceptance exists); analog-pad ESD is handled by design
 rule; `AVDD` is separated through a second core supply pair while all grounds
 are common; packaging is COB.
 
-1. Purchase the Run 3 slot (early-bird 2026-09-30, purchase deadline
+1. Purchase the Run 3 `1x0.5` slot ($6,500 incl. COB; purchase deadline
    2026-12-09); re-verify the PDK/template pins at purchase and before
    submission.
 2. Input voltage window position (1.5 V span) and comparator input-pair

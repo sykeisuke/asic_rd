@@ -7,8 +7,11 @@ order, physical power-domain partition, ESD acceptance, and package pin
 numbers remain provider-dependent.
 
 Provider baseline: wafer.space GF180MCU Run 3. The provisional physical target
-is the `0.5x1` default pad ring with COB packaging: 56 signal I/Os, including
-six documented analog pads, plus 16 power pads. See
+is the `1x0.5` default pad ring with COB packaging (changed from `0.5x1`
+on 2026-10-02): 4 input + 46 bidirectional + **4 analog** pads, plus 16
+power pads. The six-analog-pad budget below predates the change: with four
+analog pads only `analog_in`, `external_ramp_in` and two debug pads remain,
+so the test-MUX truth table must absorb the rest. See
 [`decisions/0004-wafer-space-run3.md`](decisions/0004-wafer-space-run3.md).
 
 ## Digital control and readout

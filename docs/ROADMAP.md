@@ -15,7 +15,7 @@ shall not displace its Must-level flow and observability requirements.
   [`PDK_PAD_SUPPLY_FREEZE.md`](PDK_PAD_SUPPLY_FREEZE.md).
 - [x] Confirm the PDK/template commits against the public template `main`
   (matched as of 2026-08-30; re-verify at purchase and before submission).
-- [ ] Decide the early-bird purchase (2026-09-30 deadline) with the
+- [ ] Purchase the `1x0.5` slot by 2026-12-09 (early-bird missed; slot changed 2026-10-02) with the
   collaboration.
 - [x] Padring experiment (platform-verified 2026-08-31): the `0p5x1` ring
   with `bidir[43:42]` re-typed as a second core `vdd/vss` pair passes the
