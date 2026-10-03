@@ -77,7 +77,7 @@ Install the version-pinned Python EDA add-ons (gdsfactory GF180 PDK plugin)
 into the git-ignored `.eda-tools/` directory, once per checkout:
 
 ```sh
-make tools
+make tools && make pdk
 ```
 
 Run the integrated milestones:

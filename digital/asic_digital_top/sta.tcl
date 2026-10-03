@@ -1,4 +1,4 @@
-set liberty /foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib
+set liberty /foss/designs/.eda-tools/pdk/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/lib/gf180mcu_as_sc_mcu7t3v3__tt_025C_3v30.lib
 read_liberty $liberty
 read_verilog work/asic_digital_top_mapped.v
 link_design asic_digital_top

@@ -9,13 +9,12 @@ mkdir -p "$result_dir"
     -v "$PROJECT_ROOT:/foss/designs:rw" "$EDA_IMAGE" -lc '
         set -euo pipefail
         cd /foss/designs/digital/asic_digital_top
-        gray=../wilkinson_gray_counter/wilkinson_gray_counter.v
-        controller=../four_cell_wilkinson_controller/four_cell_wilkinson_controller.v
-        sources="$gray $controller serial_readout.v asic_digital_top.v"
+        controller=../parallel_wilkinson_controller/parallel_wilkinson_controller.v
+        sources="$controller serial_readout.v asic_digital_top.v"
         iverilog -g2012 -Wall -o work/tb $sources tb_asic_digital_top.v
         vvp work/tb | tee work/simulation.log
         grep -q "PASS: sample-to-serial" work/simulation.log
-        liberty=/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib
+        liberty=/foss/designs/.eda-tools/pdk/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/lib/gf180mcu_as_sc_mcu7t3v3__tt_025C_3v30.lib
         yosys -Q -T -l work/gf180_synthesis.log -p "
             read_liberty -lib $liberty;
             read_verilog $sources;
@@ -27,7 +26,7 @@ mkdir -p "$result_dir"
             write_verilog -noattr work/asic_digital_top_mapped.v
         " >/dev/null
         test -s work/asic_digital_top_mapped.v
-        grep -q "gf180mcu_fd_sc_mcu7t5v0" work/asic_digital_top_mapped.v
+        grep -q "gf180mcu_as_sc_mcu7t3v3" work/asic_digital_top_mapped.v
         sta -exit sta.tcl > work/sta.log 2>&1
         grep -q "tns max 0.00" work/sta.log
         grep -q "wns max 0.00" work/sta.log

@@ -113,11 +113,15 @@ existing `librelane/runs/chip_top` without running LibreLane again.
 | `clk` | conversion clock, 20 MHz | `rst_n` | reset |
 | `input[0]` | `start` | `input[2]` | `test_mode` |
 | `input[1]` | `shift_en` | `input[3]` | `ext_compare` |
-| `bidir[0]` | `serial_data` | `bidir[6..9]` | `mux_select[0..3]` |
-| `bidir[1]` | `data_ready` | `bidir[10]` | `ramp_reset` |
-| `bidir[2]` | `conversion_busy` | `bidir[11]` | `bus_reset` |
-| `bidir[3]` | `conversion_done` | `bidir[12]` | comparator output `dout` |
-| `bidir[4..5]` | `active_cell[0..1]` | `bidir[13]` | `compare_high` as the counter sees it |
+| `bidir[0]` | `serial_data` | `bidir[8]` | `acquire` |
+| `bidir[1]` | `data_ready` | `bidir[9]` | `ramp_connect` |
+| `bidir[2]` | `conversion_busy` | `bidir[10]` | `ramp_reset` |
+| `bidir[3]` | `conversion_done` | `bidir[11]` | comparator output `dout` |
+| `bidir[4..7]` | `conversion_timeout[3..0]` | `bidir[12]` | `compare_high[0]` as the capture sees it |
+| | | `bidir[13]` | `wsa_inv_gf.Y` |
+
+(Pad map updated 2026-10-01 for the 8-bit parallel digital top of spec 0.6;
+the run recorded in `RESULTS.md` used the earlier 6-bit MUX top.)
 | `analog[0]` | `wsa_cmp.vin` | `analog[3]` | `wsa_inv.A` |
 | `analog[1]` | `wsa_cmp.vramp` (external ramp) | `analog[4]` | `wsa_inv.Y` |
 | `analog[2]` | `wsa_cmp.vbias` | `analog[5]` | spare |

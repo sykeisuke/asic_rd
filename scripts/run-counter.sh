@@ -19,7 +19,7 @@ mkdir -p "$result_dir"
         yosys -Q -T -l work/synthesis.log \
             -p "read_verilog wilkinson_counter.v; synth -top wilkinson_counter; stat" \
             >/dev/null
-        liberty=/foss/pdks/gf180mcuD/libs.ref/gf180mcu_fd_sc_mcu7t5v0/lib/gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30.lib
+        liberty=/foss/designs/.eda-tools/pdk/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/lib/gf180mcu_as_sc_mcu7t3v3__tt_025C_3v30.lib
         yosys -Q -T -l work/gf180_synthesis.log -p "
             read_liberty -lib $liberty;
             read_verilog wilkinson_counter.v;
@@ -32,7 +32,7 @@ mkdir -p "$result_dir"
         " >/dev/null
         test -s work/synthesis.log
         test -s work/gf180_synthesis.log
-        grep -q "gf180mcu_fd_sc_mcu7t5v0" work/wilkinson_counter_mapped.v
+        grep -q "gf180mcu_as_sc_mcu7t3v3" work/wilkinson_counter_mapped.v
     '
 
 printf '%s\n' "Simulation: $result_dir/simulation.log"

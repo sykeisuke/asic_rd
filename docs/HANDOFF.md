@@ -99,9 +99,12 @@ is explicitly **not** a Tape-out 1 pass/fail criterion.
 
 ## 5. Highest-priority open work (proposed order)
 
-1. **Retarget the digital physical flow to 3.3 V** (`gf180mcu_as_sc_mcu7t3v3`)
-   and regenerate GDS/STA/DRC/LVS — do this before any new digital work so
-   nothing is built twice.
+1. ~~Retarget the digital physical flow to 3.3 V~~ — done: every digital
+   script and the physical flow use `gf180mcu_as_sc_mcu7t3v3` (fetched into
+   `.eda-tools/pdk` by `make pdk`; the container image ships only the 5 V
+   cells). The digital top is now the 8-bit parallel architecture decided
+   on 2026-09-18 (`digital/parallel_wilkinson_controller`, 32-bit frame);
+   the sequential 6-bit MUX controller is kept for the legacy co-simulations.
 2. **Comparator mismatch Monte Carlo and PVT matrix** — the two OPEN rows in
    the verification matrix. The comparator's dynamic settling (+6 counts at
    0.4 V input; unreliable at 1.8 V) is the main analog optimization target;
@@ -131,6 +134,7 @@ hosts both work; no tool installation beyond Docker:
 ./scripts/check-host.sh   # host sanity (macOS)
 make check                # verify the pinned EDA environment
 make tools                # once per checkout: pinned gdsfactory GF180 PDK plugin into .eda-tools/
+make pdk                  # once per checkout: 3.3 V cells + pads not in the image, into .eda-tools/pdk
 make nmos-dc              # first GF180 simulation (Lab 0)
 make course-regression    # everything pre-layout
 make vnc                  # browser-based Xschem/Magic desktop (see README)
