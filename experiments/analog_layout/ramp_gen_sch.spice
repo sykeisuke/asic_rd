@@ -1,0 +1,6 @@
+* Schematic-side reference for LVS of the ramp generator (ramp_generator.spice devices).
+.subckt ramp_gen ramp biasp reset vdd vss
+XSOURCE ramp biasp vdd vdd pfet_03v3 L=2u W=1u nf=1 m=1
+XRESET ramp reset vss vss nfet_03v3 L=0.5u W=10u nf=5 m=1
+XCRAMP ramp vss cap_mim_2f0_m4m5_noshield c_length=22.4u c_width=22.4u
+.ends ramp_gen

@@ -1,0 +1,80 @@
+VERSION 5.7 ;
+  NOWIREEXTENSIONATPIN ON ;
+  DIVIDERCHAR "/" ;
+  BUSBITCHARS "[]" ;
+MACRO comparator_min
+  CLASS BLOCK ;
+  FOREIGN comparator_min ;
+  ORIGIN 0.000 0.000 ;
+  SIZE 11.310 BY 52.240 ;
+  PIN vdd
+    DIRECTION INOUT ;
+    USE POWER ;
+    ANTENNADIFFAREA 10.510400 ;
+    PORT
+      LAYER Metal3 ;
+        RECT 4.090 36.780 4.470 52.240 ;
+    END
+  END vdd
+  PIN vss
+    DIRECTION INOUT ;
+    USE GROUND ;
+    ANTENNADIFFAREA 7.328000 ;
+    PORT
+      LAYER Metal3 ;
+        RECT 4.850 48.430 5.230 52.240 ;
+    END
+  END vss
+  PIN sample
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    ANTENNAGATEAREA 0.280000 ;
+    PORT
+      LAYER Metal3 ;
+        RECT 5.610 51.315 5.990 52.240 ;
+    END
+  END sample
+  PIN ramp
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    ANTENNAGATEAREA 0.280000 ;
+    PORT
+      LAYER Metal3 ;
+        RECT 6.370 45.615 6.750 52.240 ;
+    END
+  END ramp
+  PIN bias
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    ANTENNAGATEAREA 0.500000 ;
+    PORT
+      LAYER Metal3 ;
+        RECT 7.130 26.515 7.510 52.240 ;
+    END
+  END bias
+  PIN dout
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    ANTENNADIFFAREA 1.320000 ;
+    PORT
+      LAYER Metal3 ;
+        RECT 10.930 8.830 11.310 52.240 ;
+    END
+  END dout
+  OBS
+      LAYER Metal1 ;
+        RECT 0.200 0.000 2.880 51.365 ;
+      LAYER Metal2 ;
+        RECT 0.150 0.000 11.310 51.365 ;
+      LAYER Metal3 ;
+        RECT 5.530 48.130 6.070 51.015 ;
+        RECT 4.770 45.315 6.070 48.130 ;
+        RECT 4.770 36.480 6.830 45.315 ;
+        RECT 4.090 26.215 6.830 36.480 ;
+        RECT 7.810 26.215 10.630 52.240 ;
+        RECT 4.090 8.530 10.630 26.215 ;
+        RECT 4.090 0.000 11.310 8.530 ;
+  END
+END comparator_min
+END LIBRARY
+

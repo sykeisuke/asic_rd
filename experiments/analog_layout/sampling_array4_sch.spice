@@ -1,0 +1,14 @@
+* Schematic-side reference for LVS of the 4-cell sampling array.
+.subckt sampling_cell_tg in sample sample_b hold vdd vss
+XSWN in sample hold vss nfet_03v3 L=0.28u W=10u nf=10 m=1
+XSWP in sample_b hold vdd pfet_03v3 L=0.28u W=20u nf=10 m=1
+XCHOLD hold vss cap_mim_2f0_m4m5_noshield c_length=22.4u c_width=22.4u
+.ends sampling_cell_tg
+
+.subckt sampling_array4 in hold0 hold1 hold2 hold3 sample0 sample1 sample2 sample3
++ sample_b0 sample_b1 sample_b2 sample_b3 vdd vss
+X0 in sample0 sample_b0 hold0 vdd vss sampling_cell_tg
+X1 in sample1 sample_b1 hold1 vdd vss sampling_cell_tg
+X2 in sample2 sample_b2 hold2 vdd vss sampling_cell_tg
+X3 in sample3 sample_b3 hold3 vdd vss sampling_cell_tg
+.ends sampling_array4
