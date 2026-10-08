@@ -1,0 +1,32 @@
+# GDSFactory+ project: miscellaneous gdsfactory layouts on the GF180MCU PDK.
+#
+# Open THIS folder as the VS Code workspace for the GDSFactory+ extension
+# (it looks for pyproject.toml at the workspace root, creates .venv from the
+# dependencies below, and lists every @gf.cell factory it finds under
+# gfp_misc/). The reproducible, GUI-free path is `make gf-inverter` from
+# the repository root, which runs the same factory inside the pinned
+# IIC-OSIC-TOOLS container and signs it off with the PDK's KLayout decks.
+
+[project]
+name = "gfp-misc"
+version = "0.1.0"
+description = "gdsfactory layouts for the GF180MCU waveform-sampler prototype (misc / exploration)"
+requires-python = ">=3.11"
+dependencies = [
+    # the versions `make tools` installs into .eda-tools/
+    "gdsfactory==9.40.2",
+    "gf180mcu==1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["gfp_misc"]
+
+[tool.gdsfactoryplus]
+name = "gfp_misc"
+
+[tool.gdsfactoryplus.pdk]
+name = "gf180mcu"

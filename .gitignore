@@ -3,11 +3,16 @@
 *.raw
 *.log
 *.out
+*.lis
+*.rpt
+# KLayout auto-backups written next to a saved GDS
+**/backups/*.gds
 *.spiceinit
 simulations/**/work/
 digital/**/work/
 mixed_signal/**/work/
 digital/**/physical/runs/
+mixed_signal/top_placement/librelane/runs/
 runs/
 pdk/
 .eda-tools/

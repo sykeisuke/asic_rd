@@ -1,6 +1,6 @@
 # Prototype verification matrix
 
-Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 8 bit)
+Date: 2026-10-08 (architecture 0.6: parallel conversion, bottom-plate sampling, 8 bit)
 
 | Domain | Verification | Status | Reproducible target |
 | --- | --- | --- | --- |
@@ -27,7 +27,7 @@ Date: 2026-09-18 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | Analog layout | DRC/LVS/extracted SCA + comparator + ramp | OPEN | TBD |
 | Pad ring | `0p5x1` CoB ring with second core pair: platform precheck (pad mask, DRC, antenna) | PASS (density: empty-core artifact) | `run-experiment.sh` in template fork, platform Check #800 |
 | Integration | Digital-on-top rehearsal with one generator-made analog hard macro, 3.3 V (no pad ring) | PASS (exploration branch `keisuke/analog-explore`, `experiments/digital_on_top`) | branch-only |
-| Chip top | Design-team run: pad ring + 6-bit digital top + three analog hard macros (comparator, two inverters), hand-drawn analog pad wires, 5 V cells / `fd_io`: DRC/LVS/antenna/density/timing clean | PASS (not reproducible from `main` yet: inputs not pushed) | `mixed_signal/top_placement` (its README) |
+| Chip top | Design-team flow from a clean checkout of `main`: pad ring + 8-bit digital top + three analog hard macros regenerated from their generators (`CMP`, `INV` by cicpy, `INV_GF` by gdsfactory), hand-drawn analog pad wires, 5 V cells / `fd_io`: macro DRC 0, `INV`/`INV_GF` macro LVS match (`CMP` LVS-open, ADR 0006); routing DRC 0, setup/hold 0 violations all corners, KLayout `gf180mcu.drc` 0, Netgen LVS 0, XOR 0, antenna 0, density after fill 0; max slew/cap/fanout 237/103/8 reported, not judged | PASS (5 V cells / `fd_io`, not the frozen libraries) | `make tools layout gf-inverter top-placement` (`runs/top-placement/20261008T194016Z`) |
 | Chip top | Pad ring + 8-bit digital top + one analog hard macro, 3.3 V / `ocd_io`, `bi_a` analog pads, provider precheck incl. COB pad mask clear | PASS (template fork branch `digital-on-top-chip-core`; placeholder comparator) | fork `run-chip.sh` |
 | Chip top | Real analog macros (bottom-plate cells, 0.6 comparators, ramp), fill, top DRC/LVS | OPEN | analog layout first |
 | Package/PCB | Evaluation board mating the provider COB mezzanine | OPEN | Run 3 COB pinout revision |

@@ -1,0 +1,11 @@
+* Smallest cell that exercises the whole cicpy gf180mcuD path: two
+* devices, four nets, one of them a supply.  Sized 2:1 for a symmetric
+* transition, not for any Tape-out 1 requirement.
+*
+* Finger widths are 1.5 um and 3.0 um.  The gf180 primitive provider
+* needs at least 1.2 um per finger to fit two M2 source/drain straps
+* between the contact ends; see cicpy_gf180.MIN_FINGER_UNITS.
+.subckt INV A Y VDD VSS
+XN Y A VSS VSS nfet_03v3 W=3u L=0.28u nf=2 m=1
+XP Y A VDD VDD pfet_03v3 W=6u L=0.28u nf=2 m=1
+.ends INV
