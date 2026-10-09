@@ -172,11 +172,14 @@ spec; the v0.5 blocks listed below remain as legacy references.
    run clean at 5 V / `fd_io`, see its README and RESULTS) and the
    template-fork run described below (3.3 V / `ocd_io`, `bi_a` pads,
    provider precheck). Proposed home: `mixed_signal/top_placement`, with
-   the 3.3 V library set and the precheck added. Note that
-   `mixed_signal/top_placement` currently references files that are not in
-   `main` (the `mixed_signal/analog_layout` cells, `comparator_unit_cell`,
-   `scripts/sim.sh`, a `make top-placement` target, ADR 0006/0009), so it
-   cannot be re-run from a fresh checkout until those are pushed. The recipe for
+   the 3.3 V library set and the precheck added. Since PR #17 (2026-10-08)
+   `mixed_signal/top_placement` builds from a clean checkout — verified
+   2026-10-09 with the nightly sequence `make tools && make layout gf-inverter
+   && ./scripts/sim.sh top-placement` (pass, 0 DRC/LVS/antenna/density
+   errors, 8-bit digital top, analog pad wires drawn). The nightly CI job
+   `nightly-chip` runs the same sequence. `mixed_signal/unit_cell_floorplan`
+   still references inputs that are not in `main` (`comparator_unit_cell`,
+   `simulations/gf180_sampling_unit_cell`, `EIGHT_BIT_RETARGET.md`). The recipe for
    turning a generator layout into a LibreLane hard macro and the seven
    pitfalls met on the way are recorded in
    `experiments/digital_on_top/RESULTS.md` on the exploration branch
