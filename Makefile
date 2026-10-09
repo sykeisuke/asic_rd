@@ -1,4 +1,4 @@
-.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep vnc stop
+.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep layout drc lvs gf-inverter top-placement vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -66,6 +66,21 @@ digital-top:
 
 digital-physical:
 	./scripts/run-digital-physical.sh
+
+layout:
+	./scripts/run-layout.sh $(CELL)
+
+drc:
+	./scripts/run-drc.sh $(CELL)
+
+lvs:
+	./scripts/run-lvs.sh $(CELL) $(SPICE)
+
+gf-inverter:
+	./scripts/run-gf-inverter.sh
+
+top-placement:
+	./scripts/run-top-placement.sh $(STAGE)
 
 cosim:
 	./scripts/run-cosim.sh

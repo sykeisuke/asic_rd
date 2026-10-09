@@ -1,0 +1,8 @@
+* LVS reference for the gdsfactory-drawn inverter gfp_misc/cells/inverter.py.
+* The devices are those of ../spice/INV.spice (the cicpy INV), renamed so
+* the two layouts of the same circuit keep separate signoff records.
+* W is the total width; nf=2 fingers of W/2 each, as the layout draws them.
+.subckt INV_GF A Y VDD VSS
+XN Y A VSS VSS nfet_03v3 W=3u L=0.28u nf=2 m=1
+XP Y A VDD VDD pfet_03v3 W=6u L=0.28u nf=2 m=1
+.ends INV_GF

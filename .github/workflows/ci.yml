@@ -113,6 +113,51 @@ jobs:
             digital/asic_digital_top/physical/runs/gf180_rtl2gds/final/metrics.json
           retention-days: 14
 
+  # The full chip from a clean checkout: the analog cells regenerated from
+  # their generators (cicpy CMP/INV, gdsfactory INV_GF), wrapped as hard
+  # macros, and placed with the digital top in the template pad ring.
+  nightly-chip:
+    name: Nightly full chip (analog cells + digital-on-top, LibreLane Chip flow)
+    if: github.event_name == 'schedule' && github.event.schedule == '0 12 * * *'
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
+
+      - uses: actions/checkout@v4
+
+      - name: Make workspace writable by the container user
+        run: chmod -R a+rwX .
+
+      - name: Verify pinned EDA environment
+        run: make check
+
+      - name: Install pinned Python EDA add-ons (gdsfactory plugin, cicpy)
+        run: umask 000 && make tools
+
+      - name: Analog cells from their generators
+        run: umask 000 && make layout gf-inverter
+
+      # scripts/sim.sh exits with the make target's status and records
+      # runs/top-placement/<stamp>/metrics.json.
+      - name: Full chip (macros, P&R, DRC, LVS, antenna, fill)
+        run: umask 000 && ./scripts/sim.sh top-placement
+
+      - name: Upload the nightly chip GDS and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chip_top-nightly-${{ github.run_id }}
+          path: |
+            runs/top-placement/
+            mixed_signal/top_placement/librelane/runs/chip_top/final/gds/chip_top.gds
+            mixed_signal/top_placement/librelane/runs/chip_top/final/metrics.csv
+            mixed_signal/top_placement/librelane/runs/chip_top/final/metrics.json
+          retention-days: 14
+
   analog-regression:
     name: Full analog regression (weekly / manual)
     if: (github.event_name == 'schedule' && github.event.schedule == '0 6 * * 1') || github.event_name == 'workflow_dispatch'

@@ -1,0 +1,6 @@
+# GDSFactory+ / uv project environment and build output
+.venv/
+build/
+__pycache__/
+*.gds
+*.lyrdb

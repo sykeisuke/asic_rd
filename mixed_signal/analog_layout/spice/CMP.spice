@@ -1,0 +1,26 @@
+* The comparator of simulations/gf180_comparator/comparator.spice as a
+* subcircuit, so cicpy spi2mag can place and route it.
+*
+* Instance names carry no trailing digits on purpose.  cicpy groups by
+* the non-numeric prefix, so XBUF1..XBUF4 would be one group and get
+* STACKED -- which abuts four guard rings and their wells and fails
+* NW.2a and the well-overlap rule.  Four distinct prefixes put them in
+* the row with the placement spacing between them.
+*
+* Same devices, same W and L.  ONE DEVIATION: XNBUFA is nf=2 here and
+* nf=4 in the simulation deck.  At nf=4 its finger is 1.0 um, under the
+* 1.2 um the primitive provider needs for two M2 source/drain straps,
+* so it cannot be drawn.  W/L are unchanged, so DC behaviour is the
+* same; the junction perimeter the model derives from nf is not.
+* Re-simulate before this fingering is frozen.
+.subckt CMP vin vramp dout vdd vss vbias
+XINP   left vin   tail vss nfet_03v3 L=0.5u  W=20u nf=10 m=1
+XINN   outa vramp tail vss nfet_03v3 L=0.5u  W=20u nf=10 m=1
+XLOADD left left  vdd  vdd pfet_03v3 L=0.5u  W=40u nf=10 m=1
+XLOADM outa left  vdd  vdd pfet_03v3 L=0.5u  W=40u nf=10 m=1
+XTAIL  tail vbias vss  vss nfet_03v3 L=1u    W=20u nf=10 m=1
+XNBUFA  outb outa  vss  vss nfet_03v3 L=0.28u W=4u  nf=2  m=1
+XPBUFA  outb outa  vdd  vdd pfet_03v3 L=0.28u W=8u  nf=4  m=1
+XNBUFB  dout outb  vss  vss nfet_03v3 L=0.28u W=8u  nf=4  m=1
+XPBUFB  dout outb  vdd  vdd pfet_03v3 L=0.28u W=16u nf=4  m=1
+.ends CMP

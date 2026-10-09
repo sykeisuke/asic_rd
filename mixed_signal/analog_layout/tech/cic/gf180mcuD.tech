@@ -1,0 +1,129 @@
+{
+    "//" : [
+        "cicpy technology rules for gf180mcuD (Ciel f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7).",
+        "",
+        "UNITS. cicpy stores coordinates in the unit implied by its magic",
+        "reader: Magic.toAngstrom() is file_units/magscale*100. gf180mcuD",
+        "writes .mag files with 'magscale 1 10' and one file unit is 5 nm of",
+        "silicon, so one cicpy unit is 0.5 nm, not 1 A. gamma is therefore 20,",
+        "not the 100 a sky130 tech file uses, and every rule number below is",
+        "plain micrometre * 100 (M1 width 0.23 um -> 23). Measured, not",
+        "assumed: the gencell gate of a w=2 l=0.5 device is 100x400 file units.",
+        "",
+        "GRID. cicpy_gf180.patch_magic_scale() replaces MagicPrinter's sky130",
+        "scale, so one written unit is one Magic internal unit -- exactly the",
+        "5 nm manufacturing grid -- instead of 25 nm, which cannot express a",
+        "0.26 um via1. The writer therefore quantises to the grid by",
+        "construction and gridcheck, which tests cicpy's un-rounded internal",
+        "coordinate rather than the number written, is off.",
+        "",
+        "ALIASES are magic paint-type names (gf180mcuD.tech 'types' section),",
+        "because Magic.parseToken() resolves a '<< name >>' section header",
+        "through Rules.aliasToLayer(). LAYER NUMBERS are the calma numbers of",
+        "the magic 'cifoutput style gdsii' section.",
+        "",
+        "DESIGN RULES are the gf180mcuD magic drc section, converted from its",
+        "nanometre values (M1.1 width 230 -> 23)."
+    ],
+    "version" : 2,
+    "layers" : {
+        "OD"   : { "alias" : "ndiff",   "number" : 22, "datatype" : -1, "material" : "diffusion", "previous" : "",   "next" : "CO", "color" : "green" },
+        "ODP"  : { "alias" : "pdiff",   "number" : 22, "datatype" : -1, "material" : "diffusion", "previous" : "",   "next" : "CO", "color" : "green" },
+        "ODPS" : { "alias" : "psubdiff","number" : 22, "datatype" : -1, "material" : "diffusion", "previous" : "",   "next" : "CO", "color" : "darkgreen" },
+        "ODNS" : { "alias" : "nsubdiff","number" : 22, "datatype" : -1, "material" : "diffusion", "previous" : "",   "next" : "CO", "color" : "darkgreen" },
+
+        "PO"   : { "alias" : "polysilicon", "number" : 30, "datatype" : -1, "material" : "poly", "previous" : "", "next" : "CO", "color" : "red" },
+
+        "CO"   : { "alias" : "polycontact", "number" : 33, "datatype" : -1, "material" : "cut", "previous" : "PO", "next" : "M1", "color" : "yellow" },
+        "CONDC": { "alias" : "ndiffc",      "number" : 33, "datatype" : -1, "material" : "cut", "previous" : "OD", "next" : "M1", "color" : "yellow" },
+        "COPDC": { "alias" : "pdiffc",      "number" : 33, "datatype" : -1, "material" : "cut", "previous" : "ODP","next" : "M1", "color" : "yellow" },
+        "COPSC": { "alias" : "psubdiffcont","number" : 33, "datatype" : -1, "material" : "cut", "previous" : "ODPS","next" : "M1", "color" : "yellow" },
+        "CONSC": { "alias" : "nsubdiffcont","number" : 33, "datatype" : -1, "material" : "cut", "previous" : "ODNS","next" : "M1", "color" : "yellow" },
+
+        "M1"      : { "alias" : "metal1", "number" : 34, "datatype" : -1, "material" : "metal", "previous" : "CO",   "next" : "VIA1", "pin" : "M1_pin", "color" : "blue" },
+        "M1_pin"  : { "alias" : "metal1", "number" : 34, "datatype" : 10, "material" : "implant", "fill" : "fill", "color" : "blue" },
+        "VIA1"    : { "alias" : "via1",   "number" : 35, "datatype" : -1, "material" : "cut",   "previous" : "M1",   "next" : "M2" },
+        "M2"      : { "alias" : "metal2", "number" : 36, "datatype" : -1, "material" : "metal", "previous" : "VIA1", "next" : "VIA2", "pin" : "M2_pin", "color" : "goldenrod" },
+        "M2_pin"  : { "alias" : "metal2", "number" : 36, "datatype" : 10, "material" : "implant", "fill" : "fill", "color" : "goldenrod" },
+        "VIA2"    : { "alias" : "via2",   "number" : 38, "datatype" : -1, "material" : "cut",   "previous" : "M2",   "next" : "M3" },
+        "M3"      : { "alias" : "metal3", "number" : 42, "datatype" : -1, "material" : "metal", "previous" : "VIA2", "next" : "VIA3", "pin" : "M3_pin", "color" : "aqua" },
+        "M3_pin"  : { "alias" : "metal3", "number" : 42, "datatype" : 10, "material" : "implant", "fill" : "fill", "color" : "aqua" },
+        "VIA3"    : { "alias" : "via3",   "number" : 40, "datatype" : -1, "material" : "cut",   "previous" : "M3",   "next" : "M4" },
+        "M4"      : { "alias" : "metal4", "number" : 46, "datatype" : -1, "material" : "metal", "previous" : "VIA3", "next" : "VIA4", "pin" : "M4_pin", "color" : "darkgreen" },
+        "M4_pin"  : { "alias" : "metal4", "number" : 46, "datatype" : 10, "material" : "implant", "fill" : "fill", "color" : "darkgreen" },
+        "VIA4"    : { "alias" : "via4",   "number" : 41, "datatype" : -1, "material" : "cut",   "previous" : "M4",   "next" : "M5" },
+        "M5"      : { "alias" : "metal5", "number" : 81, "datatype" : -1, "material" : "metal", "previous" : "VIA4", "next" : "",     "pin" : "M5_pin", "color" : "brown" },
+        "M5_pin"  : { "alias" : "metal5", "number" : 81, "datatype" : 10, "material" : "implant", "fill" : "fill", "color" : "brown" },
+
+        "NW"   : { "alias" : "nwell", "number" : 21,  "datatype" : -1, "material" : "implant", "color" : "red",  "fill" : "nofill" },
+        "PW"   : { "alias" : "pwell", "number" : 204, "datatype" : -1, "material" : "implant", "color" : "pink", "fill" : "nofill" },
+        "NP"   : { "alias" : "nplus", "number" : 32,  "datatype" : -1, "material" : "implant", "color" : "cyan", "fill" : "nofill" },
+        "PP"   : { "alias" : "pplus", "number" : 31,  "datatype" : -1, "material" : "implant", "color" : "pink", "fill" : "nofill" }
+    },
+    "technology" : {
+        "gamma" : 20,
+        "grid" : 1,
+        "gridcheck" : false,
+        "spiceunit" : 1e-6,
+        "techlib" : "gf180mcuD",
+        "symbol_libs" : ["gf180mcu"],
+        "symbol_lib" : "gf180mcu",
+        "devices" : {
+            "nfet_03v3" : { "name" : "nfet_03v3", "ports" : ["d","g","s","b"],
+                            "devicetype" : "XM",
+                            "propertymap" : {
+                                "l"  : { "name" : "length", "str" : "*1u" },
+                                "nf" : { "name" : "multiplier", "str" : "" },
+                                "m"  : { "name" : "nf", "str" : "" },
+                                "totalW"  : { "name" : "width", "str" : "*1u" },
+                                "fingerW" : { "name" : "width", "str" : "*1u" }
+                            }
+                          },
+            "pfet_03v3" : { "inherit" : "nfet_03v3", "name" : "pfet_03v3" }
+        }
+    },
+    "rules" : {
+        "ROUTE" : { "horizontalgrid" : 56, "verticalgrid" : 56 },
+        "CELL"  : { "space" : 100, "digitalspace" : 56 },
+
+        "CO"    : { "space" : 25, "width" : 22, "height" : 22 },
+        "CONDC" : { "space" : 25, "width" : 22, "height" : 22 },
+        "COPDC" : { "space" : 25, "width" : 22, "height" : 22 },
+        "COPSC" : { "space" : 25, "width" : 22, "height" : 22 },
+        "CONSC" : { "space" : 25, "width" : 22, "height" : 22 },
+        "PTAPC" : { "space" : 25, "width" : 22, "height" : 22 },
+
+        "VIA1"  : { "space" : 26, "width" : 26, "height" : 26 },
+        "//via2" : "magic checks the via2..4 tile at V2.1 + 2 * V2.3 = 0.28 um",
+        "VIA2"  : { "space" : 26, "width" : 28, "height" : 28 },
+        "VIA3"  : { "space" : 26, "width" : 28, "height" : 28 },
+        "VIA4"  : { "space" : 26, "width" : 28, "height" : 28 },
+
+        "PO"    : { "space" : 24, "width" : 28, "mingatelength" : 28, "enclosure" : 7, "COenclosure" : 7, "COencOpposite" : 7 },
+
+        "OD"    : { "space" : 28, "enclosure" : 7, "COenclosure" : 7, "COencOpposite" : 7, "PTAPCenclosure" : 7, "PTAPCencOpposite" : 7 },
+        "ODP"   : { "space" : 28, "enclosure" : 7, "COenclosure" : 7, "COencOpposite" : 7 },
+        "PDIFF" : { "enclosure" : 7, "PTAPCenclosure" : 7, "PTAPCencOpposite" : 7 },
+        "PTAP"  : { "enclosure" : 7, "PTAPCenclosure" : 7, "PTAPCencOpposite" : 7 },
+
+        "NW"    : { "space" : 60, "enclosure" : 43, "digitalspace" : 0 },
+        "PW"    : { "space" : 60, "enclosure" : 43, "digitalspace" : 0 },
+        "NP"    : { "space" : 40, "enclosure" : 16, "ODencOpposite" : 16, "digitalspace" : 0 },
+        "PP"    : { "space" : 40, "enclosure" : 16, "ODencOpposite" : 16, "digitalspace" : 0 },
+
+        "M1"    : { "space" : 23, "width" : 23, "minwidth" : 23, "ana_width" : 23, "cap_width" : 23, "capspace" : 23,
+                    "COenclosure" : 6, "COencOpposite" : 4, "PTAPCenclosure" : 6,
+                    "VIA1enclosure" : 4, "VIA1encOpposite" : 6 },
+        "M2"    : { "space" : 28, "width" : 28, "minwidth" : 28, "capspace" : 28,
+                    "VIA1enclosure" : 4, "VIA1encOpposite" : 6,
+                    "VIA2enclosure" : 3, "VIA2encOpposite" : 5 },
+        "M3"    : { "space" : 28, "width" : 28, "minwidth" : 28, "capspace" : 28,
+                    "VIA2enclosure" : 3, "VIA2encOpposite" : 5,
+                    "VIA3enclosure" : 3, "VIA3encOpposite" : 5 },
+        "M4"    : { "space" : 28, "width" : 28, "minwidth" : 28, "capspace" : 28, "cap_width" : 28,
+                    "VIA3enclosure" : 3, "VIA3encOpposite" : 5,
+                    "VIA4enclosure" : 3, "VIA4encOpposite" : 5 },
+        "M5"    : { "space" : 46, "width" : 44, "minwidth" : 44, "capspace" : 46, "cap_width" : 44,
+                    "VIA4enclosure" : 3, "VIA4encOpposite" : 5 }
+    }
+}

@@ -15,9 +15,9 @@ mkdir -p "$EDA_TOOLS_DIR"
         set -euo pipefail
         export PYTHONUSERBASE=/foss/designs/.eda-tools
         pip install --quiet --user --no-warn-script-location \
-            gf180mcu==1.0.0
+            gf180mcu==1.0.0 cicpy==0.3.1
         python3 - <<PY
-import gdsfactory, kfactory, gf180mcu
+import gdsfactory, kfactory, gf180mcu, cicpy
 print("gdsfactory", gdsfactory.__version__, "(image)")
 print("kfactory  ", kfactory.__version__, "(image)")
 print("gf180mcu  ", gf180mcu.__version__, "(.eda-tools, pinned)")
@@ -26,6 +26,8 @@ pdk.activate()
 c = pdk.get_component("nfet", w_gate=1.0, l_gate=0.28)
 assert c is not None
 print("gf180mcu PDK activated; sample nfet cell built OK")
+print("cicpy    ", cicpy.__version__ if hasattr(cicpy, "__version__")
+      else "0.3.1", "(.eda-tools, pinned)")
 PY
     '
 
