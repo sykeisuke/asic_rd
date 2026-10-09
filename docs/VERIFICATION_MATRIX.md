@@ -14,8 +14,8 @@ Date: 2026-10-08 (architecture 0.6: parallel conversion, bottom-plate sampling, 
 | ADC | Single 6-bit Wilkinson slice (ramp at comparator input) | PASS (legacy) | `make wilkinson-slice` |
 | ADC | Eight-point transfer | PASS | `make transfer` |
 | Array ADC | Four sequential conversions via MUX | PASS (legacy) | `make four-cell-wilkinson` |
-| CDC | Gray comparator-edge capture (single channel reference) | PASS | `make gray-counter` |
-| Controller | Parallel 4-cell 8-bit conversion, timeout, last-count capture | PASS | `make parallel-controller` |
+| CDC | Gray comparator-edge capture (single-channel reference; legacy since the synchronous capture of 2026-10-09) | PASS (legacy) | `make gray-counter` |
+| Controller | Parallel 4-cell 8-bit conversion with synchronous flag sampling, timeout, first/last-count capture | PASS | `make parallel-controller` |
 | Mixed signal | Four SPICE timings into RTL (sequential controller) | PASS (legacy) | `make four-cell-cosim` |
 | CDC | Comparator clock phase sweep (sequential controller) | PASS (legacy) | `make phase-sweep` |
 | Readout | Four 8-bit codes through the 32-bit serial output, 20 MHz STA | PASS | `make digital-top` |

@@ -36,7 +36,7 @@ chip_top.sv    template pad ring, 0p5x1 slot, pad positions unchanged
 | `librelane/macros.yaml` | placed macros and their power connections |
 | `librelane/pdn_cfg.tcl` | the template's PDN script, SRAM grids removed, sources `analog_routes.tcl` |
 | `librelane/analog_routes.tcl` | draws the five pad-to-macro analog wires (see below) |
-| `librelane/chip_top.sdc` | conversion clock plus the two comparator-event sources |
+| `librelane/chip_top.sdc` | conversion clock; comparator and ext_compare are latched data inputs |
 | `build.sh` / `container.sh` | the in-container half of the run (`macros`, `chip`, `collect` stages) |
 | `check-top.awk` | the acceptance criteria |
 | `lvs_summary.py`, `drc_summary.py` | Netgen / KLayout DRC / XOR results as REPORT lines: which nets, rules, where |
@@ -117,11 +117,14 @@ existing `librelane/runs/chip_top` without running LibreLane again.
 | `bidir[1]` | `data_ready` | `bidir[9]` | `ramp_connect` |
 | `bidir[2]` | `conversion_busy` | `bidir[10]` | `ramp_reset` |
 | `bidir[3]` | `conversion_done` | `bidir[11]` | comparator output `dout` |
-| `bidir[4..7]` | `conversion_timeout[3..0]` | `bidir[12]` | `compare_high[0]` as the capture sees it |
+| `bidir[4..7]` | `conversion_timeout[3..0]` | `bidir[12]` | `crossed[0]` as the capture sees it |
 | | | `bidir[13]` | `wsa_inv_gf.Y` |
 
-(Pad map updated 2026-10-01 for the 8-bit parallel digital top of spec 0.6;
-the run recorded in `RESULTS.md` used the earlier 6-bit MUX top.)
+(Pad map updated 2026-10-01 for the 8-bit parallel digital top of spec 0.6
+and 2026-10-09 for its synchronous capture: the comparator output is latched
+with the conversion clock in `chip_core` as a stand-in for the latch that
+belongs in the analog cell. The run recorded in `RESULTS.md` used the
+earlier 6-bit MUX top.)
 | `analog[0]` | `wsa_cmp.vin` | `analog[3]` | `wsa_inv.A` |
 | `analog[1]` | `wsa_cmp.vramp` (external ramp) | `analog[4]` | `wsa_inv.Y` |
 | `analog[2]` | `wsa_cmp.vbias` | `analog[5]` | spare |
