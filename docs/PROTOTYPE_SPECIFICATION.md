@@ -132,8 +132,8 @@ formally revised.
 | ADC | [x] | Wilkinson: one shared ramp and 8-bit Gray counter, one comparator per cell. **Ramp applied to the storage capacitor** (not to the comparator input): the comparator senses the plate that was frozen first and trips at a fixed reference, so its common-mode dependence does not enter the transfer function |
 | Input voltage window | [ ] target | 1.5 V span, IRSX-like 0.5-2.0 V as the working assumption. On the 3.3 V supply the window *position* is a free variable set by the front-end baseline; freeze it together with the comparator variant (see below) |
 | Comparator input pair | [ ] re-derive | The fixed-reference trip (2026-09-18) removes the requirement of offset accuracy across 0.5-2.0 V; what remains is that the input pair stays functional while the sensed node moves toward the trip point (see 5.3). `V_BL` (trip level) is now a free design variable, so NMOS or PMOS input may be chosen; the ~150 um^2 / ~50 uW sizing is to be re-derived. Review guidance 2026-10-02: matched current-source devices, output inverter balanced for symmetric edges, finger width about 5 um (not 15 um), the PDK width parameter is **per finger**; expected input-offset sigma about 5 mV from the shown sizes; delay result to be corrected and the material kept consistent |
-| Comparator output | [ ] decide | Review recommendation 2026-10-02: the analog cell takes the conversion clock and **latches the comparator output inside the cell**, delivering a clean synchronous flag per cell. The comparator output may be metastable and should not be handed to place-and-route as a chip-level net. If adopted, the digital capture becomes synchronous (see 5.4) |
-| Counter and storage | [x] | Shared 8-bit Gray counter, four comparator-edge capture channels, four 8-bit result registers, per-cell timeout flag |
+| Comparator output | [x] decided 2026-10-09 | The analog cell takes the conversion clock and **latches the comparator output inside the cell**, delivering a synchronous flag `crossed[i]` (1 once the ramp has passed the sample). The comparator output itself is never a chip-level net. The digital capture is synchronous (5.4); the cell latch adds a clock pin and one or two flip-flops per cell |
+| Counter and storage | [x] | Shared 8-bit counter, synchronous sampling of the four cell flags, four 8-bit result registers, per-cell timeout flag (Gray capture removed 2026-10-09) |
 | Readout | [x] | 32-bit slow synchronous CMOS serial output `{cell3, cell2, cell1, cell0}` |
 | Ramp | [x] redefined | Internal ramp applied to the storage capacitors (load 4 x ~60 fF in Tape-out 1) plus external debug/bypass path. Keep it simple for Tape-out 1 (review 2026-10-02): a current source into a capacitor, possibly external, rather than a precision integrator; the first draft (integrator, 4 pF, 0.5-2.0 V in a few us) is a starting point only |
 | Clocking | [x] | Board-controllable sampling controls (with the in-cell bottom-first switch order generated on chip) and independent 20 MHz conversion clock |
@@ -263,14 +263,14 @@ The controller sequence is:
 IDLE (acquire) -> CONNECT -> CONVERT -> [DRAIN on overflow] -> DONE
 ```
 
-- One shared 8-bit binary counter with Gray encoding; each cell captures the
-  Gray word on its own comparator falling edge (local capture clock) and a
-  toggle synchronizer returns the event to the conversion clock domain.
-  *Alternative under decision (review 2026-10-02):* if the analog cell
-  latches its comparator output with the conversion clock, the capture
-  becomes synchronous — the controller samples the four flags every clock
-  and records the count of the first asserted cycle; Gray coding and the
-  clock-domain crossing disappear from the digital block.
+- One shared 8-bit binary counter. Each analog cell latches its comparator
+  output with the conversion clock and presents `crossed[i]`; the controller
+  samples the four flags every clock and records, per cell, the count of the
+  cycle in which the crossing happened (`code = count_at_sample -
+  CAPTURE_LATENCY`, latency 1 for one flip-flop in the cell, 2 for a
+  two-stage synchronizer). No Gray coding and no clock-domain crossing in
+  the digital block (decided 2026-10-09, ADR 0010; the asynchronous Gray
+  capture of the earlier 0.6 text is superseded).
 - Four 8-bit results remain associated with their cell numbers; per-cell
   `timeout` flags accompany them.
 - The 32-bit payload is `{cell3, cell2, cell1, cell0}` unless explicitly revised.

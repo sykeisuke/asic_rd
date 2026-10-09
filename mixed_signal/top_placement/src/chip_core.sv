@@ -19,8 +19,8 @@
 //   bidir[2]  conversion_busy bidir[9]    ramp_connect
 //   bidir[3]  conversion_done bidir[10]   ramp_reset
 //                            bidir[11]    comparator output (wsa_cmp.dout)
-//                            bidir[12]    compare_high[0], as the capture sees it
-//                            bidir[13]    wsa_inv_gf.Y = NOT compare_high[0]
+//                            bidir[12]    crossed[0], as the capture sees it
+//                            bidir[13]    wsa_inv_gf.Y = NOT (comparator/ext select)
 //                            bidir[14..] unused: output and input off, pull-down
 //
 //   analog[0] wsa_cmp.vin    (held voltage in standalone mode)
@@ -28,9 +28,10 @@
 //   analog[2] wsa_cmp.vbias
 //   analog[3] wsa_inv.A      analog[4] wsa_inv.Y      analog[5] spare
 //
-// Digital top: the 8-bit parallel architecture of spec 0.6 (2026-09-18):
-// four capture channels compare_high[3:0], no analog MUX, acquire /
-// ramp_connect / ramp_reset mode outputs, 32-bit frame.
+// Digital top: the 8-bit parallel architecture of spec 0.6 (2026-09-18)
+// with synchronous capture (2026-10-09): four flags crossed[3:0] latched
+// with the conversion clock, no analog MUX, acquire / ramp_connect /
+// ramp_reset mode outputs, 32-bit frame.
 //
 // Comparator polarity (simulations/gf180_comparator): dout is high while
 // vin > vramp and falls at the crossing, which is the edge the capture
@@ -118,8 +119,25 @@ module chip_core #(
     // Digital test mode independent of the analog crossing (spec 7.3):
     // capture 0 comes from a pad instead of the comparator. Captures 1..3
     // have no comparator on this chip and always take the pad.
-    wire       compare_high0 = test_mode ? ext_compare : cmp_dout;
-    wire [3:0] compare_high  = {ext_compare, ext_compare, ext_compare, compare_high0};
+    //
+    // Synchronous capture (2026-10-09): the digital top expects per-cell
+    // flags `crossed[i]`, latched with the conversion clock. The latch
+    // belongs inside the analog cell (spec 5.4); until wsa_cmp carries it,
+    // the flip-flops below stand in for it. dout is high before the
+    // crossing and falls at it, so the flag is its inverse.
+    wire compare_high0 = test_mode ? ext_compare : cmp_dout;
+    logic crossed0_q;
+    logic crossed_ext_q;
+    always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            crossed0_q    <= 1'b0;
+            crossed_ext_q <= 1'b0;
+        end else begin
+            crossed0_q    <= ~compare_high0;
+            crossed_ext_q <= ~ext_compare;
+        end
+    end
+    wire [3:0] crossed = {crossed_ext_q, crossed_ext_q, crossed_ext_q, crossed0_q};
 
     // A simple analog cell on core nets: the gdsfactory inverter inverts
     // the capture edge and drives a pad. With test_mode=1 and a square
@@ -152,7 +170,7 @@ module chip_core #(
         .clk                (clk),
         .rst_n              (rst_n),
         .start              (start),
-        .compare_high       (compare_high),
+        .crossed            (crossed),
         .shift_en           (shift_en),
         .acquire            (acquire),
         .ramp_connect       (ramp_connect),
@@ -167,7 +185,7 @@ module chip_core #(
     assign bidir_out = {
         {(NUM_BIDIR_PADS-NUM_OUT){1'b0}},
         inv_gf_y,
-        compare_high0,
+        crossed0_q,
         cmp_dout,
         ramp_reset,
         ramp_connect,

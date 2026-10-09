@@ -1,14 +1,16 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-// Tape-out 1 digital top (architecture of 2026-09-18): four storage cells are
-// converted in parallel by one broadcast ramp and one comparator per cell;
+// Tape-out 1 digital top (architecture of 2026-09-18, synchronous capture
+// of 2026-10-09): four storage cells are converted in parallel by one
+// broadcast ramp and one comparator per cell; each cell latches its
+// comparator with the conversion clock and presents the flag crossed[i];
 // four 8-bit results are read out through a 32-bit synchronous serial port.
 module asic_digital_top (
     input  wire        clk,
     input  wire        rst_n,
     input  wire        start,
-    input  wire [3:0]  compare_high,
+    input  wire [3:0]  crossed,
     input  wire        shift_en,
     output wire        acquire,
     output wire        ramp_connect,
@@ -23,7 +25,7 @@ module asic_digital_top (
 
     parallel_wilkinson_controller #(.WIDTH(8), .CELLS(4)) controller (
         .clk(clk), .rst_n(rst_n), .start(start),
-        .compare_high(compare_high), .acquire(acquire),
+        .crossed(crossed), .acquire(acquire),
         .ramp_connect(ramp_connect), .ramp_reset(ramp_reset),
         .codes(conversion_codes), .timeout(conversion_timeout),
         .busy(conversion_busy), .done(conversion_done)

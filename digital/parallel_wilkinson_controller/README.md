@@ -1,4 +1,4 @@
-# Parallel Wilkinson controller (Tape-out 1 architecture, 2026-09-18)
+# Parallel Wilkinson controller (Tape-out 1 architecture, 2026-09-18; synchronous capture 2026-10-09)
 
 One shared 8-bit Gray-coded counter, one broadcast ramp, and **one comparator
 per storage cell**: all four cells convert simultaneously (IRSX-style). This
@@ -12,14 +12,19 @@ Sequence and analog-mode outputs:
 | --- | --- | --- | --- | --- |
 | IDLE | 1 | 0 | 1 | Cells may track/hold; bottom plates on the reference via the sampling sequencer |
 | CONNECT | 0 | 1 | 1 | Bottom plates connected to the (reset) ramp output and settling |
-| CONVERT | 0 | 1 | 0 | Ramp runs, counter counts; each comparator falling edge captures the Gray word |
-| DRAIN | 0 | 1 | 1 | Counter reached full scale; late capture events still synchronize |
+| CONVERT | 0 | 1 | 0 | Ramp runs, counter counts; the four `crossed` flags are sampled every clock |
+| DRAIN | 0 | 1 | 1 | Counter reached full scale; `CAPTURE_LATENCY` more cycles for a flag from the last count |
 
-Per cell, the comparator edge is a local capture clock (Gray word latched on
-the falling edge, toggle-synchronized back into the 20 MHz domain, decoded to
-binary). A cell that never crosses saturates to `255` and raises its
-`timeout[i]` flag. Results are packed as `{cell3, cell2, cell1, cell0}` in
-one 32-bit bus.
+Capture is synchronous (decided 2026-10-09 on the design review's
+recommendation): every analog cell latches its comparator output with the
+conversion clock and presents a flag `crossed[i]`; the controller samples the
+four flags every clock and records, per cell, the counter value of the cycle
+in which the crossing happened (`CAPTURE_LATENCY` = 1 for a single flip-flop
+in the cell, 2 for a two-stage synchronizer). No Gray coding, no comparator
+used as a clock, no clock-domain crossing in the digital block. A cell whose
+flag never rises saturates to `255` and raises `timeout[i]`. Results are
+packed as `{cell3, cell2, cell1, cell0}` in one 32-bit bus. The earlier
+asynchronous Gray-capture version is in the history up to commit `2d4fbf7`.
 
 The ordering of the switches inside a cell (bottom-plate switch opens before
 the top switch) is an analog sampling-sequencer function; this controller only

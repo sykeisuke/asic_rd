@@ -5,7 +5,7 @@ module tb_asic_digital_top;
     reg clk = 1'b0;
     reg rst_n = 1'b1;
     reg start = 1'b0;
-    reg [3:0] compare_high = 4'b0000;
+    reg [3:0] crossed = 4'b0000;
     reg shift_en = 1'b0;
     wire acquire;
     wire ramp_connect;
@@ -20,7 +20,7 @@ module tb_asic_digital_top;
 
     asic_digital_top dut (
         .clk(clk), .rst_n(rst_n), .start(start),
-        .compare_high(compare_high), .shift_en(shift_en),
+        .crossed(crossed), .shift_en(shift_en),
         .acquire(acquire), .ramp_connect(ramp_connect),
         .ramp_reset(ramp_reset), .serial_data(serial_data),
         .data_ready(data_ready), .conversion_busy(conversion_busy),
@@ -30,13 +30,15 @@ module tb_asic_digital_top;
 
     always #25 clk = ~clk;
 
-    task automatic drop_at_count;
+    // Cell model: crossing in counter cycle `count`, flag raised by the
+    // cell's flip-flop at the edge ending that cycle.
+    task automatic cell_flag;
         input integer idx;
         input integer count;
         begin
             @(negedge ramp_reset);
-            repeat (count + 1) @(negedge clk);
-            compare_high[idx] = 1'b0;
+            repeat (count + 1) @(posedge clk);
+            #1 crossed[idx] = 1'b1;
         end
     endtask
 
@@ -46,17 +48,16 @@ module tb_asic_digital_top;
         #1 rst_n = 1'b0;
         repeat (2) @(negedge clk);
         rst_n = 1'b1;
-        compare_high = 4'b1111;
         @(negedge clk);
         start = 1'b1;
         @(negedge clk);
         start = 1'b0;
 
         fork
-            drop_at_count(0, 16);
-            drop_at_count(1, 20);
-            drop_at_count(2, 27);
-            drop_at_count(3, 200);
+            cell_flag(0, 16);
+            cell_flag(1, 20);
+            cell_flag(2, 27);
+            cell_flag(3, 200);
         join
         wait (data_ready);
         if (conversion_timeout !== 4'b0000)
@@ -81,7 +82,7 @@ module tb_asic_digital_top;
         if (!acquire || ramp_connect || !ramp_reset)
             $fatal(1, "analog mode did not return to acquire");
 
-        $display("PASS: sample-to-serial digital flow codes=16,20,27,200 (8-bit x4, 32-bit frame)");
+        $display("PASS: sample-to-serial digital flow codes=16,20,27,200 (8-bit x4, 32-bit frame, synchronous capture)");
         $finish;
     end
 
