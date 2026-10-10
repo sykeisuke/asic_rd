@@ -92,7 +92,9 @@ def write_gds(design, cell):
     if not os.path.exists(src):
         raise SystemExit(f"magic wrote no GDS for {cell}")
     dst = os.path.join(FINAL, "gds", cell + ".gds")
-    shutil.copy(src, dst)
+    # copyfile, not copy: the final views are tracked files that the container
+    # user may not own (CI), and copying the mode bits would need chmod.
+    shutil.copyfile(src, dst)
     return os.path.getsize(dst)
 
 
@@ -125,7 +127,7 @@ def svg(design, cell):
     if not os.path.exists(src):
         return 0
     dst = os.path.join(FINAL, "svg", cell + ".svg")
-    shutil.copy(src, dst)
+    shutil.copyfile(src, dst)
     return os.path.getsize(dst)
 
 
