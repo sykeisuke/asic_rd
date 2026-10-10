@@ -3,7 +3,7 @@ set -eu
 
 . "$(dirname -- "$0")/eda-common.sh"
 
-result_dir="$PROJECT_ROOT/digital/wilkinson_counter/work"
+result_dir="$PROJECT_ROOT/digital/legacy/wilkinson_counter/work"
 mkdir -p "$result_dir"
 
 "$DOCKER_CLI" run --rm \
@@ -11,7 +11,7 @@ mkdir -p "$result_dir"
     -v "$PROJECT_ROOT:/foss/designs:rw" \
     "$EDA_IMAGE" -lc '
         set -euo pipefail
-        cd /foss/designs/digital/wilkinson_counter
+        cd /foss/designs/digital/legacy/wilkinson_counter
         iverilog -g2012 -Wall -o work/tb_wilkinson_counter \
             wilkinson_counter.v tb_wilkinson_counter.v
         vvp work/tb_wilkinson_counter | tee work/simulation.log

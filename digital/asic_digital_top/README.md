@@ -20,5 +20,5 @@ maps the design to GF180 cells and runs 20 MHz pre-layout STA.
 
 History: until 2026-09-18 this top used the sequential 4-to-1 analog-MUX
 controller with 6-bit codes and a 24-bit frame
-(`digital/four_cell_wilkinson_controller`, kept for the legacy mixed-signal
+(`digital/legacy/four_cell_wilkinson_controller`, kept for the legacy mixed-signal
 co-simulations).

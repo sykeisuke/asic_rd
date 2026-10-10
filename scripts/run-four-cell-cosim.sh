@@ -14,7 +14,7 @@ mkdir -p "$result_dir"
         cd /foss/designs
         analog=simulations/gf180_four_cell_wilkinson
         cosim=mixed_signal/four_cell_cosim
-        controller=digital/four_cell_wilkinson_controller
+        controller=digital/legacy/four_cell_wilkinson_controller
         counter=digital/wilkinson_gray_counter/wilkinson_gray_counter.v
 
         mkdir -p "$analog/work" "$cosim/work"

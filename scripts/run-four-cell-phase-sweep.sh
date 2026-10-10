@@ -15,7 +15,7 @@ mkdir -p "$result_dir"
         analog=simulations/gf180_four_cell_wilkinson
         bridge=mixed_signal/four_cell_cosim
         sweep=mixed_signal/four_cell_phase_sweep
-        controller=digital/four_cell_wilkinson_controller
+        controller=digital/legacy/four_cell_wilkinson_controller
         counter=digital/wilkinson_gray_counter/wilkinson_gray_counter.v
 
         mkdir -p "$analog/work" "$sweep/work"
