@@ -28,7 +28,7 @@ mkdir -p "$result_dir"
         test -s work/analog_stimulus.vh
 
         iverilog -g2012 -Wall -I work -o work/tb_wilkinson_cosim \
-            ../../digital/wilkinson_counter/wilkinson_counter.v \
+            ../../digital/legacy/wilkinson_counter/wilkinson_counter.v \
             tb_wilkinson_cosim.v
         vvp work/tb_wilkinson_cosim | tee work/cosimulation.log
         grep -q "PASS: analog timing" work/cosimulation.log

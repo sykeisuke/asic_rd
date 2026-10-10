@@ -3,7 +3,7 @@ set -eu
 
 . "$(dirname -- "$0")/eda-common.sh"
 
-result_dir="$PROJECT_ROOT/digital/four_cell_wilkinson_controller/work"
+result_dir="$PROJECT_ROOT/digital/legacy/four_cell_wilkinson_controller/work"
 mkdir -p "$result_dir"
 
 "$DOCKER_CLI" run --rm \
@@ -11,8 +11,8 @@ mkdir -p "$result_dir"
     -v "$PROJECT_ROOT:/foss/designs:rw" \
     "$EDA_IMAGE" -lc '
         set -euo pipefail
-        cd /foss/designs/digital/four_cell_wilkinson_controller
-        counter=../wilkinson_gray_counter/wilkinson_gray_counter.v
+        cd /foss/designs/digital/legacy/four_cell_wilkinson_controller
+        counter=../../wilkinson_gray_counter/wilkinson_gray_counter.v
         iverilog -g2012 -Wall -o work/tb_four_cell_wilkinson_controller \
             "$counter" four_cell_wilkinson_controller.v \
             tb_four_cell_wilkinson_controller.v
