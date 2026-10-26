@@ -1,0 +1,17 @@
+BSIM4 OSDI probe: which module names, parameters and output variables does VACASK's bsim4v8 expose
+
+ground 0
+
+load "bsim4v8.osdi"
+load "resistor.osdi"
+
+model resistor resistor
+model vsource vsource
+
+v1 (in 0) vsource dc=1
+r1 (in 0) resistor r=1k
+
+control
+  print device_files
+  print device("bsim4")
+endc

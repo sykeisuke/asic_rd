@@ -1,0 +1,45 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=X1"
+description="midref_div of ../midrail_ref (subckt midref_div of midref.spice): two ppolyf_u_3k resistors in series vdd -> vss, the mid tap vin = VDD/2 with its MIM decap XCT. Local symbol of Analog_top (pin order as the block's); xschem descends into ../midrail_ref/midref_div.sch"
+schematic=midref_div.sch
+}
+V {}
+S {}
+E {}
+L 4 0 -80 0 -60 {}
+L 4 0 -60.0 9 -51.67 {}
+L 4 9 -51.67 -9 -43.33 {}
+L 4 -9 -43.33 9 -35.0 {}
+L 4 9 -35.0 -9 -26.67 {}
+L 4 -9 -26.67 9 -18.33 {}
+L 4 9 -18.33 0 -10.0 {}
+L 4 0 -10 0 10 {}
+A 4 0 0 2.5 0 360 {fill=true}
+L 4 0 10.0 9 18.33 {}
+L 4 9 18.33 -9 26.67 {}
+L 4 -9 26.67 9 35.0 {}
+L 4 9 35.0 -9 43.33 {}
+L 4 -9 43.33 9 51.67 {}
+L 4 9 51.67 0 60.0 {}
+L 4 0 60 0 80 {}
+L 4 0 0 80 0 {}
+L 4 44 0 44 16 {}
+L 4 34 16.0 54 16.0 {}
+L 4 34 22.0 54 22.0 {}
+L 4 44 22 44 66 {}
+L 4 44 66 0 66 {}
+A 4 0 66 2.5 0 360 {fill=true}
+A 4 44 0 2.5 0 360 {fill=true}
+B 5 77.5 -2.5 82.5 2.5 {name=vin dir=out}
+B 5 -2.5 -82.5 2.5 -77.5 {name=vdd dir=inout}
+B 5 -2.5 77.5 2.5 82.5 {name=vss dir=inout}
+T {VDD/2} 50 -18 0 0 0.2 0.2 {layer=13}
+T {R} 14 -44 0 0 0.2 0.2 {}
+T {R} 14 26 0 0 0.2 0.2 {}
+T {vdd} 6 -84 0 0 0.16 0.16 {}
+T {vss} 6 70 0 0 0.16 0.16 {}
+T {@name} -70 -84 0 0 0.25 0.25 {}
+T {midref_div} -70 84 0 0 0.18 0.18 {layer=13}

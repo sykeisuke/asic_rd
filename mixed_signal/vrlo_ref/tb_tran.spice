@@ -1,0 +1,105 @@
+* tb_tran -- the short block bench of vrlo_ref (size_vrlo.py, verify_vrlo.py):
+* the regulator on the real ramp_simple, two records, with the 13.8 us ramp
+* replaced by a forced vramp so the bench stays ~6 us long.
+*
+*   0      AVDD 0 -> VDD in TPWR; ib and the ramp diode current follow; rst
+*          high (vramp held at vrlo through XRST)
+*   TS_k   (k = 0..3, 40 ns apart) the S1 model of cell k joins vramp: a cap
+*          CEQ precharged to vin_k (KS=1: the mid-codes 16.5/80.5/160.5/240.5;
+*          KS=0: all at VR_LO, no charge)
+*   TR     = TS3 + TGAP: rst falls (the ramp would start); vp_tr is vramp just
+*          before. TGAP 300 ns, the timeline requirement this block sets (the
+*          Analog_top benches have 100 ns; README.md s.1)
+*   TR+20n .. TD   rst low, vramp forced to VTOP (the measured end of the
+*          ramp with its overrun) through 1 kohm: the regulator sits in its
+*          ramp state with no inflow
+*   TD     rst rises: the 4 pF dumps ~6.6 pC into vrlo; the S1 models open at
+*          TD+20n and are precharged again
+*   TS0B = TD + TREC   record 2 repeats the timeline; TR2 its release
+*
+* One `name = value` line per measure (vr.grab). TEMPLATE: CORNER MIMCORNER
+* RESCORNER TEMP VDD IB IRD KS CEQ VTOP TREC RATIO TRUN FRCV
+* TRUN = 1.5u, FRCV = 3.3: forced end of ramp (short). TRUN = 13.8u, FRCV = 0:
+* the real ramp runs TRAMP + TOVR from TR (the long bench, verify phase ramp).
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @RESCORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ramp_simple.spice
+.include dut.spice
+.temp @TEMP@
+
+.param TGAP=300n
+.param VDD=@VDD@ TPWR=100n T0=3u TS0='T0+300n' TSP=40n TR='TS0+3*TSP+TGAP'
+.param TD='TR+@TRUN@' TREC=@TREC@ TS0B='TD+TREC' TR2='TS0B+3*TSP+TGAP' TSTOP='TR2+20n'
+.param KS=@KS@ VLO='@RATIO@*VDD' DV='1.5/256'
+.param VIN0='VLO+KS*16.5*DV' VIN1='VLO+KS*80.5*DV' VIN2='VLO+KS*160.5*DV' VIN3='VLO+KS*240.5*DV'
+
+VAVDD avdd 0 PWL(0 0 {TPWR} {VDD})
+* the regulator's own supply branch (its power) and its ideal bias
+VAMR avdd avdd_r 0
+IB avdd_r ib PWL(0 0 {TPWR} @IB@)
+XREG vrlo ib avdd_r 0 vrlo_ref
+* the ramp: its L 1 um diode fed by bias_gen's ramp current (ideal here)
+IRD pbias_r 0 PWL(0 0 {TPWR} @IRD@)
+XRD pbias_r pbias_r avdd avdd pfet_03v3 L=1u W=20u nf=10
+VRST rst 0 PWL(0 0 {TPWR} {VDD} {TR} {VDD} {TR+0.1n} 0 {TD} 0 {TD+0.1n} {VDD})
+XRAMP vramp rst vrlo pbias_r avdd 0 ramp_simple
+* forced end of ramp
+VTOPS vtop 0 @VTOP@
+VFRC frc 0 PWL(0 0 {TR+20n} 0 {TR+20.1n} @FRCV@ {TD-1n} @FRCV@ {TD-0.9n} 0)
+SFRC vtop vramp frc 0 swm
+
+* S1 model per cell: precharge switch, then S1 onto vramp; CB the cell's
+* bottom-plate charge as seen from vramp
+.model swm sw vt=1.65 vh=0.1 ron=1k roff=1e14
+.subckt s1cell vramp vin pre s1 c=40f
+SP b vin pre 0 swm
+SS b vramp s1 0 swm
+CB b 0 {c}
+.ends
+VP0 p0 0 PWL(0 3.3 {TS0+5n} 3.3 {TS0+5.1n} 0 {TD+50n} 0 {TD+50.1n} 3.3 {TS0B+5n} 3.3 {TS0B+5.1n} 0)
+VP1 p1 0 PWL(0 3.3 {TS0+TSP+5n} 3.3 {TS0+TSP+5.1n} 0 {TD+50n} 0 {TD+50.1n} 3.3 {TS0B+TSP+5n} 3.3 {TS0B+TSP+5.1n} 0)
+VP2 p2 0 PWL(0 3.3 {TS0+2*TSP+5n} 3.3 {TS0+2*TSP+5.1n} 0 {TD+50n} 0 {TD+50.1n} 3.3 {TS0B+2*TSP+5n} 3.3 {TS0B+2*TSP+5.1n} 0)
+VP3 p3 0 PWL(0 3.3 {TS0+3*TSP+5n} 3.3 {TS0+3*TSP+5.1n} 0 {TD+50n} 0 {TD+50.1n} 3.3 {TS0B+3*TSP+5n} 3.3 {TS0B+3*TSP+5.1n} 0)
+VQ0 q0 0 PWL(0 0 {TS0+10n} 0 {TS0+10.1n} 3.3 {TD+20n} 3.3 {TD+20.1n} 0 {TS0B+10n} 0 {TS0B+10.1n} 3.3)
+VQ1 q1 0 PWL(0 0 {TS0+TSP+10n} 0 {TS0+TSP+10.1n} 3.3 {TD+20n} 3.3 {TD+20.1n} 0 {TS0B+TSP+10n} 0 {TS0B+TSP+10.1n} 3.3)
+VQ2 q2 0 PWL(0 0 {TS0+2*TSP+10n} 0 {TS0+2*TSP+10.1n} 3.3 {TD+20n} 3.3 {TD+20.1n} 0 {TS0B+2*TSP+10n} 0 {TS0B+2*TSP+10.1n} 3.3)
+VQ3 q3 0 PWL(0 0 {TS0+3*TSP+10n} 0 {TS0+3*TSP+10.1n} 3.3 {TD+20n} 3.3 {TD+20.1n} 0 {TS0B+3*TSP+10n} 0 {TS0B+3*TSP+10.1n} 3.3)
+VV0 v0 0 {VIN0}
+VV1 v1 0 {VIN1}
+VV2 v2 0 {VIN2}
+VV3 v3 0 {VIN3}
+XS0 vramp v0 p0 q0 s1cell c=@CEQ@
+XS1 vramp v1 p1 q1 s1cell c=@CEQ@
+XS2 vramp v2 p2 q2 s1cell c=@CEQ@
+XS3 vramp v3 p3 q3 s1cell c=@CEQ@
+
+.options reltol=1e-5 gmin=1e-15
+.tran 0.2n {TSTOP} 0 2n
+* the reset level, quiescent, record 1 and record 2; at T0 (start-up)
+.measure tran vp_q FIND v(vramp) AT={TS0-1n}
+.measure tran vp_q2 FIND v(vramp) AT={TS0B-1n}
+.measure tran vp_t0 FIND v(vramp) AT={T0}
+.measure tran vp_t2u FIND v(vramp) AT=2u
+* just before each release
+.measure tran vp_tr FIND v(vramp) AT={TR-0.2n}
+.measure tran vp_tr2 FIND v(vramp) AT={TR2-0.2n}
+.measure tran vr_q FIND v(vrlo) AT={TS0-1n}
+.measure tran vtap_q FIND v(xreg.tap) AT={TS0-1n}
+.measure tran vg_q FIND v(xreg.g) AT={TS0-1n}
+.measure tran vr_frc FIND v(vrlo) AT={TD-1n}
+.measure tran vp_td FIND v(vramp) AT={TD-2n}
+* the dump
+.measure tran vr_pk MAX v(vrlo) FROM={TD} TO={TS0B}
+.measure tran vp_kpk MAX v(vramp) FROM={TS0} TO={TR}
+* regulator supply current incl. its ideal bias: reset state and ramp state
+.measure tran ireg_q AVG i(VAMR) FROM={TS0-200n} TO={TS0-10n}
+.measure tran ireg_r AVG i(VAMR) FROM={TD-500n} TO={TD-10n}
+.control
+set num_threads=1
+run
+quit
+.endc
+.end

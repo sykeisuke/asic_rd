@@ -1,0 +1,88 @@
+* Selection bench of size_v3.py (DESIGN_RECIPE.md s.5, stage B): one
+* candidate, one level. The unit cell's charge path with ideal parts around
+* the comparator, as tb_delay.spice: the 54.52 fF MIM, the top plate reset to
+* VREF = VDD/2 by an ideal S2 opening at TS, the bottom plate at VIN and then
+* moved to VR_LO at TCONN and ramped at the 8-bit slope from TR; inp = VBL.
+* dout drives CLOAD (the TSPC latch's measured input + wire).
+*
+* The DC trip point with inp = VBL comes from tb_sel_dc.spice (@VTRIP@): the
+* dynamic delay is measured from the instant the top plate crosses THAT
+* level, so a static (systematic) offset is not counted as speed.
+*
+* TEMPLATE: size_v3.py replaces @DUT@ @VIN@ @CLOAD@ @IREF@ @REFP@ @TSTOP@ @VTRIP@ and
+* runs it in work/sel/<id>_<level>/; the measures are printed (name = value).
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include @DUT@
+
+.param VDD=@VDD@
+.temp @TEMP@
+.param IREF=@IREF@
+.param VIN=@VIN@
+.param VR_LO=0.5
+.param LSB=0.005859375
+.param TCOUNT=50n
+.param SLOPE='LSB/TCOUNT'
+.param TS=300n
+.param TCONN=310n
+.param TR=400n
+.param TEDGE=100p
+
+.csparam cs_vdd={VDD}
+.csparam cs_tr={TR}
+.csparam cs_tconn={TCONN}
+.csparam cs_tideal={TR+(VIN-VR_LO)/SLOPE}
+
+.options savecurrents reltol=1e-4 gmin=1e-15
+
+VDD_SOURCE vdd 0 {VDD}
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREF}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREF}
+@REFP@
+VCLK clk 0 0
+
+VVBL vbl 0 {VDD/2}
+VVREF vref 0 {VDD/2}
+VBOT bot 0 PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+14u} {VR_LO+14u*SLOPE})
+VS2 s2 0 PWL(0 1 {TS} 1 {TS+TEDGE} 0)
+S2 vref top s2 0 swideal
+.model swideal sw vt=0.5 vh=0.1 ron=100 roff=1e16
+XCS top bot cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
+RLKT top 0 1e15
+
+XDUT vbl top dout clk vdd 0 nbias pbias cmp
+CLOAD dout 0 @CLOAD@
+
+.control
+set wr_singlescale
+let half = $&cs_vdd / 2
+* the static trip, from tb_sel_dc.spice (run first)
+set vtrip_s = "@VTRIP@"
+tran 0.25n @TSTOP@ 0 0.5n
+let hi90 = 0.9 * $&cs_vdd
+let lo10 = 0.1 * $&cs_vdd
+meas tran t_cross when v(top)=@VCM@ rise=1 td=$&cs_tr
+meas tran t_cs when v(top)=$vtrip_s rise=1 td=$&cs_tr
+meas tran t_dout when v(dout)=$&half fall=1 td=$&cs_tr
+meas tran t_f90 when v(dout)=$&hi90 fall=1 td=$&cs_tr
+meas tran t_f10 when v(dout)=$&lo10 fall=1 td=$&cs_tr
+meas tran armed find v(dout) at=$&cs_tr
+let t_after = t_dout + 5e-9
+meas tran t_rerise when v(dout)=$&half rise=1 td=$&t_after
+meas tran i_avg avg i(vdd_source) from=$&cs_tconn to=$&t_cross
+let delay_vbl = t_dout - t_cross
+let delay_dyn = t_dout - t_cs
+let fall = t_f10 - t_f90
+let ped_counts = (t_dout - $&cs_tideal) / 50e-9
+let p_avg = -$&cs_vdd * i_avg
+echo "RESULT_BEGIN"
+echo "vtrip_v = $vtrip_s"
+print delay_vbl delay_dyn fall ped_counts armed p_avg
+echo "RESULT_END"
+quit
+.endc
+
+.end

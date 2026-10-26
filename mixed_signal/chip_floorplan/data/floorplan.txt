@@ -1,0 +1,57 @@
+k_layout = 3.266
+uc_mim_device_fp_um2 = 191.9
+mim_keepout_um = 1.913
+bias_gen_s_dev_um2 = 4202.6
+bias_gen_s_mim_um2 = 1371.5
+midref_div_dev_um2 = 281.3
+midref_div_mim_um2 = 68.0
+midref_buf_dev_um2 = 335.7
+midref_buf_mim_um2 = 241.1
+vrlo_ref_dev_um2 = 1855.1
+vrlo_ref_mim_um2 = 2742.3
+ramp_simple_d_dev_um2 = 778.3
+ramp_simple_d_mim_um2 = 2345.1
+atop_cell_dev_um2 = 160.1
+atop_cell_mim_um2 = 77.9
+cell_w_um = 15.98
+cell_h_um = 16.80
+bias_gen_rowplan_um2 = 2871.7
+midref_buffers = 1
+test_zone_reserved_um2 = 1306.1
+bus_channel_um = 15.68
+macro_decap_um2 = 3128.6
+macro_w_um = 229.12
+macro_h_um = 127.09
+macro_area_um2 = 29119.0
+macro_block_area_um2 = 14434.4
+macro_block_fill_pct = 49.6
+pads_asig_5p0 = 1
+pads_avdd = 1
+pads_avss = 1
+pads_bi_a = 3
+pads_bidir = 44
+pads_corepwr = 2
+pads_input = 6
+pads_iopwr = 14
+pads_total = 72
+PASS: macro, digital region and CDM cells inside the 1x0p5 core, no overlaps
+wire_vin_um = 142
+wire_ext_ramp_um = 274
+wire_amon_um = 411
+wire_cmp_out_um = 549
+strap_avdd_um = 997
+strap_avss_um = 892
+route_crossings = 0
+PASS: the four analog pad wires and the AVDD/AVSS straps neither cross nor overlap
+core_area_um2 = 5020056
+digital_region_w_um = 292.35
+digital_region_h_um = 310.27
+analog_area_um2 = 31999.0
+digital_area_um2 = 90707.4
+analog_core_pct = 0.637
+digital_core_pct = 1.807
+free_core_pct = 97.56
+REPORT: core 3048 x 1647 um; analog macro 229.1 x 127.1 um; digital 292.35 x 310.27 um (digital/asic_digital_top/physical/final_views/gds/asic_digital_top.gds)
+Measurements: mixed_signal/chip_floorplan/data/floorplan.json
+Artifact: mixed_signal/chip_floorplan/assets/chip_floorplan.svg
+Artifact: mixed_signal/chip_floorplan/assets/analog_macro_floorplan.svg

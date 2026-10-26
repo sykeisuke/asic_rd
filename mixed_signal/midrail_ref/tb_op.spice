@@ -1,0 +1,46 @@
+* Operating point of midref (divider + its one buffer) at one corner and temperature, the
+* supply looped over 3.0 / 3.3 / 3.6 V. TEMPLATE: verify_v3.py replaces corner
+* mimcorner temp if tag; dut.spice is midref.spice.
+*
+* One line per supply:
+*   OP <corner> <temp> <bias scale> <vdd> hr1 hr4 hrib hrit hr2 hr5 hr3 hr6 err isup
+* hr = |vds| - |vdsat| (BSIM4), err = v(out) - VDD/2, isup = the whole supply
+* current including the ideal bias current.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.temp @TEMP@
+.include dut.spice
+
+VDD_SOURCE vdd 0 3.3
+IREF vdd ib @IF@
+XB out ib vdd 0 midref
+
+.control
+set num_threads=1
+foreach v 3.0 3.3 3.6
+  alter VDD_SOURCE dc = $v
+  op
+  let hr1 = abs(@m.xb.xb.xm1.m0[vds]) - abs(@m.xb.xb.xm1.m0[vdsat])
+  let hr4 = abs(@m.xb.xb.xm4.m0[vds]) - abs(@m.xb.xb.xm4.m0[vdsat])
+  let hrib = abs(@m.xb.xb.xmib.m0[vds]) - abs(@m.xb.xb.xmib.m0[vdsat])
+  let hrit = abs(@m.xb.xb.xmit.m0[vds]) - abs(@m.xb.xb.xmit.m0[vdsat])
+  let hr2 = abs(@m.xb.xb.xm2.m0[vds]) - abs(@m.xb.xb.xm2.m0[vdsat])
+  let hr5 = abs(@m.xb.xb.xm5.m0[vds]) - abs(@m.xb.xb.xm5.m0[vdsat])
+  let hr3 = abs(@m.xb.xb.xm3.m0[vds]) - abs(@m.xb.xb.xm3.m0[vdsat])
+  let hr6 = abs(@m.xb.xb.xm6.m0[vds]) - abs(@m.xb.xb.xm6.m0[vdsat])
+  let err = v(out) - $v / 2
+  let isup = -i(VDD_SOURCE)
+  echo "OP @TAG@ $v $&hr1 $&hr4 $&hrib $&hrit $&hr2 $&hr5 $&hr3 $&hr6 $&err $&isup"
+  let ibb = abs(@m.xb.xb.xmib.m0[id])
+  let ibt = abs(@m.xb.xb.xmit.m0[id])
+  let i2 = abs(@m.xb.xb.xm2.m0[id])
+  let vp = v(xb.xb.p)
+  let vn = v(xb.xb.n)
+  let tap = v(xb.vin) - $v / 2
+  echo "OPX @TAG@ $v $&ibb $&ibt $&i2 $&vp $&vn $&tap"
+end
+quit
+.endc
+.end

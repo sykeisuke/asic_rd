@@ -1,0 +1,44 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=primitive
+format="@name @pinlist @model"
+template="name=XCMP model=cmp"
+description="comparator_updt's bottom-plate comparator: subcircuit cmp of
+/foss/designs/mixed_signal/ramp_gen/ref/comparator_updt/cmp_updt.spice, reused by path
+through .include. type=primitive: xschem netlists this line and never
+descends; the drawing of the inside is comparator_updt/cmp_updt.sch.
+Pins in the subcircuit order: inp inn dout clk vdd vss nbias pbias."
+}
+V {}
+S {}
+E {}
+L 4 -80 -100 80 -100 {}
+L 4 80 -100 80 100 {}
+L 4 80 100 -80 100 {}
+L 4 -80 100 -80 -100 {}
+L 4 -100 -60 -80 -60 {}
+L 4 -100 -30 -80 -30 {}
+L 4 -100 0 -80 0 {}
+L 4 -100 30 -80 30 {}
+L 4 -100 60 -80 60 {}
+L 4 80 -45 100 -45 {}
+L 4 0 -120 0 -100 {}
+L 4 0 100 0 120 {}
+B 5 -102.5 -62.5 -97.5 -57.5 {name=inp dir=in}
+B 5 -102.5 -32.5 -97.5 -27.5 {name=inn dir=in}
+B 5 97.5 -47.5 102.5 -42.5 {name=dout dir=out}
+B 5 -102.5 -2.5 -97.5 2.5 {name=clk dir=in}
+B 5 -2.5 -122.5 2.5 -117.5 {name=vdd dir=inout}
+B 5 -2.5 117.5 2.5 122.5 {name=vss dir=inout}
+B 5 -102.5 27.5 -97.5 32.5 {name=nbias dir=in}
+B 5 -102.5 57.5 -97.5 62.5 {name=pbias dir=in}
+T {inp} -74 -66 0 0 0.3 0.3 {}
+T {inn} -74 -36 0 0 0.3 0.3 {}
+T {clk} -74 -6 0 0 0.3 0.3 {}
+T {nbias} -74 24 0 0 0.3 0.3 {}
+T {pbias} -74 54 0 0 0.3 0.3 {}
+T {dout} 50 -51 0 0 0.3 0.3 {}
+T {vdd} 6 -114 0 0 0.3 0.3 {}
+T {vss} 6 104 0 0 0.3 0.3 {}
+T {@name} -80 -136 0 0 0.4 0.4 {}
+T {@model} -12 -8 0 0 0.4 0.4 {}

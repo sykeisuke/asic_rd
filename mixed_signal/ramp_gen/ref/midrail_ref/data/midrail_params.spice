@@ -1,0 +1,31 @@
+* Written by size_midrail.py on 2026-09-30. Do not edit by hand; re-run the sizer.
+* Search and rationale: SIZING.md. Spec: midrail_spec.spice.
+.param SF_IREF=0.5u
+.param FVF_IREF=1u
+.param IREF_SCALE=1
+.param LB=4u
+.param WBN=2u
+.param WBP=16u
+.param DIV_W=1u
+.param INV_L=2u
+.param INV_WN=1.147u
+.param INV_WP=5.799u
+.param SF_DIV_L=100u
+.param SF_K=5
+.param SF_LN=0.5u
+.param SF_WN=1u
+.param SF_LP=0.5u
+.param SF_WP=2u
+.param SF_CFLT=0
+.param FVF_DIV_L=550u
+.param FVF_K=4
+.param FVF_W4=8u
+.param FVF_W3=2u
+.param FVF_L3=2u
+.param FVF_W6=1u
+.param FVF_L6=8u
+.param FVF_L1=2u
+.param FVF_W1=8u
+.param FVF_L4=2u
+.param FVF_CFLT=1p
+.param FVF_CC=0

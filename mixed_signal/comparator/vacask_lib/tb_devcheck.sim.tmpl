@@ -1,0 +1,33 @@
+VACASK model-import check: the six devices of tb_vacask_devcheck.spice through the converted GF180 models
+
+// TEMPLATE. run.sh substitutes @CORNER@ and writes work/tb_devcheck_<corner>.sim,
+// next to the generated model include, so the relative include resolves.
+
+ground 0
+
+include "gf180_03v3_@CORNER@.inc"
+
+model vsource vsource
+
+vdd (vdd 0) vsource dc=3.3
+vgn (gn 0) vsource dc=1.0
+vgp (gp 0) vsource dc=2.3
+vdn1 (dn1 0) vsource dc=1.0
+vdn2 (dn2 0) vsource dc=1.0
+vdn3 (dn3 0) vsource dc=0.3
+vdp1 (dp1 0) vsource dc=2.3
+vdp2 (dp2 0) vsource dc=2.3
+vdp3 (dp3 0) vsource dc=3.0
+xn1 (dn1 gn 0 0) nfet_03v3 l=0.5u w=10u nf=2 m=1
+xn2 (dn2 gn 0 0) nfet_03v3 l=0.28u w=4u nf=4 m=1
+xn3 (dn3 gn 0 0) nfet_03v3 l=2.0u w=1u nf=1 m=2
+xp1 (dp1 gp vdd vdd) pfet_03v3 l=0.5u w=30.8u nf=8 m=1
+xp2 (dp2 gp vdd vdd) pfet_03v3 l=1.0u w=90.5u nf=20 m=1
+xp3 (dp3 gp vdd vdd) pfet_03v3 l=0.28u w=0.8u nf=1 m=1
+
+control
+  var mm=0
+  options temp=27
+  save i(vdn1) i(vdn2) i(vdn3) i(vdp1) i(vdp2) i(vdp3)
+  analysis devcheck op
+endc

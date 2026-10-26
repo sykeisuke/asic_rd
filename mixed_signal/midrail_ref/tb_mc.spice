@@ -1,0 +1,36 @@
+* The output of midref under the PDK's local mismatch (verify_v3.py): the
+* divider and its one buffer on an ideal bias current. ONE DRAW PER RUN:
+* `.param sw_stat_mismatch=1` after the PDK include switches on the agauss()
+* draws in every nfet_03v3 / pfet_03v3 wrapper, and `.options seed` fixes them,
+* so verify_v3.py runs draw k with seed BASE + k (a `reset` loop under one fixed
+* seed redraws the SAME sample, the trap ../comparator recorded). Draw 0
+* is mismatch-free (mm 0). The ppolyf_u_3k model carries global
+* (sw_stat_global) variation only, so the divider ratio's own mismatch is NOT
+* in this figure.
+*
+* VREF and VBL are one node, so VBL - VREF is zero in every draw: the buffer's
+* offset only moves VDD/2, the common level of the plate and the comparator.
+*
+* One line:  MC <k> <v(out) - VDD/2>
+* TEMPLATE: corner mimcorner temp vdd if mm seed k
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include dut.spice
+.param sw_stat_mismatch=@MM@
+.temp @TEMP@
+.options seed=@SEED@
+
+VDD_SOURCE vdd 0 @VDD@
+IREF vdd ib @IF@
+XR vref ib vdd 0 midref
+
+.control
+set num_threads=1
+op
+let er = v(vref) - @VDD@ / 2
+echo "MC @K@ $&er"
+quit
+.endc
+.end

@@ -1,0 +1,44 @@
+{
+  "target": "comparator-lin-bias",
+  "timestamp": "20261007T205146Z",
+  "corner": "pvt",
+  "exit_status": 1,
+  "pass": false,
+  "metrics": {
+    "lin_typical_27_3p3_worst_level_spread_lsb": 0.00018,
+    "lin_typical_27_3p3_mean_level_spread_lsb": 7.6e-05,
+    "lin_typical_27_3p3_nominal_level_spread_lsb": 0.000124,
+    "lin_typical_27_3p3_code_offset_sigma_lsb": 3.33029,
+    "lin_ss_85_3_worst_level_spread_lsb": 0.00016,
+    "lin_ss_85_3_mean_level_spread_lsb": 8.168e-05,
+    "lin_ss_85_3_nominal_level_spread_lsb": 0.00016,
+    "lin_ss_85_3_code_offset_sigma_lsb": 3.26309,
+    "lin_ff_85_3p6_worst_level_spread_lsb": 0.00172,
+    "lin_ff_85_3p6_mean_level_spread_lsb": 0.000126857,
+    "lin_ff_85_3p6_nominal_level_spread_lsb": 0.00012,
+    "lin_ff_85_3p6_code_offset_sigma_lsb": 3.31408,
+    "bias_req_max_scale_deck": 1.05,
+    "bias_req_max_scale_geom": 1.2
+  },
+  "checks": [
+    "FAIL: offset signal-independence at typical_27_3.3: over 26/30 mismatch samples, the code offset moves at most 0.0002 LSB (mean 0.0001) between 4.5 and 250.5 LSB (gate 0.1 LSB); nominal 0.0001 LSB; offset spread over samples 3.33 LSB; 4 samples without a result",
+    "FAIL: offset signal-independence at ss_85_3: over 25/30 mismatch samples, the code offset moves at most 0.0002 LSB (mean 0.0001) between 4.5 and 250.5 LSB (gate 0.1 LSB); nominal 0.0002 LSB; offset spread over samples 3.26 LSB; 5 samples without a result",
+    "FAIL: offset signal-independence at ff_85_3.6: over 28/30 mismatch samples, the code offset moves at most 0.0017 LSB (mean 0.0001) between 4.5 and 250.5 LSB (gate 0.1 LSB); nominal 0.0001 LSB; offset spread over samples 3.31 LSB; 2 samples without a result",
+    "FAIL: offset is level-dependent somewhere",
+    "PASS: bias requirement derived (reported, not gated)"
+  ],
+  "reports": [
+    "REPORT: offset signal-independence: 3 cells x (30 mismatch samples + nominal) x levels 4.5, 40.5, 128.5, 250.5 LSB = 372 transients",
+    "REPORT: bias requirement (controlled deck): delay <= 12.5 ns needs at least 1.05x the nominal 1.931 uA at ss_85_3; cells needing more than 1.0x: ss_85_3 1.05x, ss_85_3.3 1.05x, ss_85_3.6 1.05x",
+    "REPORT: (controlled deck) 33/45 cells meet 12.5 ns already at 0.8x",
+    "REPORT: bias requirement (drawn S/D geometry): delay <= 12.5 ns needs at least 1.2x the nominal 1.931 uA at ss_85_3; cells needing more than 1.0x: ss_0_3 1.05x, ss_0_3.3 1.05x, ss_0_3.6 1.05x, ss_27_3 1.1x, ss_27_3.3 1.1x, ss_27_3.6 1.1x, ss_85_3 1.2x, ss_85_3.3 1.2x, ss_85_3.6 1.2x",
+    "REPORT: (drawn S/D geometry) 18/45 cells meet 12.5 ns already at 0.8x"
+  ],
+  "artifacts": [
+    "/root/github/asic_rd/mixed_signal/comparator/data/pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/mc_pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/vmc.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/trannoise_summary.json",
+    "/root/github/asic_rd/mixed_signal/comparator/assets/pvt_summary.png"
+  ]
+}

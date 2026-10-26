@@ -1,0 +1,57 @@
+* Drive bench for the standard-cell clocked latch (SPEC.md S1-S6): the latch
+* alone, an ideal 20 MHz clock with a set edge time, an ideal dout-like input,
+* q into the 50 fF load.
+*
+* TEMPLATE: bench.py replaces @TCE@ (clock 0-100 % edge), @TDF@ (d 0-100 %
+* edge), @CQ@, @VDD@, @TEMP@, @NETLIST@, @SUBCKT@ and the corner token on the
+* .lib line, and writes work/<tag>/tb.spice; ngspice runs in work/<tag>/ and
+* writes out.csv.
+*
+* The timeline is ../latch_bkp/cmp_tspc/tb_drive.spice's, so the two latches are
+* measured the same way. Count clock: rising edges at k x 50 ns (the
+* counter's increments), falling edges at k x 50 + 25 ns (the latch's
+* sampling edges). d moves once in each clock phase in each direction:
+*   0-400 ns   d = 1 (before the crossing): q HIGH through eight sampling edges
+*   412.5 ns   d falls while clk = 1 (master transparent): q falls after 425 ns
+*   587.5 ns   d rises while clk = 0 (master closed):      q rises after 625 ns, not at 600
+*   787.5 ns   d falls while clk = 0:                       q falls after 825 ns, not at 800
+*   962.5 ns   d rises while clk = 1:                       q rises after 975 ns
+* The first 100 ns are start-up and are excluded from every measurement.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.include /foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice
+.include @NETLIST@
+
+.param VDD=@VDD@
+.param TCOUNT=50n
+.param TCE=@TCE@
+.param TDF=@TDF@
+.param TSTOP=1100n
+
+.temp @TEMP@
+.options savecurrents reltol=1e-4
+
+* digital supply of the latch (L7), separate from any analog supply
+VDVDD dvdd 0 {VDD}
+* clock HIGH at t = 0, falling edges centred on 25 ns + k x 50 ns
+VCLK clk 0 PULSE({VDD} 0 {TCOUNT/2-TCE/2} {TCE} {TCE} {TCOUNT/2-TCE} {TCOUNT})
+VD d 0 PWL(0 {VDD}
++ {412.5n-TDF/2} {VDD} {412.5n+TDF/2} 0
++ {587.5n-TDF/2} 0 {587.5n+TDF/2} {VDD}
++ {787.5n-TDF/2} {VDD} {787.5n+TDF/2} 0
++ {962.5n-TDF/2} 0 {962.5n+TDF/2} {VDD})
+
+XL d clk q dvdd 0 @SUBCKT@
+CQ q 0 @CQ@
+
+.tran 5p {TSTOP} 0 20p
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata out.csv v(clk) v(d) v(q) i(vdvdd) i(vd)
+quit
+.endc
+
+.end

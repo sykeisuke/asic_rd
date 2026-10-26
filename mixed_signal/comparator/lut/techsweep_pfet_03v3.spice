@@ -1,0 +1,97 @@
+* GF180MCU pygmid techsweep -- pfet_03v3
+*
+* Generates a 4-D gm/Id lookup table (L x VGS x VDS x VSB) for the pygmid
+* Lookup class. Adapted from Boris Murmann's GF180MCU starter files
+* (Book-on-gm-ID-design, starter_files_open_source_tools/gf180mcuD/
+* simulation/techsweep_pfet_03v3.spice), with two deliberate deviations:
+*
+*   1. This project is pinned to gf180mcuD; the reference deck targets
+*      gf180mcuC.
+*   2. The reference deck steps VGS and VDS with nested `alter`/`run` loops,
+*      one solver call per bias point. Here VGS x VDS is a single native 2-D
+*      `.dc` sweep, so one `run` covers 133x133 points and only L and VSB
+*      are stepped by `foreach`.
+*
+* The operating-point saves MUST be netlist-level `.save` cards, not a
+* `save` command inside `.control`: the `reset` that follows `alterparam`
+* discards a control-scope save list, after which ngspice silently writes
+* one constant operating point per column instead of per-sweep-step data.
+*
+* Every row carries its own @vg/@vd/@vb/l, so build_lut.py scatter-indexes
+* each sample into the grid instead of assuming an emission order, and
+* verifies every grid slot is filled exactly once.
+*
+* Noise (STH/SFL) is NOT swept here -- see README.md "Known limitations".
+* The reference deck gets it from a per-point .noise analysis, which cannot
+* be nested inside a 2-D .dc sweep.
+*
+* Junction geometry (ad/as/pd/ps/nrd/nrs) follows the reference deck so the
+* drain/source junction capacitances are realistic.
+*
+* PMOS polarity follows the reference deck exactly: the source connections
+* are REVERSED (`vg 0 g` rather than `vg g 0`), so the swept values stay
+* positive magnitudes while the gate/drain nodes sit at negative potential.
+* @vg[dc]/@vd[dc] read back as positive VSG/VSD, so the table's VGS/VDS
+* axes need no sign flip; ID and VT come out negative from BSIM and are
+* negated to magnitudes in build_lut.py.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param lx=0.28u
+.param wx=2u
+
+vg 0 g dc 0
+vd 0 d dc 0
+vb 0 b dc 0
+
+XM1 d g 0 b pfet_03v3 L={lx} W={wx} nf=1
++ ad='int((nf+1)/2) * wx/nf * 0.18u' as='int((nf+2)/2) * wx/nf * 0.18u'
++ pd='2*int((nf+1)/2) * (wx/nf + 0.18u)' ps='2*int((nf+2)/2) * (wx/nf + 0.18u)'
++ nrd='0.18u / wx' nrs='0.18u / wx' sa=0 sb=0 sd=0 m=1
+
+.save @vg[dc]
+.save @vd[dc]
+.save @vb[dc]
+.save @m.xm1.m0[l]
+.save @m.xm1.m0[id]
+.save @m.xm1.m0[vth]
+.save @m.xm1.m0[gm]
+.save @m.xm1.m0[gmbs]
+.save @m.xm1.m0[gds]
+.save @m.xm1.m0[cgg]
+.save @m.xm1.m0[cgs]
+.save @m.xm1.m0[cgd]
+.save @m.xm1.m0[cgb]
+.save @m.xm1.m0[cdd]
+.save @m.xm1.m0[css]
+.save @m.xm1.m0[cgdo]
+.save @m.xm1.m0[cgso]
+.save @m.xm1.m0[capbd]
+.save @m.xm1.m0[capbs]
+
+.control
+set wr_singlescale
+option numdgt = 7
+
+compose l_vec values 0.28u 0.30u 0.32u 0.34u 0.36u
+compose vb_vec start=0 stop=-0.4 step=-0.2
+
+foreach lval $&l_vec
+  alterparam lx=$lval
+  reset
+  foreach bval $&vb_vec
+    alter vb $bval
+    dc vg 0 3.3 0.025 vd 0 3.3 0.025
+    wrdata ../work/lut/techsweep_pfet_03v3.txt
+    + @vg[dc] @vd[dc] @vb[dc] @m.xm1.m0[l]
+    + @m.xm1.m0[id] @m.xm1.m0[vth] @m.xm1.m0[gm] @m.xm1.m0[gmbs] @m.xm1.m0[gds]
+    + @m.xm1.m0[cgg] @m.xm1.m0[cgs] @m.xm1.m0[cgd] @m.xm1.m0[cgb]
+    + @m.xm1.m0[cdd] @m.xm1.m0[css] @m.xm1.m0[cgdo] @m.xm1.m0[cgso]
+    + @m.xm1.m0[capbd] @m.xm1.m0[capbs]
+    destroy all
+    set appendwrite
+  end
+end
+unset appendwrite
+.endc
+.end

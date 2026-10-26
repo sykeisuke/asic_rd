@@ -1,0 +1,27 @@
+{
+ "fingers_per_row": 136,
+ "dummies_p": 16,
+ "dummies_n": 4,
+ "pitch_um": 1.42,
+ "row_length_um": 193.12,
+ "row_height_um": 7.0,
+ "res_strips": 5,
+ "footprint_um": [
+  205.12,
+  14.0
+ ],
+ "footprint_um2": 2871.6800000000003,
+ "centroid_err_pitch": {
+  "MP1": 0.0,
+  "MP2": 0.0,
+  "OV": 0.0,
+  "OB": 0.0,
+  "MN1": 0.0,
+  "MN2": 0.0,
+  "OR": 0.0,
+  "OC0": 0.0,
+  "OC1": 0.0,
+  "OC2": 0.0,
+  "OC3": 0.0
+ }
+}

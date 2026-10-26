@@ -1,0 +1,40 @@
+* VACASK model-import check, ngspice side. Six GF180 3.3 V devices spanning
+* the bins the comparator uses (short and long L, narrow and wide W, single
+* and multi-finger) at fixed biases, through the PDK's ngspice models. The
+* VACASK side is vacask_lib/tb_devcheck.sim.tmpl with the SAME device lines
+* through work/gf180_03v3_<corner>.inc, and vacask_lib/devcheck.py compares
+* the drain currents. If VACASK's BSIM4 v4.8 does not reproduce ngspice's
+* BSIM4 v4.5 on the frozen models within the stated tolerance, every VACASK
+* number in this block is suspect and the check says so. This gates the use
+* of a second simulator at all.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+VDD vdd 0 3.3
+VGN gn 0 1.0
+VGP gp 0 2.3
+VDN1 dn1 0 1.0
+VDN2 dn2 0 1.0
+VDN3 dn3 0 0.3
+VDP1 dp1 0 2.3
+VDP2 dp2 0 2.3
+VDP3 dp3 0 3.0
+XN1 dn1 gn 0 0 nfet_03v3 L=0.5u W=10u nf=2 m=1
+XN2 dn2 gn 0 0 nfet_03v3 L=0.28u W=4u nf=4 m=1
+XN3 dn3 gn 0 0 nfet_03v3 L=2.0u W=1u nf=1 m=2
+XP1 dp1 gp vdd vdd pfet_03v3 L=0.5u W=30.8u nf=8 m=1
+XP2 dp2 gp vdd vdd pfet_03v3 L=1.0u W=90.5u nf=20 m=1
+XP3 dp3 gp vdd vdd pfet_03v3 L=0.28u W=0.8u nf=1 m=1
+
+.control
+op
+let id_n1 = -i(vdn1)
+let id_n2 = -i(vdn2)
+let id_n3 = -i(vdn3)
+let id_p1 = i(vdp1)
+let id_p2 = i(vdp2)
+let id_p3 = i(vdp3)
+print id_n1 id_n2 id_n3 id_p1 id_p2 id_p3
+quit
+.endc
+.end

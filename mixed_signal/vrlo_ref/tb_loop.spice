@@ -1,0 +1,51 @@
+* tb_loop -- loop gain of vrlo_ref by Middlebrook voltage injection at the OTA's
+* sense input (vr.loop_variant: XM1's gate on its own port fb). vrlo is a
+* decap node (low Z), fb a gate (high Z), so T = -v(fb_side)/v(vrlo_side) with
+* the injection in series is the loop gain without loading error.
+*   RST = 1: reset state, XRST on, vramp's 4 pF + four cells' CEQ hang on
+*            vrlo through the switch, the ramp current flows in
+*   RST = 0: ramp state, XRST off, no inflow
+* Echoes: ugb_hz, pm_deg, t0_db (at 10 Hz).
+* TEMPLATE: CORNER MIMCORNER RESCORNER TEMP VDD IB IRD RST CEQ
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @RESCORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ramp_simple.spice
+.include dut_lb.spice
+.temp @TEMP@
+
+VAVDD avdd 0 @VDD@
+IB avdd ib @IB@
+XREG vrlo fb ib avdd 0 vrlo_ref_lb
+VINJ fb vrlo DC 0 AC 1
+IRD pbias_r 0 @IRD@
+XRD pbias_r pbias_r avdd avdd pfet_03v3 L=1u W=20u nf=10
+VRST rst 0 {@RST@*@VDD@}
+XRAMP vramp rst vrlo pbias_r avdd 0 ramp_simple
+* the four cells' bottom plates on vramp (S1 closed through the reset)
+CEQ vramp 0 {4*@CEQ@}
+* in the ramp state vramp would run to the rail in DC: hold it mid-ramp
+* through a large resistor so XPS stays in saturation (no AC effect)
+RHOLD vramp vhold 1g
+VHOLD vhold 0 1.3
+
+.options gmin=1e-15
+.control
+set num_threads=1
+op
+ac dec 40 10 10g
+let t = -v(vrlo)/v(fb)
+let tdb = db(t)
+let tph = 180/pi*cph(t)
+meas ac ugb_hz WHEN tdb=0 FALL=1
+meas ac ph_ugb FIND tph AT=ugb_hz
+let pm = 180 + ph_ugb
+* cph unwraps; reduce the margin to (-180, 180]
+let pmr = pm - 360*floor((pm+180)/360)
+echo "pm_deg = $&pmr"
+meas ac t0_db FIND tdb AT=10
+quit
+.endc
+.end

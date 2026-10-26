@@ -1,0 +1,53 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=XRAMP"
+description="ramp_simple_d: the shared single-slope ramp, drawn flat with its pbias diode XRD (ramp_simple_d.sch). PMOS source XPS charges the 4 pF MIM XCR; XRST holds vramp at vrlo while rst is HIGH. ibias is a CURRENT input (bias_gen_s sinks iramp). Pins: vramp rst vrlo ibias vdd vss"
+}
+V {}
+S {}
+E {}
+L 4 -100 -100 100 -100 {}
+L 4 100 -100 100 100 {}
+L 4 100 100 -100 100 {}
+L 4 -100 100 -100 -100 {}
+L 4 100 0 120 0 {}
+L 4 -120 0 -100 0 {}
+L 4 -120 -60 -100 -60 {}
+L 4 -120 60 -100 60 {}
+L 4 0 -120 0 -100 {}
+L 4 0 100 0 120 {}
+L 8 -56 70 88 70 {}
+L 8 88 70 82.73 67.12 {}
+L 8 88 70 82.73 72.88 {}
+L 8 -56 70 -56 -82 {}
+L 8 -56 -82 -58.88 -76.73 {}
+L 8 -56 -82 -53.12 -76.73 {}
+L 8 -56 52 84 52 {dash=3}
+L 8 -56 -60 84 -60 {dash=3}
+L 4 -56 52 -40 52 {bus=true}
+L 4 -40 52 16 -60 {bus=true}
+L 4 16 -60 16 52 {bus=true}
+L 4 16 52 30 52 {bus=true}
+L 4 30 52 84 -60 {bus=true}
+T {V} -76 -92 0 0 0.22 0.22 {layer=8}
+T {t} 82 72 0 0 0.22 0.22 {layer=8}
+T {vrlo} -54 54 0 0 0.16 0.16 {layer=8}
+T {dV/dt = I / C} -36 -96 0 0 0.2 0.2 {layer=13}
+T {rst: reset} 20 54 0 0 0.14 0.14 {layer=8}
+B 5 117.5 -2.5 122.5 2.5 {name=vramp dir=out}
+B 5 -122.5 -2.5 -117.5 2.5 {name=rst dir=in}
+B 5 -122.5 -62.5 -117.5 -57.5 {name=vrlo dir=in}
+B 5 -122.5 57.5 -117.5 62.5 {name=ibias dir=in}
+B 5 -2.5 -122.5 2.5 -117.5 {name=vdd dir=inout}
+B 5 -2.5 117.5 2.5 122.5 {name=vss dir=inout}
+T {vramp} 104 -22 0 0 0.22 0.22 {}
+T {rst} -96 -14 0 0 0.2 0.2 {}
+T {vrlo} -96 -74 0 0 0.2 0.2 {}
+T {ibias} -96 62 0 0 0.2 0.2 {}
+T {vdd} 6 -122 0 0 0.2 0.2 {}
+T {vss} 6 102 0 0 0.2 0.2 {}
+T {@name} 104 -130 0 0 0.4 0.4 {}
+T {RAMP} -96 104 0 0 0.24 0.24 {layer=13}
+T {ramp_simple_d} 36 104 0 0 0.18 0.18 {layer=13}

@@ -1,0 +1,79 @@
+* Device noise characterisation for the short-L gm/Id search (size_v3.py).
+* The pygmid tables carry no noise (../../../simulations/gf180_gmid_lut/README.md,
+* "Known limitations"), so the flicker and thermal densities come from here:
+* one nfet_03v3 and one pfet_03v3, W = 2 um nf = 1 (the table's reference
+* geometry), at every L of the short-L table and a VGS sweep, VDS = 1.0 V,
+* VSB = 0. Output is the drain current sensed by a CCVS, referred to the gate
+* source, so inoise_spectrum is the gate-referred density in V/sqrt(Hz).
+*
+* One line per point:  NZ <dev> <L_um> <vgs> <id> <gm> <s 1k 10k 100k 1M 10M 100M 1G>
+* the seven s values are gate-referred densities in V/rtHz, one per decade.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+.param lx=0.28u
+.param wx=2u
+
+* nfet: source and bulk at 0
+VGN gn 0 DC 0.8 AC 1
+VDN dn 0 DC 1.0
+XMN dn gn 0 0 nfet_03v3 L={lx} W={wx} nf=1
++ ad='wx*0.18u' as='wx*0.18u' pd='2*(wx+0.18u)' ps='2*(wx+0.18u)'
+HN outn 0 VDN 1
+
+* pfet: source and bulk at 3.3 V; VGP and VDP are the magnitudes VSG, VSD
+VDDP vp 0 3.3
+VGP vp gp DC 0.8 AC 1
+VDP vp dp DC 1.0
+XMP dp gp vp vp pfet_03v3 L={lx} W={wx} nf=1
++ ad='wx*0.18u' as='wx*0.18u' pd='2*(wx+0.18u)' ps='2*(wx+0.18u)'
+HP outp 0 VDP 1
+
+.control
+set wr_singlescale
+compose l_vec values 0.28u 0.30u 0.32u 0.34u 0.36u
+compose v_vec start=0.45 stop=1.80 step=0.05
+foreach lval $&l_vec
+  alterparam lx=$lval
+  reset
+  foreach vg $&v_vec
+    alter VGN dc = $vg
+    alter VGP dc = $vg
+    op
+    let idn = abs(@m.xmn.m0[id])
+    let gmn = @m.xmn.m0[gm]
+    let idp = abs(@m.xmp.m0[id])
+    let gmp = @m.xmp.m0[gm]
+    set s_idn = $&idn
+    set s_gmn = $&gmn
+    set s_idp = $&idp
+    set s_gmp = $&gmp
+    noise v(outn) VGN dec 1 1k 1G
+    setplot previous
+    let nz0 = inoise_spectrum[0]
+    let nz1 = inoise_spectrum[1]
+    let nz2 = inoise_spectrum[2]
+    let nz3 = inoise_spectrum[3]
+    let nz4 = inoise_spectrum[4]
+    let nz5 = inoise_spectrum[5]
+    let nz6 = inoise_spectrum[6]
+    echo "NZ nfet $lval $vg $s_idn $s_gmn $&nz0 $&nz1 $&nz2 $&nz3 $&nz4 $&nz5 $&nz6"
+    setplot next
+    destroy all
+    noise v(outp) VGP dec 1 1k 1G
+    setplot previous
+    let nz0 = inoise_spectrum[0]
+    let nz1 = inoise_spectrum[1]
+    let nz2 = inoise_spectrum[2]
+    let nz3 = inoise_spectrum[3]
+    let nz4 = inoise_spectrum[4]
+    let nz5 = inoise_spectrum[5]
+    let nz6 = inoise_spectrum[6]
+    echo "NZ pfet $lval $vg $s_idp $s_gmp $&nz0 $&nz1 $&nz2 $&nz3 $&nz4 $&nz5 $&nz6"
+    setplot next
+    destroy all
+  end
+end
+quit
+.endc
+.end

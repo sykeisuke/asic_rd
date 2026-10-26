@@ -1,0 +1,38 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=XS2"
+description="S2  vref -> bot (bottom plate), single NMOS; ctlb unused; N 0.36/0.28 (um); transistor level in sw_s2.sch, from ref/switches.spice"
+}
+V {}
+S {}
+E {}
+L 4 -100 0 -80 0 {}
+L 4 80 0 100 0 {}
+L 4 -20 40 -20 60 {}
+L 4 20 40 20 60 {}
+L 4 -80 0 -30 0 {}
+L 4 30 0 80 0 {}
+A 4 -30 0 3 0 360 {fill=true}
+A 4 30 0 3 0 360 {fill=true}
+L 4 -30 0 22 -20 {}
+L 4 -20 -60 -20 -40 {}
+L 4 -20 -40 0 -40 {}
+L 4 0 -40 0 -12 {dash=3}
+L 4 20 -60 20 -46 {}
+T {n.c.} 24 -54 0 0 0.14 0.14 {layer=8}
+T {NMOS} -16 14 0 0 0.2 0.2 {layer=13}
+T {vdd vss: body} -40 42 0 0 0.13 0.13 {layer=8}
+B 5 -102.5 -2.5 -97.5 2.5 {name=a dir=inout}
+B 5 97.5 -2.5 102.5 2.5 {name=b dir=inout}
+B 5 -22.5 -62.5 -17.5 -57.5 {name=ctl dir=in}
+B 5 17.5 -62.5 22.5 -57.5 {name=ctlb dir=in}
+B 5 -22.5 57.5 -17.5 62.5 {name=vdd dir=inout}
+B 5 17.5 57.5 22.5 62.5 {name=vss dir=inout}
+T {a} -94 -16 0 0 0.2 0.2 {}
+T {b} 86 -16 0 0 0.2 0.2 {}
+T {ctl} -50 -66 0 0 0.18 0.18 {}
+T {ctlb} 26 -66 0 0 0.18 0.18 {}
+T {@name} -78 -84 0 0 0.3 0.3 {}
+T {@symname  N 0.36/0.28} -76 62 0 0 0.15 0.15 {layer=13}

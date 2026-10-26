@@ -1,0 +1,37 @@
+* VBL - VREF under the PDK's local mismatch (verify_v2.py): two buffers wired as
+* the design wires them (bufs: one divider each, or one shared tap), each on
+* its own ideal bias current. ONE DRAW PER RUN: `.param sw_stat_mismatch=1`
+* after the PDK include switches on the agauss() draws in every nfet_03v3 /
+* pfet_03v3 wrapper, and `.options seed` fixes them, so verify_v2.py runs draw k
+* with seed BASE + k (a `reset` loop under one fixed seed redraws the SAME sample,
+* the trap ../comparator recorded). Draw 0 is mismatch-free (mm 0).
+* The ppolyf_u_3k model carries global (sw_stat_global) variation only, so the
+* divider ratio's own mismatch is NOT in this figure.
+*
+* One line:  MC <k> <v(vref) - VDD/2> <v(vbl) - VDD/2>
+* TEMPLATE: corner mimcorner temp vdd if bufs mm seed k
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include dut.spice
+.param sw_stat_mismatch=@MM@
+.temp @TEMP@
+.options seed=@SEED@
+
+VDD_SOURCE vdd 0 @VDD@
+IREFR vdd ibr @IF@
+IREFB vdd ibb @IF@
+@BUFS@
+VOR vrefb vref 0
+VOB vblb vbl 0
+
+.control
+set num_threads=1
+op
+let er = v(vref) - @VDD@ / 2
+let eb = v(vbl) - @VDD@ / 2
+echo "MC @K@ $&er $&eb"
+quit
+.endc
+.end

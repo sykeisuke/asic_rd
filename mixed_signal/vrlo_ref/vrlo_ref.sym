@@ -1,0 +1,28 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=X1"
+description="0.5 V shunt regulator for ramp_simple's reset (subckt vrlo_ref of vrlo_ref.spice)"
+}
+V {}
+S {}
+E {}
+L 4 -60 -40 60 -40 {}
+L 4 60 -40 60 40 {}
+L 4 60 40 -60 40 {}
+L 4 -60 40 -60 -40 {}
+L 4 80 0 60 0 {}
+B 5 77.5 -2.5 82.5 2.5 {name=vrlo dir=out}
+T {vrlo} 5 -16 0 0 0.15 0.15 {layer=7}
+L 4 -80 0 -60 0 {}
+B 5 -82.5 -2.5 -77.5 2.5 {name=ib dir=in}
+T {ib} -135 -16 0 0 0.15 0.15 {layer=7}
+L 4 0 -60 0 -40 {}
+B 5 -2.5 -62.5 2.5 -57.5 {name=avdd dir=inout}
+T {avdd} 4 -56 0 0 0.15 0.15 {layer=7}
+L 4 0 60 0 40 {}
+B 5 -2.5 57.5 2.5 62.5 {name=avss dir=inout}
+T {avss} 4 44 0 0 0.15 0.15 {layer=7}
+T {@name} -58 -58 0 0 0.25 0.25 {}
+T {vrlo_ref} -58 24 0 0 0.2 0.2 {layer=13}

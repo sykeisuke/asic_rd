@@ -1,0 +1,43 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=X1"
+description="bias_gen: constant-gm bias generator, current outputs (mixed_signal/bias_gen)"
+}
+V {}
+S {}
+E {}
+L 4 -80 -100 80 -100 {}
+L 4 80 -100 80 100 {}
+L 4 80 100 -80 100 {}
+L 4 -80 100 -80 -100 {}
+L 4 0 -120 0 -100 {}
+B 5 -2.5 -122.5 2.5 -117.5 {name=vdd dir=inout}
+T {vdd} 4 -116 0 0 0.15 0.15 {layer=7}
+L 4 0 120 0 100 {}
+B 5 -2.5 117.5 2.5 122.5 {name=vss dir=inout}
+T {vss} 4 104 0 0 0.15 0.15 {layer=7}
+L 4 80 -80 100 -80 {}
+B 5 97.5 -82.5 102.5 -77.5 {name=icmp0 dir=inout}
+T {icmp0} 40 -88 0 0 0.15 0.15 {layer=7}
+L 4 80 -55 100 -55 {}
+B 5 97.5 -57.5 102.5 -52.5 {name=icmp1 dir=inout}
+T {icmp1} 40 -63 0 0 0.15 0.15 {layer=7}
+L 4 80 -30 100 -30 {}
+B 5 97.5 -32.5 102.5 -27.5 {name=icmp2 dir=inout}
+T {icmp2} 40 -38 0 0 0.15 0.15 {layer=7}
+L 4 80 -5 100 -5 {}
+B 5 97.5 -7.5 102.5 -2.5 {name=icmp3 dir=inout}
+T {icmp3} 40 -13 0 0 0.15 0.15 {layer=7}
+L 4 80 20 100 20 {}
+B 5 97.5 17.5 102.5 22.5 {name=iramp dir=inout}
+T {iramp} 40 12 0 0 0.15 0.15 {layer=7}
+L 4 80 45 100 45 {}
+B 5 97.5 42.5 102.5 47.5 {name=ivref dir=inout}
+T {ivref} 40 37 0 0 0.15 0.15 {layer=7}
+L 4 80 70 100 70 {}
+B 5 97.5 67.5 102.5 72.5 {name=ivbl dir=inout}
+T {ivbl} 40 62 0 0 0.15 0.15 {layer=7}
+T {@name} -78 -96 0 0 0.25 0.25 {}
+T {bias_gen} -78 76 0 0 0.2 0.2 {layer=13}

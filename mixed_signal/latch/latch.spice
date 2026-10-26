@@ -1,0 +1,29 @@
+* latch -- the clocked latch after comparator, from the frozen digital
+* library gf180mcu_as_sc_mcu7t3v3 (replaces ../latch_bkp/cmp_tspc/tspc_dff, same ports):
+*
+*   q = d sampled at the FALLING edge of clk
+*
+* One cell: gf180mcu_as_sc_mcu7t3v3__dfxtn_2, the library's only negative-edge
+* D flip-flop (static master-slave, 26 devices, 59.27 um2). There is no
+* dffnq cell in this library; that name belongs to the fd_sc libraries.
+*
+* clk is the 20 MHz count clock, unchanged and uninverted; the counter
+* increments on the rising edge, so the latch samples half a count away from
+* it (NOISE_BUDGET.md L2). q drives the Gray capture of
+* digital/wilkinson_gray_counter unchanged: q is its compare_high and q's
+* falling edge is the capture clock.
+*
+* No output buffer: the cell's own output stage (2 x 1.38 / 1.0 um, L 0.28)
+* drives the 50 fF of capture-flop clock pins and wire with a 0.20 ns 90-10 %
+* fall at typical, 0.27 ns at ss 85 C 3.0 V, against the 2.15 ns limit
+* (data/explore.csv; buff_2 / buff_4 candidates in scff_variants.spice).
+*
+* Supplies: vdd/vss are the digital supply (L7). The cell's well pins are tied
+* inside: VNW = vdd, VPW = vss.
+*
+* Needs, before this file:
+*   .include /foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice
+* (the full library install of the pinned commit: make pdk-libs).
+.subckt latch d clk q vdd vss
+XFF vdd vdd vss vss clk d q gf180mcu_as_sc_mcu7t3v3__dfxtn_2
+.ends latch

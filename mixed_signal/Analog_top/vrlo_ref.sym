@@ -1,0 +1,75 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=X1"
+description="vrlo_ref of ../vrlo_ref (ADR 0018): VR_LO shunt regulator, 28 : 5 ppolyf_u_3k divider tap = 5/33 AVDD, an OTA driving the NMOS shunt XMS on vrlo, keep-alive source, 3.44 pF decap. ib is a CURRENT input (bias_gen_s ivrlo). Local symbol of Analog_top (pin order as the block's); xschem descends into ../vrlo_ref/vrlo_ref.sch"
+schematic=vrlo_ref.sch
+}
+V {}
+S {}
+E {}
+L 4 -100 -90 110 -90 {dash=4}
+L 4 110 -90 110 90 {dash=4}
+L 4 110 90 -100 90 {dash=4}
+L 4 -100 90 -100 -90 {dash=4}
+L 4 0 -110 0 -76 {}
+L 4 0 -76 -40 -76 {}
+L 4 -40 -76.0 -32 -68.0 {}
+L 4 -32 -68.0 -48 -60.0 {}
+L 4 -48 -60.0 -32 -52.0 {}
+L 4 -32 -52.0 -48 -44.0 {}
+L 4 -48 -44.0 -32 -36.0 {}
+L 4 -32 -36.0 -48 -28.0 {}
+L 4 -48 -28.0 -32 -20.0 {}
+L 4 -32 -20.0 -40 -12.0 {}
+L 4 -40 -12 -40 12 {}
+A 4 -40 0 2.5 0 360 {fill=true}
+L 4 -40 12.0 -32 20.0 {}
+L 4 -32 20.0 -48 28.0 {}
+L 4 -48 28.0 -32 36.0 {}
+L 4 -32 36.0 -48 44.0 {}
+L 4 -48 44.0 -32 52.0 {}
+L 4 -32 52.0 -40 60.0 {}
+L 4 -40 60 -40 76 {}
+L 4 -40 76 40 76 {}
+L 4 0 76 0 110 {}
+A 4 0 76 2.5 0 360 {fill=true}
+T {28} -32 -52 0 0 0.16 0.16 {}
+T {5} -32 28 0 0 0.16 0.16 {}
+L 4 28 14 52 14 {}
+L 4 52 14 40 -6 {}
+L 4 40 -6 28 14 {}
+L 4 25 -10 28 -6 {}
+L 4 28 -6 52 -6 {}
+L 4 52 -6 55 -2 {}
+L 4 -40 0 34 0 {}
+L 4 40 -6 40 -40 {}
+L 4 40 -40 96 -40 {}
+L 4 96 -40 96 0 {}
+L 4 96 0 130 0 {}
+A 4 96 0 2.5 0 360 {fill=true}
+L 4 40 14 40 76 {}
+A 4 40 76 2.5 0 360 {fill=true}
+L 4 96 0 96 22 {}
+L 4 87 22.0 105 22.0 {}
+L 4 87 28.0 105 28.0 {}
+L 4 96 28 96 46 {}
+L 4 88 46 104 46 {}
+L 4 -130 50 -96 50 {}
+A 4 -84 50 10 0 360 {}
+L 4 -90.0 50 -78.0 50 {}
+L 4 -78.0 50 -81.95 47.84 {}
+L 4 -78.0 50 -81.95 52.16 {}
+B 5 127.5 -2.5 132.5 2.5 {name=vrlo dir=out}
+B 5 -132.5 47.5 -127.5 52.5 {name=ib dir=in}
+B 5 -2.5 -112.5 2.5 -107.5 {name=avdd dir=inout}
+B 5 -2.5 107.5 2.5 112.5 {name=avss dir=inout}
+T {vrlo} 104 -18 0 0 0.18 0.18 {}
+T {ib} -124 30 0 0 0.18 0.18 {}
+T {avdd} 6 -112 0 0 0.16 0.16 {}
+T {avss} 6 92 0 0 0.16 0.16 {}
+T {5/33 VDD} -94 -24 0 0 0.16 0.16 {layer=13}
+T {shunt} 56 6 0 0 0.16 0.16 {layer=13}
+T {@name} -96 -124 0 0 0.3 0.3 {}
+T {VR_LO  vrlo_ref} -96 -86 0 0 0.2 0.2 {layer=13}

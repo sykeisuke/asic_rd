@@ -1,0 +1,30 @@
+* Does ngspice redraw the PDK's agauss() mismatch on every `reset`, and does a
+* late `.param sw_stat_mismatch=1` override the PDK default of 0? Two facts
+* the ngspice Monte Carlo cross-check depends on, settled by running rather
+* than assumed. Prints the threshold of two nominally identical devices for
+* three passes: identical thresholds mean mismatch is off; unchanging
+* thresholds across passes mean reset does not redraw.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.param sw_stat_mismatch=1
+
+VDD vdd 0 3.3
+VG g 0 1.0
+XA vdd g 0 0 nfet_03v3 L=0.5u W=4u nf=1 m=1
+XB vdd g 0 0 nfet_03v3 L=0.5u W=4u nf=1 m=1
+XC vdd g 0 0 pfet_03v3 L=0.5u W=4u nf=1 m=1
+
+.control
+let pass = 0
+while pass < 3
+  reset
+  op
+  let vth_a = @m.xa.m0[vth]
+  let vth_b = @m.xb.m0[vth]
+  let vth_c = @m.xc.m0[vth]
+  print pass vth_a vth_b vth_c
+  let pass = pass + 1
+end
+quit
+.endc
+.end

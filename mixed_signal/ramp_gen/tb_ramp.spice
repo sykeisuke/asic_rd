@@ -1,0 +1,102 @@
+* tb_ramp -- the ramp generator alone, on the real shared bias generator, with
+* the cell load replaced by its worst-case equivalent:
+*   CL     NCELL x CLOAD_CELL of bottom-plate load to ground
+*   IKICK  the S1 connection kick: at TCONN every cell's bottom plate is moved
+*          from its sample to VR_LO and dumps NCELL x CLOAD_CELL x (VKICK -
+*          VR_LO) into vramp, here as a 1 ns current pulse (stiffer than the
+*          real RC-limited charge share, so pessimistic)
+* Timeline as CONTRACT.md (T0 shorter: no FVF divider to wait for):
+*   rst high (reset) until TR, low for the ramp and the 20-count overrun,
+*   high again at TRST2 to measure how fast vramp recovers for the next
+*   conversion.
+*
+* Results: wrdata -> ramp.csv, reduced by reduce_ramp.py (INL, slope, start),
+* plus the .measure lines below. Run from a directory holding case.spice
+* (the knobs NCELL, VKICK, VDDX, TPRE: rst falls TPRE before TR); run.sh
+* creates one per case.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice moscap_typical
+.include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/data/bias_gen_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/bias_gen.spice
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_gen_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ramp_gen.spice
+
+.param VDD=3.3
+.param TCOUNT=50n
+.param VR_LO=0.5
+.param VR_HI=2.0
+.param LSB='(VR_HI-VR_LO)/256'
+.param TRAMP='256*TCOUNT'
+.param SLOPE='(VR_HI-VR_LO)/TRAMP'
+.param CLOAD_CELL=10f
+.include case.spice
+.param TPWR=100n
+.param T0=1u
+.param TS='T0+300n'
+.param TCONN='TS+10n'
+.param TR='T0+400n'
+.param TE='TR+TRAMP'
+.param TOVR='20*TCOUNT'
+.param TRST2='TE+TOVR+50n'
+.param TSTOP='TRST2+600n'
+.param QKICK='NCELL*CLOAD_CELL*(VKICK-VR_LO)'
+
+VDD_SOURCE vdd 0 PWL(0 0 {TPWR} {VDD*VDDX} {TSTOP} {VDD*VDDX})
+VRLO vrlo 0 {VR_LO-SLOPE*TPRE}
+VRST rst 0 PWL(0 0 {TPWR} {VDD} {TR-TPRE} {VDD} {TR-TPRE+100p} 0 {TRST2} 0 {TRST2+100p} {VDD})
+XBIAS vdd 0 pbias nbias bias_gen
+XRG vramp rst vrlo pbias vdd 0 ramp_gen
+CL vramp 0 {NCELL*CLOAD_CELL+1f}
+IKICK 0 vramp PULSE(0 {QKICK/1n} {TCONN} 100p 100p 0.9n 1)
+
+.options reltol=1e-5 abstol=1e-13 vntol=1e-7 gmin=1e-15 savecurrents
+.tran 0.2n {TSTOP} 0 2n
+.save v(vramp) v(xrg.vx) v(rst) v(pbias) v(xrg.d2) v(xrg.nd) i(vdd_source)
+.save @m.xrg.xns.m0[vds] @m.xrg.xns.m0[vdsat] @m.xrg.xps.m0[vds] @m.xrg.xps.m0[vdsat]
+.save @m.xrg.xm5.m0[vds] @m.xrg.xm5.m0[vdsat] @m.xrg.xm6.m0[vds] @m.xrg.xm6.m0[vdsat]
+.save @m.xrg.xm7.m0[vds] @m.xrg.xm7.m0[vdsat] @m.xrg.xm1.m0[vds] @m.xrg.xm1.m0[vdsat]
+.save @m.xrg.xns.m0[id] @m.xrg.xps.m0[id] @m.xrg.xm5.m0[id] @m.xrg.xm6.m0[id] @m.xrg.xm7.m0[id]
+
+.measure tran vr_tconn FIND v(vramp) AT={TCONN}
+.measure tran vr_kick_max MAX v(vramp) FROM={TCONN} TO={TR}
+.measure tran vr_tr FIND v(vramp) AT={TR}
+.measure tran vx_tr FIND v(xrg.vx) AT={TR}
+.measure tran vx_mid FIND v(xrg.vx) AT={TR+TRAMP/2}
+.measure tran vx_te FIND v(xrg.vx) AT={TE}
+.measure tran vr_te FIND v(vramp) AT={TE}
+.measure tran vr_ovr FIND v(vramp) AT={TE+TOVR}
+.measure tran i_ns AVG @m.xrg.xns.m0[id] FROM={TR} TO={TE}
+.measure tran i_ps AVG @m.xrg.xps.m0[id] FROM={TR} TO={TE}
+.measure tran i_m5 AVG @m.xrg.xm5.m0[id] FROM={TR} TO={TE}
+.measure tran i_m7 AVG @m.xrg.xm7.m0[id] FROM={TR} TO={TE}
+.measure tran i_total AVG i(vdd_source) FROM={TR} TO={TE}
+.measure tran ns_vds_min MIN @m.xrg.xns.m0[vds] FROM={TR} TO={TE+TOVR}
+.measure tran ns_vdsat FIND @m.xrg.xns.m0[vdsat] AT={TR}
+.measure tran ns_margin PARAM='ns_vds_min-ns_vdsat'
+.measure tran m5_vds_min MIN @m.xrg.xm5.m0[vds] FROM={TR} TO={TE+TOVR}
+.measure tran m5_vdsat FIND @m.xrg.xm5.m0[vdsat] AT={TR}
+.measure tran m5_margin PARAM='m5_vds_min-m5_vdsat'
+.measure tran m6_vds_maxabs MIN @m.xrg.xm6.m0[vds] FROM={TR} TO={TE+TOVR}
+.measure tran m6_vdsat FIND @m.xrg.xm6.m0[vdsat] AT={TE+TOVR}
+.measure tran m7_vds FIND @m.xrg.xm7.m0[vds] AT={TR}
+.measure tran m7_vdsat FIND @m.xrg.xm7.m0[vdsat] AT={TR}
+.measure tran m1_vds FIND @m.xrg.xm1.m0[vds] AT={TR}
+.measure tran m1_vdsat FIND @m.xrg.xm1.m0[vdsat] AT={TR}
+.measure tran ps_vds FIND @m.xrg.xps.m0[vds] AT={TR}
+.measure tran ps_vdsat FIND @m.xrg.xps.m0[vdsat] AT={TR}
+.measure tran pbias_tr FIND v(pbias) AT={TR}
+.measure tran pbias_min MIN v(pbias) FROM={TR} TO={TSTOP}
+.measure tran pbias_max MAX v(pbias) FROM={TR} TO={TSTOP}
+
+.control
+set num_threads=1
+set wr_singlescale
+set wr_vecnames
+run
+wrdata ramp.csv v(vramp) v(xrg.vx) v(rst) v(pbias)
+quit
+.endc
+.end

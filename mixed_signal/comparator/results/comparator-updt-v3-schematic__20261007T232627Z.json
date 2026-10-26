@@ -1,0 +1,62 @@
+{
+  "target": "comparator-schematic",
+  "timestamp": "20261007T232627Z",
+  "corner": "typical_27c",
+  "exit_status": 0,
+  "pass": true,
+  "metrics": {
+    "xtb_geom_vtrip": 1.64961,
+    "xtb_geom_delay_dyn": 1.1296e-08,
+    "xtb_geom_delay_vbl": 3.256e-09,
+    "xtb_geom_fall": 5.377e-09,
+    "xtb_geom_ota_gain_vv": 44.526,
+    "xtb_geom_nz_own_vin": 0.000163316,
+    "xtb_geom_vos_nom": -0.000341,
+    "xtb_geom_sigma_vos": 0.00940787,
+    "xtb_mc_samples": 200
+  },
+  "checks": [
+    "PASS: subcircuit ports in order: inp inn dout clk vdd vss nbias pbias",
+    "PASS: schematic netlists to comparator.spice: 10 transistors, 0 capacitors",
+    "PASS: xschem render assets/comparator_xschem.png / .svg",
+    "PASS: xschem render assets/tb_delay_xschem.png / .svg",
+    "PASS: xschem render assets/tb_trip_xschem.png / .svg",
+    "PASS: xschem render assets/tb_noise_xschem.png / .svg",
+    "PASS: xschem render assets/tb_mc_xschem.png / .svg",
+    "PASS: xtb: xschem netlisted tb_trip.sch (comparator from its schematic: yes)",
+    "PASS: xtb: xschem netlisted tb_delay.sch (comparator from its schematic: yes)",
+    "PASS: xtb: xschem netlisted tb_noise.sch (comparator from its schematic: yes)",
+    "PASS: xtb: xschem netlisted tb_mc.sch (comparator from its schematic: yes)",
+    "PASS: xtb nogeom vtrip: schematic 1.64961, bench 1.64961 (diff 1e-06; tol 5e-05 abs)",
+    "PASS: xtb nogeom delay_dyn: schematic 1.061e-08, bench 1.0589e-08 (diff 2.1e-11; tol 1e-10 abs)",
+    "PASS: xtb nogeom delay_vbl: schematic 2.544e-09, bench 2.544e-09 (diff 0; tol 1e-10 abs)",
+    "PASS: xtb nogeom fall: schematic 5.322e-09, bench 5.322e-09 (rel 0.00e+00; tol 0.02 rel)",
+    "PASS: xtb nogeom ota_gain_vv: schematic 44.5239, bench 44.5239 (rel 1.12e-06; tol 0.01 rel)",
+    "PASS: xtb nogeom nz_own_vin: schematic 0.000167831, bench 0.000167831 (rel 1.79e-06; tol 0.01 rel)",
+    "PASS: xtb nogeom vos_nom: schematic -0.000341, bench -0.000341 (diff 0; tol 0.0001 abs)",
+    "PASS: xtb nogeom sigma_vos: schematic 0.0085937, bench 0.00938299 (rel 8.41e-02; tol 0.2 rel)",
+    "PASS: xtb: every testbench schematic reproduces its bench"
+  ],
+  "reports": [
+    "REPORT: wrote comparator.sch from comparator.spice: 10 devices, 67 wire segments",
+    "REPORT: wrote tb_delay.sch: 17 symbols, 44 wires",
+    "REPORT: wrote tb_trip.sch: 12 symbols, 32 wires",
+    "REPORT: wrote tb_noise.sch: 13 symbols, 34 wires",
+    "REPORT: wrote tb_mc.sch: 12 symbols, 32 wires",
+    "REPORT: wrote assets/comparator_schematic.png from comparator.spice",
+    "REPORT: xtb as drawn (S/D geometry) vtrip: schematic 1.64961, bench 1.64961, +0.00 %",
+    "REPORT: xtb as drawn (S/D geometry) delay_dyn: schematic 1.1296e-08, bench 1.0589e-08, +6.68 %",
+    "REPORT: xtb as drawn (S/D geometry) delay_vbl: schematic 3.256e-09, bench 2.544e-09, +27.99 %",
+    "REPORT: xtb as drawn (S/D geometry) fall: schematic 5.377e-09, bench 5.322e-09, +1.03 %",
+    "REPORT: xtb as drawn (S/D geometry) ota_gain_vv: schematic 44.526, bench 44.5239, +0.00 %",
+    "REPORT: xtb as drawn (S/D geometry) nz_own_vin: schematic 0.000163316, bench 0.000167831, -2.69 %",
+    "REPORT: xtb as drawn (S/D geometry) vos_nom: schematic -0.000341, bench -0.000341, -0.00 %",
+    "REPORT: xtb as drawn (S/D geometry) sigma_vos: schematic 0.00940787, bench 0.00938299, +0.27 %"
+  ],
+  "artifacts": [
+    "/root/github/asic_rd/mixed_signal/comparator/comparator.sch",
+    "/root/github/asic_rd/mixed_signal/comparator/comparator.sym",
+    "/root/github/asic_rd/mixed_signal/comparator/tb_delay.sch /root/github/asic_rd/mixed_signal/comparator/tb_trip.sch /root/github/asic_rd/mixed_signal/comparator/tb_noise.sch /root/github/asic_rd/mixed_signal/comparator/tb_mc.sch",
+    "/root/github/asic_rd/mixed_signal/comparator/data/xtb.csv"
+  ]
+}

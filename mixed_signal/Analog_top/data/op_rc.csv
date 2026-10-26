@@ -1,0 +1,22 @@
+kind,name,role,state,value,v,i,formula
+ron,S0 cell 0 (vfe -> top),c0_s0n+c0_s0p,trk,3592.17,,,
+ron,S1 cell 0 (vramp -> top),c0_s1n+c0_s1p,ramp,3535.21,,,
+ron,S2 cell 0 (vref -> bot),c0_s2n,trk,8820.13,,,
+ron,ramp reset XRST (vramp -> vrlo),rp_xrst,trk,3484.02,,,
+res,XR1 xbg,bias_gen_s R string 1/5 (ppolyf_u 1 x 10.73 um),ramp,4083.57,0.0139478,3.41559e-06,
+res,XR2 xbg,bias_gen_s R string 2/5,ramp,4083.57,0.0139478,3.41559e-06,
+res,XR3 xbg,bias_gen_s R string 3/5,ramp,4083.57,0.0139478,3.41559e-06,
+res,XR4 xbg,bias_gen_s R string 4/5,ramp,4083.57,0.0139478,3.41559e-06,
+res,XR5 xbg,bias_gen_s R string 5/5,ramp,4083.57,0.0139478,3.41559e-06,
+res,XRT xdiv,midref_div upper (ppolyf_u_3k 1 x 64.98 um),ramp,204125,1.65,8.08328e-06,
+res,XRB xdiv,midref_div lower (ppolyf_u_3k 1 x 64.98 um),ramp,204125,1.65,8.08328e-06,
+res,XR1 xvrlo,vrlo_ref divider top unit 1/33 (ppolyf_u_3k 1 x 20 um),ramp,63278.7,0.1,1.58031e-06,
+res,XR33 xvrlo,vrlo_ref divider bottom unit 33/33,ramp,63279,0.0999986,1.58028e-06,
+cap,XCS xc0,"hold capacitor C_S, every cell (bot = terminal 1, top = terminal 2)",,5.45176e-14,,,5.4516e-14
+cap,XCR xramp,ramp integrating capacitor (ramp_simple_d),,4.00106e-12,,,4.00094e-12
+cap,XCP xbg,bias_gen_s pb decap to vdd,,1.01635e-12,,,1.01632e-12
+cap,XCN xbg,bias_gen_s nb decap to vss,,1.01635e-12,,,1.01632e-12
+cap,XCT xdiv,midref_div tap decap,,4.31475e-14,,,4.31462e-14
+cap,XCD xvref,XVREF output decap,,2.83572e-13,,,2.83564e-13
+cap,XCT xvrlo,vrlo_ref divider tap filter,,1.01988e-12,,,1.01985e-12
+cap,XCD xvrlo,vrlo_ref vrlo decap,,3.46694e-12,,,3.46684e-12

@@ -1,0 +1,91 @@
+* VBL from the candidate buffer as comparator's threshold through one
+* decision (typical, 27 C, 3.3 V): ../midrail_ref_bkp/midrail_ref/tb_biased_cmp.spice with the
+* comparator now ../comparator (its ideal 1.931 uA bias into one tail
+* finger, dout into 10 fF) and the buffers on ideal bias currents.
+* TEMPLATE: if bufs.
+*
+* The cell: S2 holds top at VREF and opens at TS; bot at VDD/2 during track,
+* down by VDROP at TDROP, then up at the 8-bit slope until top rises through
+* vbl and dout falls. Run 1 uses the buffer's VBL, run 2 an IDEAL VBL at run
+* 1's own pre-ramp level (the control).
+*   cmp_td1_ns, cmp_td2_ns   dout fall, buffer / ideal
+*   cmp_dt_lsb               the trip shift the buffer's dynamics cause
+*   cmp_pkpre_uv             largest |vbl - v0b| in the 200 ns before the trip
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.include /foss/designs/mixed_signal/comparator/comparator.spice
+.include dut.spice
+.param VDD=3.3
+.param CS_W=5u
+.param CS_L=5u
+.param TCOUNT=50n
+.param SLOPE=117187.5
+.param TS=0.5u
+.param TDROP=0.51u
+.param VDROP=0.15
+.param TR=0.6u
+.param TSTOP=2.3u
+.param RS2=1k
+.param IREFC=1.931u
+.options savecurrents reltol=1e-4 gmin=1e-15
+
+VDD_SOURCE vdd 0 {VDD}
+IREFR vdd ibr @IF@
+IREFB vdd ibb @IF@
+@BUFS@
+VOR vrefb vref 0
+* VBL to the comparator: the buffer (run 1) or the ideal control (run 2)
+VCB cb 0 2
+VCI ci 0 0
+SWB vbl vblb cb 0 swsel
+SWI vbl vbli ci 0 swsel
+VBLI vbli 0 1.65
+.model swsel sw vt=1 vh=0 ron=1 roff=1e14
+* comparator's bias as its own benches: ideal current into one tail finger
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREFC}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREFC}
+XREFP pbias pbias vddb vddb pfet_03v3 L=0.28u W=1u nf=1 m=1
+* the cell
+XCS top bot cap_mim_2f0_m4m5_noshield c_width={CS_W} c_length={CS_L}
+RLKT top 0 1e15
+VS2 s2 0 PWL(0 {VDD} {TS} {VDD} {TS+0.1n} 0)
+S2 vref top s2 0 sws2
+.model sws2 sw vt={VDD/2} vh=0.05 ron={RS2} roff=1e14
+VBOT bot 0 PWL(0 {VDD/2} {TDROP} {VDD/2} {TDROP+0.1n} {VDD/2-VDROP} {TR} {VDD/2-VDROP} {TSTOP} {VDD/2-VDROP+SLOPE*(TSTOP-TR)})
+XCMP vbl top dout clk vdd 0 nbias pbias cmp
+CLOAD dout 0 10f
+VCLK clk 0 0
+
+.control
+set num_threads=1
+tran 0.1n 2.3u 0 1n
+meas tran v0b avg v(vbl) from=0.3u to=0.45u
+meas tran td1 when v(dout)=1.65 fall=1
+let devb = abs(v(vbl) - v0b)
+let tpre = td1 - 200n
+meas tran pkpre max devb from=$&tpre to=$&td1
+meas tran pkall max devb from=0.5u to=2.3u
+let cmp_v0b_v = v0b
+let cmp_td1_ns = td1 * 1e9
+let cmp_pkpre_uv = pkpre * 1e6
+let cmp_pkall_uv = pkall * 1e6
+print cmp_v0b_v
+print cmp_td1_ns
+print cmp_pkpre_uv
+print cmp_pkall_uv
+alter @VBLI[dc] = $&v0b
+alter @VCB[dc] = 0
+alter @VCI[dc] = 2
+tran 0.1n 2.3u 0 1n
+meas tran td2 when v(dout)=1.65 fall=1
+let cmp_td2_ns = td2 * 1e9
+let cmp_dt_lsb = (tran1.td1 - td2) / 50e-9
+print cmp_td2_ns
+print cmp_dt_lsb
+quit
+.endc
+.end

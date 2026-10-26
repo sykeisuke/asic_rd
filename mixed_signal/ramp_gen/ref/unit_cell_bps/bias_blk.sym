@@ -1,0 +1,34 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=primitive
+format="@name @pinlist @model"
+template="name=XBIAS model=bias_gen"
+description="The shared constant-gm bias generator, configuration S:
+subcircuit bias_gen of /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/bias_gen.spice
+(sizes from bias_gen/data/bias_gen_params.spice), reused by path through
+.include. type=primitive: xschem netlists this line and never descends; the
+drawing of the inside is bias_gen/bias_gen.sch.
+Pins in the subcircuit order: vdd vss pbias nbias."
+}
+V {}
+S {}
+E {}
+L 4 -60 -40 60 -40 {}
+L 4 60 -40 60 40 {}
+L 4 60 40 -60 40 {}
+L 4 -60 40 -60 -40 {}
+L 4 0 -60 0 -40 {}
+L 4 0 40 0 60 {}
+L 4 60 -20 80 -20 {}
+L 4 60 20 80 20 {}
+B 5 -2.5 -62.5 2.5 -57.5 {name=vdd dir=inout}
+B 5 -2.5 57.5 2.5 62.5 {name=vss dir=inout}
+B 5 77.5 -22.5 82.5 -17.5 {name=pbias dir=out}
+B 5 77.5 17.5 82.5 22.5 {name=nbias dir=out}
+T {@name} -58 -58 0 0 0.25 0.25 {}
+T {@model} -58 24 0 0 0.2 0.2 {layer=13}
+T {const-gm} -56 -10 0 0 0.2 0.2 {}
+T {pbias} 30 -30 0 0 0.15 0.15 {layer=7}
+T {nbias} 30 10 0 0 0.15 0.15 {layer=7}
+T {vdd} 4 -56 0 0 0.15 0.15 {layer=7}
+T {vss} 4 44 0 0 0.15 0.15 {layer=7}

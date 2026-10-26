@@ -1,0 +1,39 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=XRG"
+description="Simple Wilkinson ramp (ramp_simple.spice): PMOS current source + 4 pF MIM + reset switch, the comparison baseline for ramp_gen. type=subcircuit: xschem descends into ramp_simple.sch.
+Pins in the subcircuit order: vramp rst vrlo pbias vdd vss."
+}
+V {}
+S {}
+E {}
+L 4 -100 -100 100 -100 {}
+L 4 100 -100 100 100 {}
+L 4 100 100 -100 100 {}
+L 4 -100 100 -100 -100 {}
+L 7 -50 40 30 -40 {}
+L 7 30 -40 30 40 {}
+L 7 30 40 50 40 {}
+L 7 -70 40 -50 40 {}
+L 4 100 0 120 0 {}
+B 5 117.5 -2.5 122.5 2.5 {name=vramp dir=out}
+L 4 -120 0 -100 0 {}
+B 5 -122.5 -2.5 -117.5 2.5 {name=rst dir=in}
+L 4 -120 -60 -100 -60 {}
+B 5 -122.5 -62.5 -117.5 -57.5 {name=vrlo dir=in}
+L 4 -120 60 -100 60 {}
+B 5 -122.5 57.5 -117.5 62.5 {name=pbias dir=in}
+L 4 0 -120 0 -100 {}
+B 5 -2.5 -122.5 2.5 -117.5 {name=vdd dir=inout}
+L 4 0 100 0 120 {}
+B 5 -2.5 117.5 2.5 122.5 {name=vss dir=inout}
+T {vramp} 60 -6 0 0 0.2 0.2 {}
+T {rst} -94 -6 0 0 0.2 0.2 {}
+T {vrlo} -94 -66 0 0 0.2 0.2 {}
+T {pbias} -94 54 0 0 0.2 0.2 {}
+T {vdd} 6 -114 0 0 0.2 0.2 {}
+T {vss} 6 104 0 0 0.2 0.2 {}
+T {@name} -100 -136 0 0 0.3 0.3 {}
+T {I + C} -60 60 0 0 0.22 0.22 {layer=13}

@@ -1,0 +1,94 @@
+* Kick bench (SPEC.md S9, S10, S12): comparator and the clocked latch on the
+* unit cell's charge path, the count clock running against the clock stopped,
+* to measure what the latch and its clock do to the decision.
+*
+* The charge path is ../latch_bkp/cmp_tspc/tb_kick.spice's: the 54.52 fF MIM, the top
+* plate reset to VREF = VDD/2 by an ideal S2 that opens at TS, the bottom
+* plate held at VIN, moved to VR_LO at TCONN and ramped at the 8-bit slope
+* from TR; inp = VBL = VDD/2, ideal. The comparator is the one Analog_top uses,
+* ../comparator/comparator.spice (by path), on its own pbias diode
+* XREFP (L 0.28 / W 1 um, as in atop_cell) fed by an ideal 1.681 x 1.931 uA
+* (bias_gen's comparator output, ADR 0017). The comparator is on vdd =
+* AVDD; the latch and its clock are on dvdd (L7). Both supplies are ideal.
+*
+* TEMPLATE: bench.py replaces the input level, the clock source's value (a
+* PULSE, or a DC level for the stopped clock), the load on dout (the LOAD
+* token below XDUT), the clock edge and the latch netlist path. Tokens are
+* never written in comments: render() replaces them there too.
+*
+* The count clock has rising edges at k x 50 ns (TR = 400 ns is one) and
+* falling edges at k x 50 + 25 ns (the latch's sampling edges).
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.include /foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice
+.include /foss/designs/mixed_signal/comparator/comparator.spice
+.include /foss/designs/mixed_signal/latch/ref/tspc_dff.spice
+.include @NETLIST@
+
+.param VDD=3.3
+.param IBIAS='1.681*1.93077e-6'
+.param VIN=@VIN@
+.param VR_LO=0.5
+.param VR_HI=2.0
+.param LSB=0.005859375
+.param TCOUNT=50n
+.param SLOPE='LSB/TCOUNT'
+.param OVR='20*LSB'
+.param TS=300n
+.param TCONN=310n
+.param TR=400n
+.param TEDGE=100p
+.param TCE=@TCE@
+.param TRAMP='(VR_HI+OVR-VR_LO)/SLOPE'
+.param TSTOP='TR+(VIN-VR_LO)/SLOPE+300n'
+
+.csparam cs_tr={TR}
+.csparam cs_tideal={TR+(VIN-VR_LO)/SLOPE}
+
+.options savecurrents reltol=1e-4 gmin=1e-15
+
+VDD_SOURCE vdd 0 {VDD}
+VDVDD dvdd 0 {VDD}
+IREFP pbias 0 {IBIAS}
+XREFP pbias pbias vdd vdd pfet_03v3 L=0.28u W=1u nf=1 m=1
+VCLK clk 0 @CLK@
+
+VVBL vbl 0 {VDD/2}
+VVREF vref 0 {VDD/2}
+VBOT bot 0 PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+TRAMP} {VR_HI+OVR})
+VS2 s2 0 PWL(0 1 {TS} 1 {TS+TEDGE} 0)
+S2 vref top s2 0 swideal
+.model swideal sw vt=0.5 vh=0.1 ron=100 roff=1e16
+XCS top bot cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
+RLKT top 0 1e15
+
+XDUT vbl top dout 0 vdd 0 0 pbias cmp
+@LOAD@
+
+.tran 1n {TSTOP} 0 2n
+
+.control
+run
+meas tran t_cross when v(top)=v(vbl) rise=1 td=$&cs_tr
+meas tran t_dout when v(dout)=1.65 fall=1 td=$&cs_tr
+meas tran t_f90 when v(dout)=2.97 fall=1 td=$&cs_tr
+meas tran t_f10 when v(dout)=0.33 fall=1 td=$&cs_tr
+meas tran t_q when v(q)=1.65 fall=1 td=$&cs_tr
+meas tran armed find v(dout) at=$&cs_tr
+let t_after = t_dout + 5e-9
+meas tran t_rerise when v(dout)=1.65 rise=1 td=$&t_after
+let tq_after = t_q + 5e-9
+meas tran t_qrerise when v(q)=1.65 rise=1 td=$&tq_after
+* the times again, relative to the ideal crossing and with 10 digits
+set numdgt=10
+let rel_cross = t_cross - $&cs_tideal
+let rel_dout = t_dout - $&cs_tideal
+let rel_q = t_q - $&cs_tideal
+print rel_cross
+print rel_dout
+print rel_q
+quit
+.endc
+
+.end

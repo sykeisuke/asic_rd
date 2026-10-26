@@ -1,0 +1,58 @@
+* ramp_gen -- shared single-slope ramp for the 8-bit true bottom-plate cells.
+*
+* Topology only. Every size is a parameter written by size_ramp.py into
+* data/ramp_gen_params.spice (rationale: DESIGN_RECIPE.md). Every MOS is
+* nfet_03v3 / pfet_03v3; the two capacitors are PDK devices.
+*
+*                    XRST (rst high = reset)
+*                 +-----/ -----+
+*                 |   XCI      |
+*        vx ------+----||------+------ vramp ---> S1 of every cell
+*        |                     |           |
+*        |    +-------+        |         XCO (2 pF MIM, kick absorber)
+*        +--(-|  OTA  |>-------+           |
+*     vrlo --(+|      |                   vss
+*        |    +-------+
+*      XNS (sink, I_INT = C_INT x SLOPE) <- XND diode <- XPS pbias slave
+*
+* Miller integrator. The current that sets the slope is drawn out of the
+* virtual ground vx, whose voltage never moves: the 1.6 V swing appears at
+* the OTA output, not across the sink, so the sink's output impedance does
+* not enter the linearity, and the load (the bottom plates, their S1
+* connection kick, the comparators' trip kicks) hangs on a driven node, not
+* on the integrating capacitor. Reset shorts XCI: the OTA becomes a
+* follower and vramp = vx = vrlo.
+*
+* Ports
+*   vramp  ramp output, to every cell's S1
+*   rst    0 / VDD, HIGH = reset (XCI shorted, vramp held at vrlo)
+*   vrlo   ramp start level, 0.5 V (VR_LO); a gate only, no DC current
+*   pbias  the shared PMOS bias line of ../ramp_gen/ref/bias_gen (3.1314 uA leg); every
+*          current here is a pbias mirror
+*   vdd vss
+*
+* PROBES: xps xnd xns xm1 xm2 xm3 xm4 xm5 xm6 xm7 xrst
+.subckt ramp_gen vramp rst vrlo pbias vdd vss
+* ---- slope current: pbias slave -> NMOS diode -> sink on the virtual ground
+XPS nd pbias vdd vdd pfet_03v3 L={RG_LPS} W={RG_WPS} nf={RG_NFPS} m=1
+XND nd nd vss vss nfet_03v3 L={RG_LN} W={RG_KD*RG_WNS} nf={RG_NFND} m=1
+XNS vx nd vss vss nfet_03v3 L={RG_LN} W={RG_WNS} nf=1 m=1
+* ---- integrating capacitor (MIM; plate c0 on vramp, c1 on vx) and reset
+XCI vramp vx cap_mim_2f0_m4m5_noshield c_width={RG_CIW} c_length={RG_CIW}
+XRST vramp rst vx vss nfet_03v3 L=0.28u W={RG_WRST} nf=1 m=1
+* ---- OTA stage 1: PMOS pair (vx on the diode side), NMOS mirror load
+XM7 tail pbias vdd vdd pfet_03v3 L=1u W={RG_WT} nf={RG_NFT} m=1
+XM1 d1 vx tail vdd pfet_03v3 L={RG_L1} W={RG_W1} nf={RG_NF1} m=1
+XM2 d2 vrlo tail vdd pfet_03v3 L={RG_L1} W={RG_W1} nf={RG_NF1} m=1
+XM3 d1 d1 vss vss nfet_03v3 L={RG_L3} W={RG_W3} nf=1 m=1
+XM4 d2 d1 vss vss nfet_03v3 L={RG_L3} W={RG_W3} nf=1 m=1
+* ---- OTA stage 2: NMOS common source, pbias-slave load, Miller Cc + Rz
+XM5 vramp d2 vss vss nfet_03v3 L={RG_L5} W={RG_W5} nf={RG_NF5} m=1
+XM6 vramp pbias vdd vdd pfet_03v3 L=1u W={RG_W6} nf={RG_NF6} m={RG_M6}
+XCC vramp cz cap_mim_2f0_m4m5_noshield c_width={RG_CCW} c_length={RG_CCW}
+XRZ cz d2 vss ppolyf_u r_width=1u r_length={RG_RZL}
+* ---- output capacitor (kick absorber): MIM, linear; the accumulation varactor
+*      cap_nmos_03v3_b stalled the transient at the sample edge (its behavioural
+*      E-source, "timestep too small"), and a driven node does not need density
+XCO vramp vss cap_mim_2f0_m4m5_noshield c_width={RG_COW} c_length={RG_COW}
+.ends ramp_gen

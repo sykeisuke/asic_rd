@@ -1,0 +1,59 @@
+* tb_analog_top -- one four-cell record of the analog macro from a cold supply:
+* power-up, the four samples (40 ns apart), the shared ramp and the four trips.
+* The macro is analog_top.spice, GENERATED from analog_top.sch by schematic.sh:
+* every block down to transistors, as drawn (comparator, tspc_dff and the
+* switches with the PDK symbols' S/D junction geometry). Only the supplies, vrlo,
+* the input, the switch controls, ramp_rst and the count clock are ideal sources.
+* No block deck is included here: analog_top.spice is self-contained apart from
+* the PDK models and ramp_simple's {RS_*} sizes.
+* Timeline and levels: tb_params.inc. Measures, analysis and output:
+* tb_measure.inc. The xschem testbench tb_analog_top.sch draws this circuit.
+*
+* Run from a directory holding .spiceinit (set num_threads=1):
+*   ngspice -b /foss/designs/mixed_signal/vrlo_ref/macro/ref_analog_top/tb_analog_top.spice
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+* ramp_simple's sizes ({RS_*}), by path, never copied; then the macro
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/vrlo_ref/macro/ref_analog_top/analog_top.spice
+.include /foss/designs/mixed_signal/vrlo_ref/macro/ref_analog_top/tb_params.inc
+
+* ---------------------------------------------------------------------------
+* Supplies (cold start), vrlo, input, ramp reset, count clock, switch controls
+* ---------------------------------------------------------------------------
+VAVDD avdd 0 PWL(0 0 {TPWR} {VDD})
+VDVDD dvdd 0 PWL(0 0 {TPWR} {VDD})
+VVRLO vrlo 0 {VR_LO}
+* one level per cell; vin steps TSTEP after each S2 opens (S0_k is open by then)
+VVIN vin 0 PWL(0 {VIN0} {TS0+TSTEP} {VIN0} {TS0+TSTEP+TEDGE} {VIN1} {TS1+TSTEP} {VIN1} {TS1+TSTEP+TEDGE} {VIN2} {TS2+TSTEP} {VIN2} {TS2+TSTEP+TEDGE} {VIN3})
+VRST ramp_rst 0 PWL(0 0 {TPWR} {VDD} {TR} {VDD} {TR+TEDGE} 0)
+* 20 MHz count clock, free-running, a rising edge at TR; the latch samples on falling edges
+VCLK cnt_clk 0 PULSE(0 {VDD} {TCLK0} {TEDGE} {TEDGE} {TCOUNT/2-TEDGE} {TCOUNT})
+* controls follow the supply up during TPWR (a closed switch has a rail gate)
+VS2_0 s2_0 0 PWL(0 0 {TPWR} {VDD} {TS0} {VDD} {TS0+TEDGE} 0)
+VS2_1 s2_1 0 PWL(0 0 {TPWR} {VDD} {TS1} {VDD} {TS1+TEDGE} 0)
+VS2_2 s2_2 0 PWL(0 0 {TPWR} {VDD} {TS2} {VDD} {TS2+TEDGE} 0)
+VS2_3 s2_3 0 PWL(0 0 {TPWR} {VDD} {TS3} {VDD} {TS3+TEDGE} 0)
+VS0_0 s0_0 0 PWL(0 0 {TPWR} {VDD} {TS0+TNOV} {VDD} {TS0+TNOV+TEDGE} 0)
+VS0_1 s0_1 0 PWL(0 0 {TPWR} {VDD} {TS1+TNOV} {VDD} {TS1+TNOV+TEDGE} 0)
+VS0_2 s0_2 0 PWL(0 0 {TPWR} {VDD} {TS2+TNOV} {VDD} {TS2+TNOV+TEDGE} 0)
+VS0_3 s0_3 0 PWL(0 0 {TPWR} {VDD} {TS3+TNOV} {VDD} {TS3+TNOV+TEDGE} 0)
+VS1_0 s1_0 0 PWL(0 0 {TS0+2*TNOV} 0 {TS0+2*TNOV+TEDGE} {VDD})
+VS1_1 s1_1 0 PWL(0 0 {TS1+2*TNOV} 0 {TS1+2*TNOV+TEDGE} {VDD})
+VS1_2 s1_2 0 PWL(0 0 {TS2+2*TNOV} 0 {TS2+2*TNOV+TEDGE} {VDD})
+VS1_3 s1_3 0 PWL(0 0 {TS3+2*TNOV} 0 {TS3+2*TNOV+TEDGE} {VDD})
+
+* ---------------------------------------------------------------------------
+* The macro and the capture load on each q
+* ---------------------------------------------------------------------------
+XDUT vin vrlo ramp_rst cnt_clk s0_0 s0_1 s0_2 s0_3 s1_0 s1_1 s1_2 s1_3
++ s2_0 s2_1 s2_2 s2_3 q0 q1 q2 q3 avdd 0 dvdd 0 analog_top
+CQ0 q0 0 {CQ}
+CQ1 q1 0 {CQ}
+CQ2 q2 0 {CQ}
+CQ3 q3 0 {CQ}
+
+.include /foss/designs/mixed_signal/vrlo_ref/macro/ref_analog_top/tb_measure.inc
+.end

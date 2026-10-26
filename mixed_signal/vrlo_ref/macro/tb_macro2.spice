@@ -1,0 +1,105 @@
+* tb_macro2 -- two identical records of ref_analog_top/analog_top.spice (the
+* generated macro, every block at transistor level) with the end-of-ramp
+* reset between them, so the reset dump that the single-record functional
+* bench never exercises lands on vrlo before record 2 samples.
+* Record 1 is tb_analog_top.spice's timeline (tb_params.inc). Then:
+*   TRS = TE + TOVR        ramp_rst rises: vramp (2.16 V) dumps into vrlo
+*   TRS + 20n              S1_k open;  TRS + 40n  S0_k, S2_k close (track)
+*   TS0B = TRS + TREC2     record 2: S2/S0/S1 per cell as in record 1, 40 ns apart
+*   TR2 = TS3B + 300n      ramp_rst falls; TR2 - TR = 304 counts exactly
+*                          (TREC2 = 0.98 us), so cnt_clk has a rising edge there
+* The VRLO token (below) is either the ideal source of tb_analog_top.spice or vrlo_ref on an
+* ideal bias current (macro.py writes both). Measures per cell: the
+* continuous trip count of each record from dout (clock-phase free) and the
+* code from q; vramp before each release; vrlo's dump peak.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/vrlo_ref/macro/ref_analog_top/analog_top.spice
+.include /foss/designs/mixed_signal/vrlo_ref/macro/ref_analog_top/tb_params.inc
+@INCLUDE@
+
+.param TRS='TE+TOVR' TREC2=0.98u TS0B='TRS+TREC2' TS1B='TS0B+TSPACE' TS2B='TS0B+2*TSPACE'
+.param TS3B='TS0B+3*TSPACE' TR2='TS3B+300n' TE2='TR2+TRAMP' TSTOP2='TE2+TOVR+100n'
+
+VAVDD avdd 0 PWL(0 0 {TPWR} {VDD})
+VDVDD dvdd 0 PWL(0 0 {TPWR} {VDD})
+@VRLO@
+VVIN vin 0 PWL(0 {VIN0} {TS0+TSTEP} {VIN0} {TS0+TSTEP+TEDGE} {VIN1} {TS1+TSTEP} {VIN1} {TS1+TSTEP+TEDGE} {VIN2}
++ {TS2+TSTEP} {VIN2} {TS2+TSTEP+TEDGE} {VIN3} {TRS+30n} {VIN3} {TRS+30n+TEDGE} {VIN0}
++ {TS0B+TSTEP} {VIN0} {TS0B+TSTEP+TEDGE} {VIN1} {TS1B+TSTEP} {VIN1} {TS1B+TSTEP+TEDGE} {VIN2}
++ {TS2B+TSTEP} {VIN2} {TS2B+TSTEP+TEDGE} {VIN3})
+VRST ramp_rst 0 PWL(0 0 {TPWR} {VDD} {TR} {VDD} {TR+TEDGE} 0 {TRS} 0 {TRS+TEDGE} {VDD} {TR2} {VDD} {TR2+TEDGE} 0)
+VCLK cnt_clk 0 PULSE(0 {VDD} {TCLK0} {TEDGE} {TEDGE} {TCOUNT/2-TEDGE} {TCOUNT})
+* per cell: S2 opens at TS_k, S0 at TS_k + TNOV, S1 closes at TS_k + 2 TNOV;
+* after TRS: S1 opens at +20n, S0 and S2 close at +40n; record 2 repeats
+.subckt ctl s0 s1 s2 ts=0 tsb=0 trs=0 tpwr=100n tnov=5n te=100p vdd=3.3
+VS2 s2 0 PWL(0 0 {tpwr} {vdd} {ts} {vdd} {ts+te} 0 {trs+40n} 0 {trs+40n+te} {vdd} {tsb} {vdd} {tsb+te} 0)
+VS0 s0 0 PWL(0 0 {tpwr} {vdd} {ts+tnov} {vdd} {ts+tnov+te} 0 {trs+40n} 0 {trs+40n+te} {vdd} {tsb+tnov} {vdd} {tsb+tnov+te} 0)
+VS1 s1 0 PWL(0 0 {ts+2*tnov} 0 {ts+2*tnov+te} {vdd} {trs+20n} {vdd} {trs+20n+te} 0 {tsb+2*tnov} 0 {tsb+2*tnov+te} {vdd})
+.ends
+XK0 s0_0 s1_0 s2_0 ctl ts={TS0} tsb={TS0B} trs={TRS} tpwr={TPWR} tnov={TNOV} te={TEDGE} vdd={VDD}
+XK1 s0_1 s1_1 s2_1 ctl ts={TS1} tsb={TS1B} trs={TRS} tpwr={TPWR} tnov={TNOV} te={TEDGE} vdd={VDD}
+XK2 s0_2 s1_2 s2_2 ctl ts={TS2} tsb={TS2B} trs={TRS} tpwr={TPWR} tnov={TNOV} te={TEDGE} vdd={VDD}
+XK3 s0_3 s1_3 s2_3 ctl ts={TS3} tsb={TS3B} trs={TRS} tpwr={TPWR} tnov={TNOV} te={TEDGE} vdd={VDD}
+
+XDUT vin vrlo ramp_rst cnt_clk s0_0 s0_1 s0_2 s0_3 s1_0 s1_1 s1_2 s1_3
++ s2_0 s2_1 s2_2 s2_3 q0 q1 q2 q3 avdd 0 dvdd 0 analog_top
+CQ0 q0 0 {CQ}
+CQ1 q1 0 {CQ}
+CQ2 q2 0 {CQ}
+CQ3 q3 0 {CQ}
+
+* as tb_measure.inc: gmin 1e-15 (floating top plates), reltol 1e-4, 2 ns ceiling
+.options reltol=1e-4 gmin=1e-15
+.tran 0.1n {TSTOP2} 0 2n
+.measure tran p_tr PARAM='TR'
+.measure tran p_tr2 PARAM='TR2'
+.measure tran vramp_tr FIND v(xdut.vramp) AT={TR-0.2n}
+.measure tran vramp_tr2 FIND v(xdut.vramp) AT={TR2-0.2n}
+.measure tran vramp_q FIND v(xdut.vramp) AT={TS0-1n}
+.measure tran vramp_q2 FIND v(xdut.vramp) AT={TS0B-1n}
+.measure tran vramp_top FIND v(xdut.vramp) AT={TRS}
+.measure tran vrlo_q FIND v(vrlo) AT={TS0-1n}
+.measure tran vrlo_pk MAX v(vrlo) FROM={TRS} TO={TS0B}
+* record 1 and record 2: dout falls (continuous trip count), q falls (code)
+.measure tran ta0 WHEN v(xdut.xc0.dout)='VDD/2' FALL=1 TD={TR}
+.measure tran ta1 WHEN v(xdut.xc1.dout)='VDD/2' FALL=1 TD={TR}
+.measure tran ta2 WHEN v(xdut.xc2.dout)='VDD/2' FALL=1 TD={TR}
+.measure tran ta3 WHEN v(xdut.xc3.dout)='VDD/2' FALL=1 TD={TR}
+.measure tran tb0 WHEN v(xdut.xc0.dout)='VDD/2' FALL=1 TD={TR2}
+.measure tran tb1 WHEN v(xdut.xc1.dout)='VDD/2' FALL=1 TD={TR2}
+.measure tran tb2 WHEN v(xdut.xc2.dout)='VDD/2' FALL=1 TD={TR2}
+.measure tran tb3 WHEN v(xdut.xc3.dout)='VDD/2' FALL=1 TD={TR2}
+.measure tran qa0 WHEN v(q0)='VDD/2' FALL=1 TD={TR}
+.measure tran qa1 WHEN v(q1)='VDD/2' FALL=1 TD={TR}
+.measure tran qa2 WHEN v(q2)='VDD/2' FALL=1 TD={TR}
+.measure tran qa3 WHEN v(q3)='VDD/2' FALL=1 TD={TR}
+.measure tran qb0 WHEN v(q0)='VDD/2' FALL=1 TD={TR2}
+.measure tran qb1 WHEN v(q1)='VDD/2' FALL=1 TD={TR2}
+.measure tran qb2 WHEN v(q2)='VDD/2' FALL=1 TD={TR2}
+.measure tran qb3 WHEN v(q3)='VDD/2' FALL=1 TD={TR2}
+.measure tran da0 PARAM='(ta0-TR)/TCOUNT'
+.measure tran da1 PARAM='(ta1-TR)/TCOUNT'
+.measure tran da2 PARAM='(ta2-TR)/TCOUNT'
+.measure tran da3 PARAM='(ta3-TR)/TCOUNT'
+.measure tran db0 PARAM='(tb0-TR2)/TCOUNT'
+.measure tran db1 PARAM='(tb1-TR2)/TCOUNT'
+.measure tran db2 PARAM='(tb2-TR2)/TCOUNT'
+.measure tran db3 PARAM='(tb3-TR2)/TCOUNT'
+.measure tran ca0 PARAM='floor((qa0-TR)/TCOUNT)'
+.measure tran ca1 PARAM='floor((qa1-TR)/TCOUNT)'
+.measure tran ca2 PARAM='floor((qa2-TR)/TCOUNT)'
+.measure tran ca3 PARAM='floor((qa3-TR)/TCOUNT)'
+.measure tran cb0 PARAM='floor((qb0-TR2)/TCOUNT)'
+.measure tran cb1 PARAM='floor((qb1-TR2)/TCOUNT)'
+.measure tran cb2 PARAM='floor((qb2-TR2)/TCOUNT)'
+.measure tran cb3 PARAM='floor((qb3-TR2)/TCOUNT)'
+.control
+set num_threads=1
+run
+quit
+.endc
+.end

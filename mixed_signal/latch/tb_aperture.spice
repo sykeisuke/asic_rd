@@ -1,0 +1,46 @@
+* Aperture bench for the standard-cell clocked latch (SPEC.md S7): dout's
+* falling edge placed DT from the sampling edge at 125 ns, swept and bisected
+* onto the point where the decision moves from that edge to the next one
+* (175 ns). The timeline is ../latch_bkp/cmp_tspc/tb_aperture.spice's.
+*
+* TEMPLATE: bench.py replaces @DT@, @TCE@ (clock 0-100 % edge), @TDF@
+* (d 0-100 % edge), @CQ@, @VDD@, @TEMP@, @NETLIST@, @SUBCKT@ and the corner token.
+*
+* For every DT, q must fall exactly once, never rise, never dip towards the
+* capture threshold before its fall, and cross VDD/2 less than 75 ns after
+* the edge that decided. Near the boundary the master latch is metastable for
+* a while; the clock-to-q there is its resolution time.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.include /foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice
+.include @NETLIST@
+
+.param VDD=@VDD@
+.param TCOUNT=50n
+.param TCE=@TCE@
+.param TDF=@TDF@
+.param TE=125n
+.param DT=@DT@
+.param TSTOP=240n
+
+.temp @TEMP@
+.options reltol=1e-5 abstol=1e-13 vntol=1e-7
+
+VDVDD dvdd 0 {VDD}
+VCLK clk 0 PULSE({VDD} 0 {TCOUNT/2-TCE/2} {TCE} {TCE} {TCOUNT/2-TCE} {TCOUNT})
+VD d 0 PWL(0 {VDD} {TE+DT-TDF/2} {VDD} {TE+DT+TDF/2} 0)
+
+XL d clk q dvdd 0 @SUBCKT@
+CQ q 0 @CQ@
+
+.tran 1p {TSTOP} 0 5p
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata out.csv v(clk) v(d) v(q)
+quit
+.endc
+
+.end

@@ -1,0 +1,57 @@
+* gm/Id table for the bias generator's mirror / core / output fingers.
+* TEMPLATE: lut/build.sh replaces @DEV@ (nfet_03v3 | pfet_03v3), @CORNER@,
+* @TEMP@ and @OUT@.
+*
+* One finger (nf=1) per point, the PDK xschem symbols' S/D geometry (0.18 um
+* diffusion extension). Grid: L 0.40..0.90 um (the user's "L below 1 um"),
+* finger W 1 / 2 / 4 um, VSB 0 and 0.2 V (the degenerated core device sits on
+* its resistor's drop), VGS 0..2.2 V by 10 mV, VDS 0.2..2.6 V by 0.2 V.
+* Source-referenced magnitudes for both flavours: the PMOS is wired with the
+* sources reversed (vg 0 g), so the swept values stay positive.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.temp @TEMP@
+
+.param lx=0.5u
+.param wx=2u
+
+vg @VGN@ dc 0
+vd @VDN@ dc 0
+vb @VBN@ dc 0
+
+XM1 d g 0 b @DEV@ L={lx} W={wx} nf=1
++ ad='wx * 0.18u' as='wx * 0.18u' pd='2 * (wx + 0.18u)' ps='2 * (wx + 0.18u)'
++ nrd='0.18u / wx' nrs='0.18u / wx' sa=0 sb=0 sd=0 m=1
+
+.save @vg[dc]
+.save @vd[dc]
+.save @m.xm1.m0[id]
+.save @m.xm1.m0[gm]
+.save @m.xm1.m0[gds]
+.save @m.xm1.m0[vth]
+.save @m.xm1.m0[vdsat]
+
+.control
+set wr_singlescale
+set num_threads=1
+option numdgt = 7
+compose l_vec values 0.4u 0.5u 0.6u 0.7u 0.8u 0.9u
+compose w_vec values 1u 2u 4u
+compose b_vec start=0 stop=@VSB2@ step=@VSB2@
+foreach lval $&l_vec
+  alterparam lx=$lval
+  foreach wval $&w_vec
+    alterparam wx=$wval
+    reset
+    foreach bval $&b_vec
+      alter vb $bval
+      dc vg 0 2.2 0.01 vd 0.2 2.6 0.2
+      echo "BLOCK $lval $wval $bval" >> @OUT@.idx
+      wrdata @OUT@.txt @vg[dc] @vd[dc] @m.xm1.m0[id] @m.xm1.m0[gm] @m.xm1.m0[gds] @m.xm1.m0[vth] @m.xm1.m0[vdsat]
+      set appendwrite
+    end
+  end
+end
+quit
+.endc
+.end

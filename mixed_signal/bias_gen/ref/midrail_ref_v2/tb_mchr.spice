@@ -1,0 +1,32 @@
+* Follower headroom under the PDK's local mismatch (verify_v2.py), one buffer
+* at one PVT cell (the extremes of the FVF window: ff/85 C/3.6 V and
+* ss/0 C/3.0 V). One draw per run with its own seed, as tb_mc.spice; draw 0
+* is mismatch-free.
+*
+* One line:  HR <k> <hr1> <hr4> <err>
+*   hr = |vds| - |vdsat| of the followers M1 / M4 (BSIM4), err = v(out) - VDD/2
+* TEMPLATE: corner mimcorner temp vdd if mm seed k
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include dut.spice
+.param sw_stat_mismatch=@MM@
+.temp @TEMP@
+.options seed=@SEED@
+
+VDD_SOURCE vdd 0 @VDD@
+IREF vdd ib @IF@
+XD vin vdd 0 midref_div
+XB out vin ib vdd 0 midref_buf
+
+.control
+set num_threads=1
+op
+let hr1 = abs(@m.xb.xm1.m0[vds]) - abs(@m.xb.xm1.m0[vdsat])
+let hr4 = abs(@m.xb.xm4.m0[vds]) - abs(@m.xb.xm4.m0[vdsat])
+let err = v(out) - @VDD@ / 2
+echo "HR @K@ $&hr1 $&hr4 $&err"
+quit
+.endc
+.end

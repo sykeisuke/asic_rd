@@ -1,0 +1,25 @@
+# xschemrc for mixed_signal/Analog_top: the PDK rc, then every sibling block
+# whose symbol the analog_top drawings place, appended to the symbol path.
+# The drawings name those symbols by bare file name (midref_div.sym,
+# midref_buf.sym, vrlo_ref.sym, latch.sym); comparator_d, ramp_simple_d,
+# bias_gen_s, sw_s0/1/2, atop_cell and analog_top are this folder's own.
+# bias_gen, ramp_gen and comparator are NOT on the path: the v4
+# cells derived from their drawings are local, so their originals can never
+# be picked up by mistake.
+# Without these lines xschem cannot find a symbol and SILENTLY drops the
+# instance from the netlist (the trap recorded in ../ramp_gen/xschemrc). For a
+# type=subcircuit symbol xschem descends into the .sch next to the .sym, so
+# the block's own drawing (verified against its own deck by that block) is
+# what the hierarchical netlist carries. Blocks are read by path, never copied.
+#
+# xschem reads ./xschemrc by itself when started in this directory;
+# schematic.sh and xtb.sh pass it explicitly with --rcfile.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc
+set ATOP_DIR [file normalize [file dirname [info script]]]
+# this folder FIRST: its presentation symbols midref_div.sym, midref_buf.sym,
+# vrlo_ref.sym and latch.sym (symbols.py) shadow the blocks' own; having no
+# .sch of those names, xschem descends into the blocks' drawings further down
+append XSCHEM_LIBRARY_PATH :$ATOP_DIR
+foreach blk {midrail_ref vrlo_ref latch} {
+    append XSCHEM_LIBRARY_PATH :[file normalize [file join $ATOP_DIR .. $blk]]
+}

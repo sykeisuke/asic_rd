@@ -1,0 +1,52 @@
+* Threshold spread by Monte Carlo in ngspice (verify_v3.py), on the PDK's own
+* mismatch model: `.param sw_stat_mismatch=1` after the PDK include switches
+* on the agauss() draws inside every nfet_03v3/pfet_03v3 wrapper (as
+* ../comparator_bkp/comparator_updt_v2/tb_mc.spice, where that and the redraw on `reset` were
+* verified). Each pass sweeps inn through VBL with inp fixed and records where
+* dout crosses VDD/2; pass 0 is the mismatch-free nominal. The bias reference
+* (one tail finger, ideal current) is drawn with mismatch too.
+*
+* TEMPLATE: verify_v3.py replaces @DUT@ @IREF@ @REFP@ @CLOAD@ @NMC@.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.include @DUT@
+.param sw_stat_mismatch=1
+.param VDD=@VDD@
+.temp @TEMP@
+.param IREF=@IREF@
+
+.csparam cs_n=@NMC@
+
+VDD_SOURCE vdd 0 {VDD}
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREF}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREF}
+@REFP@
+VCLK clk 0 {VDD}
+VINP inp 0 @VCM@
+VINN inn 0 @VCM@
+XDUT inp inn dout clk vdd 0 nbias pbias cmp
+CLOAD dout 0 @CLOAD@
+
+.control
+set rndseed=20261006
+let k = 0
+alterparam sw_stat_mismatch=0
+reset
+dc vinn @VLO70@ @VHI70@ 0.0002
+meas dc vtrip when v(dout)=@VCM@ fall=1
+let vos_nom = vtrip - @VCM@
+print vos_nom
+alterparam sw_stat_mismatch=1
+while k < $&cs_n
+  reset
+  dc vinn @VLO70@ @VHI70@ 0.0002
+  meas dc vtrip when v(dout)=@VCM@ fall=1
+  let vos_k = vtrip - @VCM@
+  print vos_k
+  let k = k + 1
+end
+quit
+.endc
+.end

@@ -1,0 +1,30 @@
+* ramp_simple -- the textbook Wilkinson ramp, built as the comparison baseline
+* for ramp_gen: a current source charging a grounded capacitor, a reset switch
+* to the start level. Same ports, same capacitor (4.0 pF MIM), same slope,
+* same bias source (the ramp's own bias_gen), so the two drop into the same
+* benches and the same four-cell testbench.
+*
+*          vdd
+*           |
+*   pbias -| XPS   (PMOS current source, L = 8 um, I = C x SLOPE = 0.469 uA)
+*           |
+*           +------------------------- vramp ---> S1 of every cell
+*           |                |
+*         XCR 4 pF          XRST (rst high = reset) --- vrlo
+*           |
+*          vss
+*
+* What it relies on, unlike the integrator: the 1.6 V swing sits across XPS
+* (its output conductance bends the ramp), the voltage-dependent junctions of
+* XPS's drain and XRST's drain sit on the integrating node, every cell's load
+* and every kick land on that node and stay there, and vrlo must sink the
+* source current during reset and absorb the S1-connection charge (a stiff
+* reference: an ideal source in the benches, which flatters this circuit).
+*
+* Sizes: data/ramp_simple_params.spice, written by size_simple.py.
+* PROBES: xps xrst
+.subckt ramp_simple vramp rst vrlo pbias vdd vss
+XPS vramp pbias vdd vdd pfet_03v3 L={RS_LPS} W={RS_WPS} nf={RS_NFPS} m=1
+XCR vramp vss cap_mim_2f0_m4m5_noshield c_width={RS_CW} c_length={RS_CW}
+XRST vramp rst vrlo vss nfet_03v3 L=0.28u W={RS_WRST} nf=1 m=1
+.ends ramp_simple

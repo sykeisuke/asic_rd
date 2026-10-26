@@ -1,0 +1,28 @@
+* Which BSIM4 bin does ngspice pick for a multi-finger device? The GF180 bins
+* are 0.22-0.5, 0.5-1.2, 1.2-10 and 10-100 um wide. A W=30u nf=8 device is
+* 30 um total and 3.75 um per finger, which land in different bins. ngspice
+* `show` prints the model each instance resolved to, so this deck settles the
+* rule empirically instead of assuming it; the VACASK wrapper copies the rule.
+* Also probes the boundary: L=0.5u sits exactly on the edge of two bins.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+
+VDD vdd 0 3.3
+VG g 0 1.0
+XA vdd g 0 0 nfet_03v3 L=0.5u W=30u nf=8 m=1
+XB vdd g 0 0 nfet_03v3 L=0.5u W=3.75u nf=1 m=1
+XC vdd g 0 0 nfet_03v3 L=0.5u W=30u nf=1 m=1
+XD vdd g 0 0 nfet_03v3 L=1.0u W=90.5u nf=20 m=1
+XE vdd g 0 0 nfet_03v3 L=0.28u W=4.0u nf=4 m=1
+XF vdd g 0 0 nfet_03v3 L=1.2u W=10u nf=1 m=1
+
+.control
+op
+show m.xa.m0 m.xb.m0 m.xc.m0 m.xd.m0 m.xe.m0 m.xf.m0 : model
+let ida = @m.xa.m0[id]
+let idb = @m.xb.m0[id]
+let idc = @m.xc.m0[id]
+print ida idb idc
+quit
+.endc
+.end

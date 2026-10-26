@@ -1,0 +1,42 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=primitive
+format="@name @pinlist @model"
+template="name=XS0 model=sw_s0"
+description="One switch of the unit cell: subcircuit sw_s0 / sw_s1 / sw_s2 of
+/foss/designs/mixed_signal/ramp_gen/ref/unit_cell_bps/switches.spice, reused by path
+through .include (set model= per instance). type=primitive: the devices come
+from that file, so xschem netlists this line and never descends.
+Pins in the subcircuit order: a b ctl ctlb vdd vss (a = driving side,
+b = plate side, ctl HIGH = closed, ctlb its complement)."
+}
+V {}
+S {}
+E {}
+L 4 -60 -40 60 -40 {}
+L 4 60 -40 60 40 {}
+L 4 60 40 -60 40 {}
+L 4 -60 40 -60 -40 {}
+L 4 -80 -20 -60 -20 {}
+L 4 60 -20 80 -20 {}
+L 4 -20 -60 -20 -40 {}
+L 4 20 -60 20 -40 {}
+L 4 -20 40 -20 60 {}
+L 4 20 40 20 60 {}
+L 4 -40 -20 -10 -20 {}
+L 4 -10 -20 25 -32 {}
+L 4 30 -20 45 -20 {}
+B 5 -82.5 -22.5 -77.5 -17.5 {name=a dir=inout}
+B 5 77.5 -22.5 82.5 -17.5 {name=b dir=inout}
+B 5 -22.5 -62.5 -17.5 -57.5 {name=ctl dir=in}
+B 5 17.5 -62.5 22.5 -57.5 {name=ctlb dir=in}
+B 5 -22.5 57.5 -17.5 62.5 {name=vdd dir=inout}
+B 5 17.5 57.5 22.5 62.5 {name=vss dir=inout}
+T {@name} -58 -58 0 0 0.25 0.25 {}
+T {@model} -58 20 0 0 0.2 0.2 {layer=13}
+T {a} -56 -30 0 0 0.15 0.15 {layer=7}
+T {b} 48 -30 0 0 0.15 0.15 {layer=7}
+T {ctl} -34 -56 0 0 0.15 0.15 {layer=7}
+T {ctlb} 24 -56 0 0 0.15 0.15 {layer=7}
+T {vdd} -40 44 0 0 0.15 0.15 {layer=7}
+T {vss} 24 44 0 0 0.15 0.15 {layer=7}

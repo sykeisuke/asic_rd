@@ -1,0 +1,39 @@
+* midref -- the VDD/2 reference of the 8-bit bottom-plate cell with ONE output:
+* one midref_buf drives both VREF (every cell's S2 track level) and VBL (every
+* comparator's inp). 2026-10-13, user decision: the second buffer of midref_v2
+* (one shared tap, two midref_buf) is removed. midref_div and midref_buf are
+* midref_v2's, device for device (../midrail_ref_bkp/midrail_ref_v2/midref_v2.spice, ADR 0016);
+* only the second buffer and its bias current are gone.
+* Bias: an IDEAL current into port ib (one NMOS diode finger, XMBN), i_f 12.36 uA.
+*   area 441 um2 (MOS 102.8, poly 182, MIM 156.5: the whole divider and tap cap count;
+*   midref_v2 with two buffers: 680 um2) [P, ../midrail_ref_bkp/midrail_ref_v2 README area rules]
+*   power 260.3 uW at typical/27 C/3.3 V, divider + buffer + ideal ib (midref_v2: 494 uW for two
+*   buffers on one divider) [M, runs/midref-v3]
+* Ports: midref_div (vin vdd vss); midref_buf (out vin ib vdd vss); midref (out ib vdd vss).
+* The simulators are the authority, not these lines (verify_v3.py).
+
+.subckt midref_div vin vdd vss
+XRT vdd vin vss ppolyf_u_3k r_width=1u r_length=64.98u
+XRB vin vss vss ppolyf_u_3k r_width=1u r_length=64.98u
+XCT vin vss cap_mim_2f0_m4m5_noshield c_width=4.423u c_length=4.423u
+.ends midref_div
+
+.subckt midref_buf out vin ib vdd vss
+XMBN ib ib vss vss nfet_03v3 L=0.34u W=0.5u nf=1 m=1
+XMBN2 pb ib vss vss nfet_03v3 L=0.34u W=0.5u nf=1 m=1
+XMBP pb pb vdd vdd pfet_03v3 L=0.34u W=2u nf=1 m=1
+XMIT a pb vdd vdd pfet_03v3 L=0.34u W=2u nf=1 m=1
+XMIB b ib vss vss nfet_03v3 L=0.34u W=0.5u nf=1 m=1
+XM3 p b vdd vdd pfet_03v3 L=0.36u W=2u nf=1 m=1
+XM1 b vin p vdd pfet_03v3 L=0.34u W=40u nf=20 m=1
+XM2 out out p vdd pfet_03v3 L=0.34u W=40u nf=20 m=1
+XM6 n a vss vss nfet_03v3 L=0.36u W=0.5u nf=1 m=1
+XM4 a vin n vss nfet_03v3 L=0.34u W=13u nf=26 m=1
+XM5 out out n vss nfet_03v3 L=0.34u W=13u nf=26 m=1
+XCD out vss cap_mim_2f0_m4m5_noshield c_width=11.7u c_length=11.7u
+.ends midref_buf
+
+.subckt midref out ib vdd vss
+XD vin vdd vss midref_div
+XB out vin ib vdd vss midref_buf
+.ends midref
