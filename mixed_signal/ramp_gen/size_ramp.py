@@ -39,7 +39,7 @@ import tempfile
 import numpy as np
 
 BLOCK = os.path.dirname(os.path.abspath(__file__))
-LUT = os.path.join(BLOCK, "..", "..", "simulations", "gf180_gmid_lut", "data", "gmid_curves.csv")
+LUT = os.path.join(BLOCK, "ref", "gmid_curves.csv")   # copy of simulations/gf180_gmid_lut/data
 
 LSB = 1.5 / 256
 SLOPE = LSB / 50e-9                 # 117187.5 V/s

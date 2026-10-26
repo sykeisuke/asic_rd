@@ -2,7 +2,7 @@
 # Run a command inside the pinned EDA container with this block as the working
 # directory. Everything in this folder goes through here, so no tool ever runs
 # on the host. The latch is a gf180mcu_as_sc_mcu7t3v3 standard cell: the full
-# library install of the pinned commit (make pdk-libs) is mounted at /foss/pdk_libs.
+# library install of the pinned commit (make pdk) is mounted at /foss/pdk_libs.
 #
 #   ./container.sh 'bash ct.sh'
 set -eu

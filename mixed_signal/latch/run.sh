@@ -6,7 +6,7 @@
 #
 # Writes runs/cmp-scff/<stamp>/metrics.json and links `latest`
 # (scripts/summarize-metrics.awk by path). `make latch` calls this through
-# scripts/run-latch.sh. Needs the full library install (make pdk-libs).
+# scripts/run-latch.sh. Needs the full library install (make pdk).
 #
 # Phases:
 #   explore    the candidates (dfxtn_2 alone, + buff_2, + buff_4) through the

@@ -7,7 +7,7 @@
 #
 # Writes runs/chip-floorplan/<stamp>/metrics.json and links `latest`.
 # `make chip-floorplan` calls this through scripts/run-chip-floorplan.sh.
-# Needs the full library install (make pdk-libs) for the ocd_io pad cells.
+# Needs the full library install (make pdk) for the ocd_io pad cells.
 #
 # Phases:
 #   probe   gds_probe.py: digital top outline from its GDS, ocd_io pad and

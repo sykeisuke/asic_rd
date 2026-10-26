@@ -9,7 +9,7 @@
 # sourced by path rather than copied. That script derives PROJECT_ROOT from
 # $0, which is this file when sourced, so PROJECT_ROOT is recomputed here.
 # The latch is a gf180mcu_as_sc_mcu7t3v3 standard cell: the full library
-# install of the pinned commit (make pdk-libs) is mounted at /foss/pdk_libs.
+# install of the pinned commit (make pdk) is mounted at /foss/pdk_libs.
 set -eu
 
 BLOCK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

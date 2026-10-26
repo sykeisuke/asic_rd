@@ -1,7 +1,7 @@
 #!/bin/sh
 # Run one command inside the pinned IIC-OSIC-TOOLS container with this block
 # as the working directory, the full library install (PDK_LIBS_ROOT, `make
-# pdk-libs`) mounted read-only at /foss/pdk_libs.
+# pdk`) mounted read-only at /foss/pdk_libs.
 #
 #   ./container.sh 'python3 floorplan.py'
 set -eu
@@ -11,7 +11,7 @@ BLOCK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 PROJECT_ROOT=$(CDPATH= cd -- "$BLOCK_DIR/../.." && pwd)
 
 if [ ! -f "$PDK_LIBS_ROOT/gf180mcuD/libs.ref/gf180mcu_ocd_io/gds/gf180mcu_ocd_io.gds" ]; then
-    printf 'FAIL: gf180mcu_ocd_io not installed in %s; run make pdk-libs\n' "$PDK_LIBS_ROOT"
+    printf 'FAIL: gf180mcu_ocd_io not installed in %s; run make pdk\n' "$PDK_LIBS_ROOT"
     exit 1
 fi
 
