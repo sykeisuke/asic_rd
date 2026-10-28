@@ -15,12 +15,12 @@
 //                                      no comparator on this chip)
 //
 //   bidir[0]  serial_data    bidir[4..7]  conversion_timeout[3..0]
-//   bidir[1]  data_ready     bidir[8]     acquire
-//   bidir[2]  conversion_busy bidir[9]    ramp_connect
-//   bidir[3]  conversion_done bidir[10]   ramp_reset
-//                            bidir[11]    comparator output (wsa_cmp.dout)
-//                            bidir[12]    compare_high[0], as the capture sees it
-//                            bidir[13]    wsa_inv_gf.Y = NOT compare_high[0]
+//   bidir[1]  data_ready     bidir[8]     s0[0]  (cell 0 input gate)
+//   bidir[2]  conversion_busy bidir[9]    s2[0]  (cell 0 bottom-plate switch)
+//   bidir[3]  conversion_done bidir[10]   s1[0]  (cell 0 ramp gate)
+//                            bidir[11]    ramp_rst
+//                            bidir[12]    comparator output (wsa_cmp.dout)
+//                            bidir[13]    q[0] (stand-in latch), bidir[14] wsa_inv_gf.Y
 //                            bidir[14..] unused: output and input off, pull-down
 //
 //   analog[0] wsa_cmp.vin    (held voltage in standalone mode)
@@ -67,7 +67,7 @@ module chip_core #(
     inout  wire [NUM_ANALOG_PADS-1:0] analog  // Analog
 );
 
-    localparam NUM_OUT = 14;
+    localparam NUM_OUT = 15;
 
     // Pad control. The first NUM_OUT bidirectional pads are outputs; the
     // rest are switched off and pulled down so they do not float.
@@ -116,10 +116,27 @@ module chip_core #(
     );
 
     // Digital test mode independent of the analog crossing (spec 7.3):
-    // capture 0 comes from a pad instead of the comparator. Captures 1..3
-    // have no comparator on this chip and always take the pad.
-    wire       compare_high0 = test_mode ? ext_compare : cmp_dout;
-    wire [3:0] compare_high  = {ext_compare, ext_compare, ext_compare, compare_high0};
+    // cell 0 takes the comparator macro or the ext_compare pad; cells 1..3
+    // have no comparator on this chip and take the pad.
+    //
+    // Analog_top interface (ADR 0010, mixed_signal/Analog_top/PIN_LIST.md):
+    // the digital top expects q[i] = the cell's latch, a NEGATIVE-edge flop
+    // on cnt_clk fed by the comparator (high before the crossing, falls once
+    // after it). The macro on this chip (wsa_cmp) has no latch yet, so the
+    // flops below stand in for it; remove them once Analog_top carries them.
+    wire compare_high0 = test_mode ? ext_compare : cmp_dout;
+    logic q0_n;
+    logic qext_n;
+    always_ff @(negedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            q0_n   <= 1'b1;
+            qext_n <= 1'b1;
+        end else begin
+            q0_n   <= compare_high0;
+            qext_n <= ext_compare;
+        end
+    end
+    wire [3:0] q = {qext_n, qext_n, qext_n, q0_n};
 
     // A simple analog cell on core nets: the gdsfactory inverter inverts
     // the capture edge and drives a pad. With test_mode=1 and a square
@@ -133,15 +150,17 @@ module chip_core #(
         .VDD   (VDD),
         .VSS   (VSS),
         `endif
-        .A     (compare_high0),
+        .A     (q0_n),
         .Y     (inv_gf_y)
     );
 
-    // Digital top, as is
+    // Digital top, as is (Analog_top interface). The sampling-sequence
+    // outputs s0/s1/s2 and ramp_rst have no consumer on this chip (wsa_cmp
+    // is a bare comparator); they go to pads so the sequence is observable.
 
-    wire       acquire;
-    wire       ramp_connect;
-    wire       ramp_reset;
+    wire [3:0] s0, s1, s2;
+    wire       ramp_rst;
+    wire       cnt_clk;
     wire       serial_data;
     wire       data_ready;
     wire       conversion_busy;
@@ -152,11 +171,13 @@ module chip_core #(
         .clk                (clk),
         .rst_n              (rst_n),
         .start              (start),
-        .compare_high       (compare_high),
+        .q                  (q),
         .shift_en           (shift_en),
-        .acquire            (acquire),
-        .ramp_connect       (ramp_connect),
-        .ramp_reset         (ramp_reset),
+        .s0                 (s0),
+        .s1                 (s1),
+        .s2                 (s2),
+        .ramp_rst           (ramp_rst),
+        .cnt_clk            (cnt_clk),
         .serial_data        (serial_data),
         .data_ready         (data_ready),
         .conversion_busy    (conversion_busy),
@@ -164,14 +185,18 @@ module chip_core #(
         .conversion_timeout (conversion_timeout)
     );
 
+    logic _unused_clk;
+    assign _unused_clk = cnt_clk;
+
     assign bidir_out = {
         {(NUM_BIDIR_PADS-NUM_OUT){1'b0}},
         inv_gf_y,
-        compare_high0,
+        q0_n,
         cmp_dout,
-        ramp_reset,
-        ramp_connect,
-        acquire,
+        ramp_rst,
+        s1[0],
+        s2[0],
+        s0[0],
         conversion_timeout,
         conversion_done,
         conversion_busy,

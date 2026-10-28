@@ -6,7 +6,8 @@ CORE_AREA: [442, 442, 1494, 4680]
 # PAD_gf180mcu_fd_io: the template's Makefile would pass the pad library;
 # chip_top.sv shorts core VDD/VSS to DVDD/DVSS under it, as the foundry
 # pads do in silicon.
-VERILOG_DEFINES: ["SLOT_0P5X1", "PAD_gf180mcu_fd_io"]
+# SCL_FD_SC_MCU7T5V0: the digital delay lines use the 5 V library's delay cell
+VERILOG_DEFINES: ["SLOT_0P5X1", "PAD_gf180mcu_fd_io", "SCL_FD_SC_MCU7T5V0"]
 
 # Specify the pad instances for the padring
 PAD_SOUTH: [

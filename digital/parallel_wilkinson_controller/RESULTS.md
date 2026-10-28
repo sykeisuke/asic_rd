@@ -1,28 +1,23 @@
 # Parallel controller results
 
-Date: 2026-09-18
+Date: 2026-10-28 (Analog_top interface; the asynchronous Gray-capture
+version of 2026-09-18 mapped to 437 cells / 14883.5 um^2 at 5 V)
 
-Self-checking RTL simulation (Icarus, 20 MHz conversion clock) passes four
-conversions:
+Self-checking RTL simulation (Icarus, 20 MHz) with the cell latch modelled
+as a negative-edge flop on `q <= dout`, four conversions:
 
-1. codes `16, 20, 27, 35` on the four cells simultaneously;
-2. two equal codes plus a near-full-scale code (`200, 200, 3, 254`);
-3. one cell never crossing: code saturates to `255`, `timeout = 0100`, the
-   other three codes are kept;
-4. a crossing exactly at the last count (`255`) together with `0`, `128`, `1`.
+1. Analog_top's functional record: comparators deciding just after
+   16.5 / 80.5 / 160.5 / 240.5 counts give codes 17 / 81 / 161 / 241
+   (the latch rule `floor((t_qfall - TR) / TCOUNT)`);
+2. decisions 10 ns before and after a falling clock edge (codes 20 and 21),
+   two equal codes, and an early one;
+3. one cell never crossing: 255 and `timeout = 0100`, the others kept;
+4. decisions in the last count (255) and the first (0).
 
-The acquire/connect/convert mode outputs and the single-cycle `done` pulse
-are checked in every case.
+Each run also checks the sampling sequence: `s2` edges one clock apart,
+`s0` opening 4-6 ns after `s2`, `s1` closing 9-11 ns after `s2`, `ramp_rst`
+falling 6 clocks after `s2[3]`, and the return to track after `done`.
 
-GF180 `mcu7t5v0` mapping at TT, 25 C, 3.3 V (pre-placement estimate):
-
-| Metric | Result |
-| --- | ---: |
-| Mapped cells | 437 |
-| Liberty area | 14883.5 um^2 |
-| of which sequential | 56.8 % |
-| Comparator-clocked capture flops (`dffnrnq`) | 36 (4 cells x 8 Gray bits + 4 toggles) |
-
-For comparison the sequential 6-bit MUX controller plus its counter mapped to
-264 cells / 8974 um^2. The growth is the four independent capture registers
-(8 bit each) and the 8-bit result word per cell.
+GF180 `gf180mcu_as_sc_mcu7t3v3` mapping (pre-placement, inside the digital
+top): 585 cells / 19140 um^2, of which 148 are the kept `dlybuff_2` delay
+stages (4 cells x (12 + 25)).
