@@ -1,0 +1,355 @@
+group,device,kind,code,var_v2,rms_lsb
+bias_gen,xbias.xmn1,flicker,4,2.127997e-11,7.872890e-04
+bias_gen,xbias.xmn1,flicker,16,2.075449e-10,2.458695e-03
+bias_gen,xbias.xmn1,flicker,64,2.627034e-09,8.747452e-03
+bias_gen,xbias.xmn1,flicker,128,9.594740e-09,1.671727e-02
+bias_gen,xbias.xmn1,flicker,192,2.049743e-08,2.443422e-02
+bias_gen,xbias.xmn1,flicker,255,3.486436e-08,3.186688e-02
+bias_gen,xbias.xmn1,thermal,4,2.968696e-10,2.940570e-03
+bias_gen,xbias.xmn1,thermal,16,5.860534e-10,4.131591e-03
+bias_gen,xbias.xmn1,thermal,64,1.640335e-09,6.912178e-03
+bias_gen,xbias.xmn1,thermal,128,3.045475e-09,9.418380e-03
+bias_gen,xbias.xmn1,thermal,192,4.450097e-09,1.138501e-02
+bias_gen,xbias.xmn1,thermal,255,5.832292e-09,1.303372e-02
+bias_gen,xbias.xmn2,flicker,4,4.319376e-12,3.546984e-04
+bias_gen,xbias.xmn2,flicker,16,4.171055e-11,1.102229e-03
+bias_gen,xbias.xmn2,flicker,64,5.273937e-10,3.919369e-03
+bias_gen,xbias.xmn2,flicker,128,1.926069e-09,7.490049e-03
+bias_gen,xbias.xmn2,flicker,192,4.114640e-09,1.094749e-02
+bias_gen,xbias.xmn2,flicker,255,6.998610e-09,1.427758e-02
+bias_gen,xbias.xmn2,thermal,4,2.299025e-10,2.587740e-03
+bias_gen,xbias.xmn2,thermal,16,4.282171e-10,3.531675e-03
+bias_gen,xbias.xmn2,thermal,64,1.152695e-09,5.794366e-03
+bias_gen,xbias.xmn2,thermal,128,2.118074e-09,7.854513e-03
+bias_gen,xbias.xmn2,thermal,192,3.083138e-09,9.476440e-03
+bias_gen,xbias.xmn2,thermal,255,4.032842e-09,1.083813e-02
+bias_gen,xbias.xmp1,flicker,4,1.228552e-11,5.981987e-04
+bias_gen,xbias.xmp1,flicker,16,1.500080e-10,2.090287e-03
+bias_gen,xbias.xmp1,flicker,64,2.158043e-09,7.928276e-03
+bias_gen,xbias.xmp1,flicker,128,8.314987e-09,1.556250e-02
+bias_gen,xbias.xmp1,flicker,192,1.831695e-08,2.309805e-02
+bias_gen,xbias.xmp1,flicker,255,3.182959e-08,3.044838e-02
+bias_gen,xbias.xmp1,thermal,4,4.623038e-10,3.669547e-03
+bias_gen,xbias.xmp1,thermal,16,9.126387e-10,5.155825e-03
+bias_gen,xbias.xmp1,thermal,64,2.554431e-09,8.625729e-03
+bias_gen,xbias.xmp1,thermal,128,4.742603e-09,1.175323e-02
+bias_gen,xbias.xmp1,thermal,192,6.929968e-09,1.420739e-02
+bias_gen,xbias.xmp1,thermal,255,9.082407e-09,1.626482e-02
+bias_gen,xbias.xmp2,flicker,4,3.751029e-11,1.045259e-03
+bias_gen,xbias.xmp2,flicker,16,4.576900e-10,3.651190e-03
+bias_gen,xbias.xmp2,flicker,64,6.584012e-09,1.384822e-02
+bias_gen,xbias.xmp2,flicker,128,2.536825e-08,2.718278e-02
+bias_gen,xbias.xmp2,flicker,192,5.588325e-08,4.034498e-02
+bias_gen,xbias.xmp2,flicker,255,9.710900e-08,5.318369e-02
+bias_gen,xbias.xmp2,thermal,4,1.595310e-09,6.816655e-03
+bias_gen,xbias.xmp2,thermal,16,3.104658e-09,9.509454e-03
+bias_gen,xbias.xmp2,thermal,64,8.610062e-09,1.583623e-02
+bias_gen,xbias.xmp2,thermal,128,1.594741e-08,2.155231e-02
+bias_gen,xbias.xmp2,thermal,192,2.328202e-08,2.604108e-02
+bias_gen,xbias.xmp2,thermal,255,3.049958e-08,2.980545e-02
+bias_gen,xbias.xsu1,flicker,4,6.915351e-23,1.419240e-09
+bias_gen,xbias.xsu1,flicker,16,6.924400e-23,1.420168e-09
+bias_gen,xbias.xsu1,flicker,64,6.980074e-23,1.425866e-09
+bias_gen,xbias.xsu1,flicker,128,6.933072e-23,1.421057e-09
+bias_gen,xbias.xsu1,flicker,192,6.910215e-23,1.418713e-09
+bias_gen,xbias.xsu1,flicker,255,6.924278e-23,1.420156e-09
+bias_gen,xbias.xsu1,thermal,4,6.136085e-18,4.227605e-07
+bias_gen,xbias.xsu1,thermal,16,6.135015e-18,4.227236e-07
+bias_gen,xbias.xsu1,thermal,64,6.197387e-18,4.248670e-07
+bias_gen,xbias.xsu1,thermal,128,6.042065e-18,4.195091e-07
+bias_gen,xbias.xsu1,thermal,192,6.055151e-18,4.199632e-07
+bias_gen,xbias.xsu1,thermal,255,6.110156e-18,4.218663e-07
+bias_gen,xbias.xsu2,flicker,4,6.915351e-23,1.419240e-09
+bias_gen,xbias.xsu2,flicker,16,6.924400e-23,1.420168e-09
+bias_gen,xbias.xsu2,flicker,64,6.980074e-23,1.425866e-09
+bias_gen,xbias.xsu2,flicker,128,6.933072e-23,1.421057e-09
+bias_gen,xbias.xsu2,flicker,192,6.910215e-23,1.418713e-09
+bias_gen,xbias.xsu2,flicker,255,6.924278e-23,1.420156e-09
+bias_gen,xbias.xsu2,thermal,4,6.136085e-18,4.227605e-07
+bias_gen,xbias.xsu2,thermal,16,6.135015e-18,4.227236e-07
+bias_gen,xbias.xsu2,thermal,64,6.197387e-18,4.248670e-07
+bias_gen,xbias.xsu2,thermal,128,6.042065e-18,4.195091e-07
+bias_gen,xbias.xsu2,thermal,192,6.055151e-18,4.199632e-07
+bias_gen,xbias.xsu2,thermal,255,6.110156e-18,4.218663e-07
+bias_gen,xbias.xsu3,flicker,4,6.915351e-23,1.419240e-09
+bias_gen,xbias.xsu3,flicker,16,6.924400e-23,1.420168e-09
+bias_gen,xbias.xsu3,flicker,64,6.980074e-23,1.425866e-09
+bias_gen,xbias.xsu3,flicker,128,6.933072e-23,1.421057e-09
+bias_gen,xbias.xsu3,flicker,192,6.910215e-23,1.418713e-09
+bias_gen,xbias.xsu3,flicker,255,6.924278e-23,1.420156e-09
+bias_gen,xbias.xsu3,thermal,4,6.136085e-18,4.227605e-07
+bias_gen,xbias.xsu3,thermal,16,6.135015e-18,4.227236e-07
+bias_gen,xbias.xsu3,thermal,64,6.197387e-18,4.248670e-07
+bias_gen,xbias.xsu3,thermal,128,6.042065e-18,4.195091e-07
+bias_gen,xbias.xsu3,thermal,192,6.055151e-18,4.199632e-07
+bias_gen,xbias.xsu3,thermal,255,6.110156e-18,4.218663e-07
+bias_gen,xbias.xsu4,flicker,4,1.448720e-19,6.495924e-08
+bias_gen,xbias.xsu4,flicker,16,1.448711e-19,6.495904e-08
+bias_gen,xbias.xsu4,flicker,64,1.455844e-19,6.511876e-08
+bias_gen,xbias.xsu4,flicker,128,1.438663e-19,6.473338e-08
+bias_gen,xbias.xsu4,flicker,192,1.431070e-19,6.456231e-08
+bias_gen,xbias.xsu4,flicker,255,1.432564e-19,6.459601e-08
+bias_gen,xbias.xsu4,thermal,4,5.938348e-16,4.158929e-06
+bias_gen,xbias.xsu4,thermal,16,5.937313e-16,4.158567e-06
+bias_gen,xbias.xsu4,thermal,64,5.997674e-16,4.179652e-06
+bias_gen,xbias.xsu4,thermal,128,5.847358e-16,4.126944e-06
+bias_gen,xbias.xsu4,thermal,192,5.860022e-16,4.131410e-06
+bias_gen,xbias.xsu4,thermal,255,5.913255e-16,4.150133e-06
+bias_gen,xbias.xsu5,flicker,4,2.021138e-25,7.672674e-11
+bias_gen,xbias.xsu5,flicker,16,1.966452e-24,2.393263e-10
+bias_gen,xbias.xsu5,flicker,64,2.488422e-23,8.513551e-10
+bias_gen,xbias.xsu5,flicker,128,9.088330e-23,1.627012e-09
+bias_gen,xbias.xsu5,flicker,192,1.941551e-22,2.378062e-09
+bias_gen,xbias.xsu5,flicker,255,3.302406e-22,3.101444e-09
+bias_gen,xbias.xsu5,thermal,4,3.038540e-17,9.407651e-07
+bias_gen,xbias.xsu5,thermal,16,5.913351e-17,1.312398e-06
+bias_gen,xbias.xsu5,thermal,64,1.639933e-16,2.185555e-06
+bias_gen,xbias.xsu5,thermal,128,3.037455e-16,2.974429e-06
+bias_gen,xbias.xsu5,thermal,192,4.434457e-16,3.593924e-06
+bias_gen,xbias.xsu5,thermal,255,5.809165e-16,4.113444e-06
+ramp_chain,xrg.xnd,flicker,4,9.490300e-13,1.662603e-04
+ramp_chain,xrg.xnd,flicker,16,1.129989e-11,5.737012e-04
+ramp_chain,xrg.xnd,flicker,64,1.491986e-10,2.084640e-03
+ramp_chain,xrg.xnd,flicker,128,5.470540e-10,3.991754e-03
+ramp_chain,xrg.xnd,flicker,192,1.169853e-09,5.837331e-03
+ramp_chain,xrg.xnd,flicker,255,1.990711e-09,7.614700e-03
+ramp_chain,xrg.xnd,thermal,4,5.720303e-11,1.290798e-03
+ramp_chain,xrg.xnd,thermal,16,2.336894e-10,2.608965e-03
+ramp_chain,xrg.xnd,thermal,64,9.404164e-10,5.233700e-03
+ramp_chain,xrg.xnd,thermal,128,1.882700e-09,7.405242e-03
+ramp_chain,xrg.xnd,thermal,192,2.824976e-09,9.071019e-03
+ramp_chain,xrg.xnd,thermal,255,3.752517e-09,1.045466e-02
+ramp_chain,xrg.xns,flicker,4,3.718718e-12,3.291132e-04
+ramp_chain,xrg.xns,flicker,16,4.386982e-11,1.130399e-03
+ramp_chain,xrg.xns,flicker,64,5.784699e-10,4.104773e-03
+ramp_chain,xrg.xns,flicker,128,2.120804e-09,7.859574e-03
+ramp_chain,xrg.xns,flicker,192,4.535148e-09,1.149329e-02
+ramp_chain,xrg.xns,flicker,255,7.717282e-09,1.499274e-02
+ramp_chain,xrg.xns,thermal,4,2.886481e-10,2.899567e-03
+ramp_chain,xrg.xns,thermal,16,1.058713e-09,5.553129e-03
+ramp_chain,xrg.xns,thermal,64,4.139067e-09,1.097994e-02
+ramp_chain,xrg.xns,thermal,128,8.245892e-09,1.549771e-02
+ramp_chain,xrg.xns,thermal,192,1.235278e-08,1.896842e-02
+ramp_chain,xrg.xns,thermal,255,1.639550e-08,2.185300e-02
+ramp_chain,xrg.xps,flicker,4,6.645795e-13,1.391304e-04
+ramp_chain,xrg.xps,flicker,16,8.628805e-12,5.013304e-04
+ramp_chain,xrg.xps,flicker,64,1.257313e-10,1.913685e-03
+ramp_chain,xrg.xps,flicker,128,4.850467e-10,3.758724e-03
+ramp_chain,xrg.xps,flicker,192,1.068861e-09,5.579680e-03
+ramp_chain,xrg.xps,flicker,255,1.857669e-09,7.355850e-03
+ramp_chain,xrg.xps,thermal,4,1.577393e-10,2.143476e-03
+ramp_chain,xrg.xps,thermal,16,6.444065e-10,4.332401e-03
+ramp_chain,xrg.xps,thermal,64,2.593231e-09,8.690990e-03
+ramp_chain,xrg.xps,thermal,128,5.191610e-09,1.229702e-02
+ramp_chain,xrg.xps,thermal,192,7.789967e-09,1.506317e-02
+ramp_chain,xrg.xps,thermal,255,1.034769e-08,1.736083e-02
+ramp_ota,xrg.xm1,flicker,4,3.695457e-08,3.280823e-02
+ramp_ota,xrg.xm1,flicker,16,3.695457e-08,3.280823e-02
+ramp_ota,xrg.xm1,flicker,64,3.695457e-08,3.280823e-02
+ramp_ota,xrg.xm1,flicker,128,3.695457e-08,3.280823e-02
+ramp_ota,xrg.xm1,flicker,192,3.695457e-08,3.280823e-02
+ramp_ota,xrg.xm1,flicker,255,3.695457e-08,3.280823e-02
+ramp_ota,xrg.xm1,thermal,4,8.809517e-09,1.601861e-02
+ramp_ota,xrg.xm1,thermal,16,8.809517e-09,1.601861e-02
+ramp_ota,xrg.xm1,thermal,64,8.809517e-09,1.601861e-02
+ramp_ota,xrg.xm1,thermal,128,8.809517e-09,1.601861e-02
+ramp_ota,xrg.xm1,thermal,192,8.809517e-09,1.601861e-02
+ramp_ota,xrg.xm1,thermal,255,8.809517e-09,1.601861e-02
+ramp_ota,xrg.xm2,flicker,4,3.743716e-08,3.302175e-02
+ramp_ota,xrg.xm2,flicker,16,3.743716e-08,3.302175e-02
+ramp_ota,xrg.xm2,flicker,64,3.743716e-08,3.302175e-02
+ramp_ota,xrg.xm2,flicker,128,3.743716e-08,3.302175e-02
+ramp_ota,xrg.xm2,flicker,192,3.743716e-08,3.302175e-02
+ramp_ota,xrg.xm2,flicker,255,3.743716e-08,3.302175e-02
+ramp_ota,xrg.xm2,thermal,4,6.513365e-09,1.377372e-02
+ramp_ota,xrg.xm2,thermal,16,6.513365e-09,1.377372e-02
+ramp_ota,xrg.xm2,thermal,64,6.513365e-09,1.377372e-02
+ramp_ota,xrg.xm2,thermal,128,6.513365e-09,1.377372e-02
+ramp_ota,xrg.xm2,thermal,192,6.513365e-09,1.377372e-02
+ramp_ota,xrg.xm2,thermal,255,6.513365e-09,1.377372e-02
+ramp_ota,xrg.xm3,flicker,4,3.321630e-08,3.110458e-02
+ramp_ota,xrg.xm3,flicker,16,3.321630e-08,3.110458e-02
+ramp_ota,xrg.xm3,flicker,64,3.321630e-08,3.110458e-02
+ramp_ota,xrg.xm3,flicker,128,3.321630e-08,3.110458e-02
+ramp_ota,xrg.xm3,flicker,192,3.321630e-08,3.110458e-02
+ramp_ota,xrg.xm3,flicker,255,3.321630e-08,3.110458e-02
+ramp_ota,xrg.xm3,thermal,4,3.930757e-09,1.070008e-02
+ramp_ota,xrg.xm3,thermal,16,3.930757e-09,1.070008e-02
+ramp_ota,xrg.xm3,thermal,64,3.930757e-09,1.070008e-02
+ramp_ota,xrg.xm3,thermal,128,3.930757e-09,1.070008e-02
+ramp_ota,xrg.xm3,thermal,192,3.930757e-09,1.070008e-02
+ramp_ota,xrg.xm3,thermal,255,3.930757e-09,1.070008e-02
+ramp_ota,xrg.xm4,flicker,4,3.276371e-08,3.089194e-02
+ramp_ota,xrg.xm4,flicker,16,3.276371e-08,3.089194e-02
+ramp_ota,xrg.xm4,flicker,64,3.276371e-08,3.089194e-02
+ramp_ota,xrg.xm4,flicker,128,3.276371e-08,3.089194e-02
+ramp_ota,xrg.xm4,flicker,192,3.276371e-08,3.089194e-02
+ramp_ota,xrg.xm4,flicker,255,3.276371e-08,3.089194e-02
+ramp_ota,xrg.xm4,thermal,4,4.911915e-09,1.196118e-02
+ramp_ota,xrg.xm4,thermal,16,4.911915e-09,1.196118e-02
+ramp_ota,xrg.xm4,thermal,64,4.911915e-09,1.196118e-02
+ramp_ota,xrg.xm4,thermal,128,4.911915e-09,1.196118e-02
+ramp_ota,xrg.xm4,thermal,192,4.911915e-09,1.196118e-02
+ramp_ota,xrg.xm4,thermal,255,4.911915e-09,1.196118e-02
+ramp_ota,xrg.xm5,flicker,4,1.420008e-10,2.033734e-03
+ramp_ota,xrg.xm5,flicker,16,1.420008e-10,2.033734e-03
+ramp_ota,xrg.xm5,flicker,64,1.420008e-10,2.033734e-03
+ramp_ota,xrg.xm5,flicker,128,1.420008e-10,2.033734e-03
+ramp_ota,xrg.xm5,flicker,192,1.420008e-10,2.033734e-03
+ramp_ota,xrg.xm5,flicker,255,1.420008e-10,2.033734e-03
+ramp_ota,xrg.xm5,thermal,4,1.750273e-09,7.140055e-03
+ramp_ota,xrg.xm5,thermal,16,1.750273e-09,7.140055e-03
+ramp_ota,xrg.xm5,thermal,64,1.750273e-09,7.140055e-03
+ramp_ota,xrg.xm5,thermal,128,1.750273e-09,7.140055e-03
+ramp_ota,xrg.xm5,thermal,192,1.750273e-09,7.140055e-03
+ramp_ota,xrg.xm5,thermal,255,1.750273e-09,7.140055e-03
+ramp_ota,xrg.xm6,flicker,4,1.212841e-12,1.879536e-04
+ramp_ota,xrg.xm6,flicker,16,1.212841e-12,1.879536e-04
+ramp_ota,xrg.xm6,flicker,64,1.212841e-12,1.879536e-04
+ramp_ota,xrg.xm6,flicker,128,1.212841e-12,1.879536e-04
+ramp_ota,xrg.xm6,flicker,192,1.212841e-12,1.879536e-04
+ramp_ota,xrg.xm6,flicker,255,1.212841e-12,1.879536e-04
+ramp_ota,xrg.xm6,thermal,4,2.730819e-09,8.918569e-03
+ramp_ota,xrg.xm6,thermal,16,2.730819e-09,8.918569e-03
+ramp_ota,xrg.xm6,thermal,64,2.730819e-09,8.918569e-03
+ramp_ota,xrg.xm6,thermal,128,2.730819e-09,8.918569e-03
+ramp_ota,xrg.xm6,thermal,192,2.730819e-09,8.918569e-03
+ramp_ota,xrg.xm6,thermal,255,2.730819e-09,8.918569e-03
+ramp_ota,xrg.xm7,flicker,4,3.166395e-12,3.036905e-04
+ramp_ota,xrg.xm7,flicker,16,3.166395e-12,3.036905e-04
+ramp_ota,xrg.xm7,flicker,64,3.166395e-12,3.036905e-04
+ramp_ota,xrg.xm7,flicker,128,3.166395e-12,3.036905e-04
+ramp_ota,xrg.xm7,flicker,192,3.166395e-12,3.036905e-04
+ramp_ota,xrg.xm7,flicker,255,3.166395e-12,3.036905e-04
+ramp_ota,xrg.xm7,thermal,4,2.327913e-09,8.234402e-03
+ramp_ota,xrg.xm7,thermal,16,2.327913e-09,8.234402e-03
+ramp_ota,xrg.xm7,thermal,64,2.327913e-09,8.234402e-03
+ramp_ota,xrg.xm7,thermal,128,2.327913e-09,8.234402e-03
+ramp_ota,xrg.xm7,thermal,192,2.327913e-09,8.234402e-03
+ramp_ota,xrg.xm7,thermal,255,2.327913e-09,8.234402e-03
+ramp_ota,xrg.xrst,flicker,4,1.893304e-28,2.348329e-12
+ramp_ota,xrg.xrst,flicker,16,1.893304e-28,2.348329e-12
+ramp_ota,xrg.xrst,flicker,64,1.893304e-28,2.348329e-12
+ramp_ota,xrg.xrst,flicker,128,1.893304e-28,2.348329e-12
+ramp_ota,xrg.xrst,flicker,192,1.893304e-28,2.348329e-12
+ramp_ota,xrg.xrst,flicker,255,1.893304e-28,2.348329e-12
+ramp_ota,xrg.xrst,thermal,4,3.088853e-19,9.485219e-08
+ramp_ota,xrg.xrst,thermal,16,3.088853e-19,9.485219e-08
+ramp_ota,xrg.xrst,thermal,64,3.088853e-19,9.485219e-08
+ramp_ota,xrg.xrst,thermal,128,3.088853e-19,9.485219e-08
+ramp_ota,xrg.xrst,thermal,192,3.088853e-19,9.485219e-08
+ramp_ota,xrg.xrst,thermal,255,3.088853e-19,9.485219e-08
+bias_gen,xbias.xmn1,flicker via OTA,4,3.881417e-12,3.362357e-04
+bias_gen,xbias.xmn1,flicker via OTA,16,3.881417e-12,3.362357e-04
+bias_gen,xbias.xmn1,flicker via OTA,64,3.881417e-12,3.362357e-04
+bias_gen,xbias.xmn1,flicker via OTA,128,3.881417e-12,3.362357e-04
+bias_gen,xbias.xmn1,flicker via OTA,192,3.881417e-12,3.362357e-04
+bias_gen,xbias.xmn1,flicker via OTA,255,3.881417e-12,3.362357e-04
+bias_gen,xbias.xmn1,thermal via OTA,4,3.316371e-10,3.107994e-03
+bias_gen,xbias.xmn1,thermal via OTA,16,3.316371e-10,3.107994e-03
+bias_gen,xbias.xmn1,thermal via OTA,64,3.316371e-10,3.107994e-03
+bias_gen,xbias.xmn1,thermal via OTA,128,3.316371e-10,3.107994e-03
+bias_gen,xbias.xmn1,thermal via OTA,192,3.316371e-10,3.107994e-03
+bias_gen,xbias.xmn1,thermal via OTA,255,3.316371e-10,3.107994e-03
+bias_gen,xbias.xmn2,flicker via OTA,4,9.261480e-13,1.642438e-04
+bias_gen,xbias.xmn2,flicker via OTA,16,9.261480e-13,1.642438e-04
+bias_gen,xbias.xmn2,flicker via OTA,64,9.261480e-13,1.642438e-04
+bias_gen,xbias.xmn2,flicker via OTA,128,9.261480e-13,1.642438e-04
+bias_gen,xbias.xmn2,flicker via OTA,192,9.261480e-13,1.642438e-04
+bias_gen,xbias.xmn2,flicker via OTA,255,9.261480e-13,1.642438e-04
+bias_gen,xbias.xmn2,thermal via OTA,4,3.512414e-10,3.198538e-03
+bias_gen,xbias.xmn2,thermal via OTA,16,3.512414e-10,3.198538e-03
+bias_gen,xbias.xmn2,thermal via OTA,64,3.512414e-10,3.198538e-03
+bias_gen,xbias.xmn2,thermal via OTA,128,3.512414e-10,3.198538e-03
+bias_gen,xbias.xmn2,thermal via OTA,192,3.512414e-10,3.198538e-03
+bias_gen,xbias.xmn2,thermal via OTA,255,3.512414e-10,3.198538e-03
+bias_gen,xbias.xmp1,flicker via OTA,4,2.415564e-12,2.652516e-04
+bias_gen,xbias.xmp1,flicker via OTA,16,2.415564e-12,2.652516e-04
+bias_gen,xbias.xmp1,flicker via OTA,64,2.415564e-12,2.652516e-04
+bias_gen,xbias.xmp1,flicker via OTA,128,2.415564e-12,2.652516e-04
+bias_gen,xbias.xmp1,flicker via OTA,192,2.415564e-12,2.652516e-04
+bias_gen,xbias.xmp1,flicker via OTA,255,2.415564e-12,2.652516e-04
+bias_gen,xbias.xmp1,thermal via OTA,4,5.164459e-10,3.878476e-03
+bias_gen,xbias.xmp1,thermal via OTA,16,5.164459e-10,3.878476e-03
+bias_gen,xbias.xmp1,thermal via OTA,64,5.164459e-10,3.878476e-03
+bias_gen,xbias.xmp1,thermal via OTA,128,5.164459e-10,3.878476e-03
+bias_gen,xbias.xmp1,thermal via OTA,192,5.164459e-10,3.878476e-03
+bias_gen,xbias.xmp1,thermal via OTA,255,5.164459e-10,3.878476e-03
+bias_gen,xbias.xmp2,flicker via OTA,4,7.445473e-12,4.656878e-04
+bias_gen,xbias.xmp2,flicker via OTA,16,7.445473e-12,4.656878e-04
+bias_gen,xbias.xmp2,flicker via OTA,64,7.445473e-12,4.656878e-04
+bias_gen,xbias.xmp2,flicker via OTA,128,7.445473e-12,4.656878e-04
+bias_gen,xbias.xmp2,flicker via OTA,192,7.445473e-12,4.656878e-04
+bias_gen,xbias.xmp2,flicker via OTA,255,7.445473e-12,4.656878e-04
+bias_gen,xbias.xmp2,thermal via OTA,4,1.944955e-09,7.526680e-03
+bias_gen,xbias.xmp2,thermal via OTA,16,1.944955e-09,7.526680e-03
+bias_gen,xbias.xmp2,thermal via OTA,64,1.944955e-09,7.526680e-03
+bias_gen,xbias.xmp2,thermal via OTA,128,1.944955e-09,7.526680e-03
+bias_gen,xbias.xmp2,thermal via OTA,192,1.944955e-09,7.526680e-03
+bias_gen,xbias.xmp2,thermal via OTA,255,1.944955e-09,7.526680e-03
+bias_gen,xbias.xsu1,flicker via OTA,4,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu1,flicker via OTA,16,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu1,flicker via OTA,64,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu1,flicker via OTA,128,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu1,flicker via OTA,192,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu1,flicker via OTA,255,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu1,thermal via OTA,4,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu1,thermal via OTA,16,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu1,thermal via OTA,64,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu1,thermal via OTA,128,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu1,thermal via OTA,192,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu1,thermal via OTA,255,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu2,flicker via OTA,4,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu2,flicker via OTA,16,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu2,flicker via OTA,64,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu2,flicker via OTA,128,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu2,flicker via OTA,192,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu2,flicker via OTA,255,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu2,thermal via OTA,4,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu2,thermal via OTA,16,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu2,thermal via OTA,64,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu2,thermal via OTA,128,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu2,thermal via OTA,192,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu2,thermal via OTA,255,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu3,flicker via OTA,4,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu3,flicker via OTA,16,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu3,flicker via OTA,64,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu3,flicker via OTA,128,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu3,flicker via OTA,192,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu3,flicker via OTA,255,3.548667e-22,3.215003e-09
+bias_gen,xbias.xsu3,thermal via OTA,4,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu3,thermal via OTA,16,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu3,thermal via OTA,64,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu3,thermal via OTA,128,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu3,thermal via OTA,192,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu3,thermal via OTA,255,3.159959e-17,9.593772e-07
+bias_gen,xbias.xsu4,flicker via OTA,4,7.511162e-19,1.479116e-07
+bias_gen,xbias.xsu4,flicker via OTA,16,7.511162e-19,1.479116e-07
+bias_gen,xbias.xsu4,flicker via OTA,64,7.511162e-19,1.479116e-07
+bias_gen,xbias.xsu4,flicker via OTA,128,7.511162e-19,1.479116e-07
+bias_gen,xbias.xsu4,flicker via OTA,192,7.511162e-19,1.479116e-07
+bias_gen,xbias.xsu4,flicker via OTA,255,7.511162e-19,1.479116e-07
+bias_gen,xbias.xsu4,thermal via OTA,4,3.058128e-15,9.437926e-06
+bias_gen,xbias.xsu4,thermal via OTA,16,3.058128e-15,9.437926e-06
+bias_gen,xbias.xsu4,thermal via OTA,64,3.058128e-15,9.437926e-06
+bias_gen,xbias.xsu4,thermal via OTA,128,3.058128e-15,9.437926e-06
+bias_gen,xbias.xsu4,thermal via OTA,192,3.058128e-15,9.437926e-06
+bias_gen,xbias.xsu4,thermal via OTA,255,3.058128e-15,9.437926e-06
+bias_gen,xbias.xsu5,flicker via OTA,4,3.842485e-26,3.345452e-11
+bias_gen,xbias.xsu5,flicker via OTA,16,3.842485e-26,3.345452e-11
+bias_gen,xbias.xsu5,flicker via OTA,64,3.842485e-26,3.345452e-11
+bias_gen,xbias.xsu5,flicker via OTA,128,3.842485e-26,3.345452e-11
+bias_gen,xbias.xsu5,flicker via OTA,192,3.842485e-26,3.345452e-11
+bias_gen,xbias.xsu5,flicker via OTA,255,3.842485e-26,3.345452e-11
+bias_gen,xbias.xsu5,thermal via OTA,4,3.704497e-17,1.038756e-06
+bias_gen,xbias.xsu5,thermal via OTA,16,3.704497e-17,1.038756e-06
+bias_gen,xbias.xsu5,thermal via OTA,64,3.704497e-17,1.038756e-06
+bias_gen,xbias.xsu5,thermal via OTA,128,3.704497e-17,1.038756e-06
+bias_gen,xbias.xsu5,thermal via OTA,192,3.704497e-17,1.038756e-06
+bias_gen,xbias.xsu5,thermal via OTA,255,3.704497e-17,1.038756e-06
+ramp_reset,xrg.xrst,kTC,4,1.035730e-09,5.492524e-03
+ramp_reset,xrg.xrst,kTC,16,1.035730e-09,5.492524e-03
+ramp_reset,xrg.xrst,kTC,64,1.035730e-09,5.492524e-03
+ramp_reset,xrg.xrst,kTC,128,1.035730e-09,5.492524e-03
+ramp_reset,xrg.xrst,kTC,192,1.035730e-09,5.492524e-03
+ramp_reset,xrg.xrst,kTC,255,1.035730e-09,5.492524e-03

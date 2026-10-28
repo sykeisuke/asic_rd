@@ -1,0 +1,41 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=XS0"
+description="S0  vfe -> top (top plate), transmission gate; N 0.50/0.28  P 1.00/0.28 (um); transistor level in sw_s0.sch, from ref/switches.spice"
+}
+V {}
+S {}
+E {}
+L 4 -100 0 -80 0 {}
+L 4 80 0 100 0 {}
+L 4 -20 40 -20 60 {}
+L 4 20 40 20 60 {}
+L 4 -80 0 -30 0 {}
+L 4 30 0 80 0 {}
+L 4 -30 -20 30 20 {}
+L 4 30 20 30 -20 {}
+L 4 30 -20 -30 20 {}
+L 4 -30 20 -30 -20 {}
+L 4 -20 -60 -20 -40 {}
+L 4 -20 -40 -5 -40 {}
+L 4 -5 -40 -5 -14 {}
+L 4 20 -60 20 -40 {}
+L 4 20 -40 6 -40 {}
+L 4 6 -40 6 -26 {}
+A 4 6 -21 5 0 360 {}
+T {TG} -12 22 0 0 0.24 0.24 {layer=13}
+T {vdd vss: body} -40 42 0 0 0.13 0.13 {layer=8}
+B 5 -102.5 -2.5 -97.5 2.5 {name=a dir=inout}
+B 5 97.5 -2.5 102.5 2.5 {name=b dir=inout}
+B 5 -22.5 -62.5 -17.5 -57.5 {name=ctl dir=in}
+B 5 17.5 -62.5 22.5 -57.5 {name=ctlb dir=in}
+B 5 -22.5 57.5 -17.5 62.5 {name=vdd dir=inout}
+B 5 17.5 57.5 22.5 62.5 {name=vss dir=inout}
+T {a} -94 -16 0 0 0.2 0.2 {}
+T {b} 86 -16 0 0 0.2 0.2 {}
+T {ctl} -50 -66 0 0 0.18 0.18 {}
+T {ctlb} 26 -66 0 0 0.18 0.18 {}
+T {@name} -78 -84 0 0 0.3 0.3 {}
+T {@symname  N 0.50/0.28  P 1.00/0.28} -76 62 0 0 0.15 0.15 {layer=13}

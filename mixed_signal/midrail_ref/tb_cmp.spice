@@ -1,0 +1,119 @@
+* The one output of midref as BOTH the cell's S2 level (VREF) and
+* comparator's threshold (VBL) through one decision, typical / 27 C / 3.3 V.
+* ../midrail_ref_bkp/midrail_ref_v2/tb_cmp.spice with the second buffer removed: S2 and the
+* comparator's inp sit on the same node. TEMPLATE: if vdrop src agg v0 (verify_v3.py
+* writes one deck per run):
+*   src 1  the buffer drives the node                      (run A, and C1 / C2)
+*   src 0  an IDEAL source at run A's pre-sample level v0  (run B, the control)
+*   agg 0  no neighbour; agg 1 / 2 a neighbouring cell's S2 CLOSES on the node
+*          at TK, during this cell's hold, with tb_kick.spice's two charge
+*          directions (~80 fC each). This bounds every neighbour event of a
+*          hold: in the frozen timeline no S2 closes while a cell holds (the
+*          later cells' S2 only OPEN; their injection is in analog_top's record)
+*
+* The cell (as v2): S2 holds top (the comparator plate) at the node and opens at
+* TS; bot (the S0/S1 plate) at VDD/2 during track, down by VDROP at TDROP, then
+* up at the 8-bit slope until top rises through the node and dout falls.
+* VDROP 0.15 V puts the trip 33.6 LSB into the ramp; a small VDROP holds the
+* comparator close to its trip point through the kick (the low-code case).
+*   cmp_td_ns        dout fall
+*   cmp_v0_v         the node's level before TS
+*   cmp_pkpre_uv     largest |node - v0| in the 200 ns before the trip
+*   cmp_pkall_uv     largest |node - v0| from TS to the end
+*   cmp_pkhold_mv    largest |node - v0| over the hold (TK .. TR)
+*   cmp_doutmin_v    lowest dout over the hold: below VDD/2 = a false decision
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.include /foss/designs/mixed_signal/comparator/comparator.spice
+.include dut.spice
+.param VDD=3.3
+.param CS_W=5u
+.param CS_L=5u
+.param TCOUNT=50n
+.param SLOPE=117187.5
+.param TS=0.5u
+.param TDROP=0.51u
+.param VDROP=@VDROP@
+* a neighbour 50 ns into the hold; the ramp 300 ns after it (TR = TS3 + 300 ns, ADR 0018)
+.param TK=0.55u
+.param TR=0.85u
+.param TSTOP=2.6u
+.param RS2=1k
+.param IREFC=1.931u
+* the neighbour (tb_kick.spice's load): top-plate parasitic, S0 resistance, start levels
+.param CTOP=17.12f
+.param RS0=100
+.param VBOT0=2.117
+.param AGGON=@AGGON@
+.param TOPA0=@TOPA0@
+.param VFEA1=@VFEA1@
+.options savecurrents reltol=1e-4 gmin=1e-15
+
+VDD_SOURCE vdd 0 {VDD}
+IREF vdd ib @IF@
+XR vrefb ib vdd 0 midref
+* the node: the buffer (src 1) or the ideal control (src 0)
+VCB cb 0 @SRC_B@
+VCI ci 0 @SRC_I@
+SWB vref vrefb cb 0 swsel
+SWI vref vrefi ci 0 swsel
+VREFI vrefi 0 @V0@
+.model swsel sw vt=1 vh=0 ron=1 roff=1e14
+* comparator's bias as its own benches: ideal current into one tail finger
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREFC}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREFC}
+XREFP pbias pbias vddb vddb pfet_03v3 L=0.28u W=1u nf=1 m=1
+* the cell
+XCS top bot cap_mim_2f0_m4m5_noshield c_width={CS_W} c_length={CS_L}
+RLKT top 0 1e15
+VS2 s2 0 PWL(0 {VDD} {TS} {VDD} {TS+0.1n} 0)
+S2 vref top s2 0 sws2
+.model sws2 sw vt={VDD/2} vh=0.05 ron={RS2} roff=1e14
+VBOT bot 0 PWL(0 {VDD/2} {TDROP} {VDD/2} {TDROP+0.1n} {VDD/2-VDROP} {TR} {VDD/2-VDROP} {TSTOP} {VDD/2-VDROP+SLOPE*(TSTOP-TR)})
+XCMP vref top dout clk vdd 0 nbias pbias cmp
+CLOAD dout 0 10f
+VCLK clk 0 0
+* the neighbour: its S2 closes on the node at TK (agg 1 / 2), or never (agg 0)
+XCSA topa bota cap_mim_2f0_m4m5_noshield c_width={CS_W} c_length={CS_L}
+CTOPPA topa 0 {CTOP}
+RLKTA topa 0 1e15
+VTOPA0 vtopa0 0 {TOPA0}
+VSPREA sprea 0 PWL(0 2 {TK-5n} 2 {TK-4n} 0)
+SPREA topa vtopa0 sprea 0 swpre
+VS2A s2a 0 PWL(0 0 {TK} 0 {TK+0.1n} {2*AGGON})
+S2A vref topa s2a 0 sws2a
+VBOTA botsa 0 PWL(0 {VBOT0} {TK} {VBOT0} {TK+0.1n} {VFEA1})
+RS0A botsa bota {RS0}
+.model swpre sw vt=1 vh=0.1 ron=100 roff=1e14
+.model sws2a sw vt=1 vh=0.1 ron={RS2} roff=1e14
+
+.control
+set num_threads=1
+tran 0.1n 2.6u 0 1n
+meas tran v0 avg v(vref) from=0.3u to=0.45u
+meas tran td when v(dout)=1.65 fall=1 from=0.85u
+let dev = abs(v(vref) - v0)
+let tpre = td - 200n
+meas tran pkpre max dev from=$&tpre to=$&td
+meas tran pkall max dev from=0.5u to=2.6u
+meas tran pkhold max dev from=0.54u to=0.85u
+meas tran doutmin min v(dout) from=0.54u to=0.85u
+let cmp_v0_v = v0
+let cmp_td_ns = td * 1e9
+let cmp_pkpre_uv = pkpre * 1e6
+let cmp_pkall_uv = pkall * 1e6
+let cmp_pkhold_mv = pkhold * 1e3
+let cmp_doutmin_v = doutmin
+print cmp_v0_v
+print cmp_td_ns
+print cmp_pkpre_uv
+print cmp_pkall_uv
+print cmp_pkhold_mv
+print cmp_doutmin_v
+quit
+.endc
+.end

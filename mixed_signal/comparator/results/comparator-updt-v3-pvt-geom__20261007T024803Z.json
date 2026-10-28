@@ -1,0 +1,41 @@
+{
+  "target": "comparator-pvt-geom",
+  "timestamp": "20261007T024803Z",
+  "corner": "pvt",
+  "exit_status": 1,
+  "pass": false,
+  "metrics": {
+    "pvt_delay_max_s": 1.3564e-08,
+    "pvt_delay_min_s": 9.3045e-09,
+    "pvt_fall_max_s": 1.0436e-08,
+    "pvt_noise_max_v": 0.000183736,
+    "pvt_power_dec_max_w": 0.000393984,
+    "pvt_power_avg_max_w": 9.8115e-05
+  },
+  "checks": [
+    "FAIL: pvt_delay: delay from the static trip <= 12.5 ns at 36/45 cells; range 9.30..13.56 ns, worst ss_85_3.6",
+    "PASS: pvt_spread: level spread max 0.00 ns (<= 5)",
+    "FAIL: pvt_fall: dout fall <= 6 ns at 27/45 cells; max 10.44 ns at ff_85_3.6",
+    "PASS: pvt_armed: dout high at TR at every cell",
+    "PASS: pvt_noise: noise at the pins max 0.184 mV at fs_85_3.6 (< 1.2 mV)",
+    "FAIL: at least one PVT check failed"
+  ],
+  "reports": [
+    "REPORT: PVT of f003 with drawn S/D geometry: ideal bias 1.931 uA into one tail finger, constant over PVT; alpha 0.761 (typical) for the ADC-input referral",
+    "REPORT: slowest: ss_85_3.6 delay 13.56 ns, fall 6.19 ns, gain 44.8, noise 0.174 mV",
+    "REPORT: slowest: ss_85_3.3 delay 13.49 ns, fall 5.47 ns, gain 45.3, noise 0.174 mV",
+    "REPORT: slowest: ss_85_3 delay 13.43 ns, fall 4.88 ns, gain 45.7, noise 0.174 mV",
+    "REPORT: slowest: ss_27_3.3 delay 13.03 ns, fall 4.57 ns, gain 48.2, noise 0.159 mV",
+    "REPORT: slowest: ss_27_3 delay 12.99 ns, fall 4.05 ns, gain 48.8, noise 0.159 mV",
+    "REPORT: slowest fall: ff_85_3.6 10.44 ns",
+    "REPORT: slowest fall: ff_85_3.3 8.48 ns",
+    "REPORT: slowest fall: ff_27_3.6 7.97 ns"
+  ],
+  "artifacts": [
+    "/root/github/asic_rd/mixed_signal/comparator/data/pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/mc_pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/vmc.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/trannoise_summary.json",
+    "/root/github/asic_rd/mixed_signal/comparator/assets/pvt_summary.png"
+  ]
+}

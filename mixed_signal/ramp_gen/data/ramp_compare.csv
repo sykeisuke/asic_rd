@@ -1,0 +1,29 @@
+group,figure,ramp_gen,ramp_simple,limit,unit,ramp_gen_meets,ramp_simple_meets
+topology,devices (MOS / capacitors / resistors),11 / 3 / 1,2 / 1 / 0,,,,
+topology,MIM area,3225,1989,,um2,,
+topology,MOS gate area,593.4,191.4,,um2,,
+topology,power incl. its own bias_gen,81.88,23.16,<= 100,uW,yes,yes
+slope,slope error after the trim,0.008045,-0.0242,|x| <= 0.5,%,yes,yes
+slope,trim the transient needed (slope / I/C),-0.0945,-1.31,,%,,
+slope,"slope change, 16 cells vs 4",2.14e-06,-2.867,|x| <= 0.05,%,yes,no
+slope,"slope change, 64 cells vs 4",6e-06,-12.86,|x| <= 0.05,%,yes,no
+slope,supply sensitivity (VDD +-2 %),0.165,0.1592,|x| <= 0.2,%/%,yes,yes
+linearity,"ramp INL, best line, codes 8-256",0.001956,0.09616,<= 0.05,LSB,yes,no
+linearity,"ramp INL, end-point line",0.002711,0.1408,,LSB,,
+linearity,ramp INL with 64 cells,0.005346,0.0703,<= 0.05,LSB,yes,no
+conversion,the ramp's INL in the 4-cell conversion (real - ideal),0.0064,0.1055,<= 0.1,LSB,yes,no
+conversion,the ramp's gain error in the conversion,-0.0091,0.3651,|x| <= 0.5,%,yes,yes
+conversion,the ramp's offset (pedestal),0.5259,-0.3077,|x| <= 2,LSB,yes,yes
+conversion,"error spread, 32 levels, real ramp",0.0642,1.018,<= 0.25,LSB,yes,no
+crosstalk,"trip kick, ramp share, aggressors 0.25 LSB before",-0.0007,0.0083,|x| <= 0.1,LSB,yes,yes
+crosstalk,"trip kick, ramp share, 1 LSB",-0,0.0279,|x| <= 0.1,LSB,yes,yes
+crosstalk,"trip kick, ramp share, 4 LSB",-0.0035,0.109,|x| <= 0.1,LSB,yes,no
+crosstalk,"trip kick, ramp share, 16 LSB",0.0019,0.1158,|x| <= 0.1,LSB,yes,no
+crosstalk,"S1-connection kick, victim at code 20",-0.0098,-0.0083,|x| <= 0.1,LSB,yes,yes
+start,"S1 kick of 4 full-scale cells, peak",26.74,14.24,<= 35,mV,yes,yes
+start,start deviation at code 0,0.1387,-0.07246,,LSB,,
+start,recovery after the end-of-ramp reset,577.9,119.4,<= 1000,ns,yes,yes
+noise,"own noise, code 4 (from 1 Hz)",0.07099,0.00726,,LSB rms,,
+noise,"own noise, code 255",0.07906,0.03721,<= 0.10,LSB rms,yes,yes
+noise,"with its bias_gen, code 4",0.07218,0.00847,,LSB rms,,
+noise,"with its bias_gen, code 255",0.1129,0.08763,<= 0.15,LSB rms,yes,yes

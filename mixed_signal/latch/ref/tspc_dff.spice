@@ -1,0 +1,62 @@
+* tspc_dff -- the clocked latch after cmp_updt: a negative-edge true
+* single-phase-clock (TSPC) D flip-flop with a static output latch and a
+* driver for 50 fF.
+*
+*   q = d sampled at the FALLING edge of clk
+*
+* clk is the 20 MHz count clock, unchanged and uninverted. The counter
+* increments on the rising edge, so the latch samples half a count away from
+* it (NOISE_BUDGET.md s.4.7, L2). q drives the Gray capture of
+* digital/wilkinson_gray_counter unchanged: q is its compare_high, and q's
+* falling edge is the capture clock. Specification and sizing: SPEC.md.
+*
+* 13 devices: the 9-transistor TSPC, the output inverter, and a weak
+* feedback inverter from q back to qb.
+*   stage 1  a  = !d      transparent while clk = 1; opaque while clk = 0 (a can only rise)
+*   stage 2  x  = !a      predischarged to 0 while clk = 1; evaluates while clk = 0 (x can only rise)
+*   stage 3  qb = !x      evaluates while clk = 0; off while clk = 1
+*   driver   q  = !qb     drives the 50 fF of capture-flop clock pins and wire
+*   keeper   qb = !q      weak: qb and q form a latch, so qb is static while
+*                         stage 3 is off and q holds with the clock stopped high
+* So at each clk fall: a = !d, x = d, qb = !d, q = d.
+*
+* Why the keeper (SPEC.md s.4.3, data/explore/): x is dynamic. When dout
+* crosses within ~1 ps of the sampling edge, x is left part-charged for the
+* whole half period. Without the keeper, stage 3 turns that into a steady
+* mid-rail qb and q (2.3 V, then 1.6 V for 50 ns), and q fell, rose and fell
+* again: two capture edges, a lost conversion. With it, q makes one
+* monotonic fall in every case (late and slower within ~1 ps of the edge).
+* Stronger keepers, or a keeper on x itself, stop stage 3 writing qb.
+*
+* Sizing. Every device is at the 3.3 V minimum (W 0.42 um, L 0.28 um)
+* except:
+*   XN2 L 0.6 um   slows a's fall when stage 1 reopens at a slow rising edge,
+*                  so x cannot charge through XP5/XP6 before XN4 holds it
+*   XN4 W 1.0 um   predischarge that wins against XP5/XP6 in that window
+*   XP3 W 0.84 um  stage 1 pull-up (a rises when d falls in either phase)
+*   XP5/XP6 W 1.0  x rises promptly once XN4 is off (the pre-crossing glitch)
+*   XN10/XP11 1.0 / 2.0 um  q into 50 fF in ~0.6 ns; the strong PMOS puts the
+*                  driver's threshold above VDD/2, away from qb's upward glitch
+*   XP12 L 1.0 / XN12 L 3.0 um  the keeper: weak enough that stage 3 overwrites
+*                  qb, strong enough to resolve a part-charged x
+* Input load on dout: 1.9 fF (XN1 + XP3). vdd/vss are the digital supply (L7).
+.subckt tspc_dff d clk q vdd vss
+* stage 1
+XN1 n1 d vss vss nfet_03v3 L=0.28u W=0.42u nf=1 m=1
+XN2 a clk n1 vss nfet_03v3 L=0.6u W=0.42u nf=1 m=1
+XP3 a d vdd vdd pfet_03v3 L=0.28u W=0.84u nf=1 m=1
+* stage 2
+XP6 n2 clk vdd vdd pfet_03v3 L=0.28u W=1.0u nf=1 m=1
+XP5 x a n2 vdd pfet_03v3 L=0.28u W=1.0u nf=1 m=1
+XN4 x clk vss vss nfet_03v3 L=0.28u W=1.0u nf=1 m=1
+* stage 3
+XP9 n3 x vdd vdd pfet_03v3 L=0.28u W=0.42u nf=1 m=1
+XP8 qb clk n3 vdd pfet_03v3 L=0.28u W=0.42u nf=1 m=1
+XN7 qb x vss vss nfet_03v3 L=0.28u W=0.42u nf=1 m=1
+* output driver
+XN10 q qb vss vss nfet_03v3 L=0.28u W=1.0u nf=1 m=1
+XP11 q qb vdd vdd pfet_03v3 L=0.28u W=2.0u nf=1 m=1
+* keeper
+XP12 qb q vdd vdd pfet_03v3 L=1.0u W=0.42u nf=1 m=1
+XN12 qb q vss vss nfet_03v3 L=3.0u W=0.42u nf=1 m=1
+.ends tspc_dff

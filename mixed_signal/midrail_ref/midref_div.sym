@@ -1,0 +1,25 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=X1"
+description="VDD/2 divider of midrail_ref (subckt midref_div of midref.spice)"
+}
+V {}
+S {}
+E {}
+L 4 -60 -40 60 -40 {}
+L 4 60 -40 60 40 {}
+L 4 60 40 -60 40 {}
+L 4 -60 40 -60 -40 {}
+L 4 80 0 60 0 {}
+B 5 77.5 -2.5 82.5 2.5 {name=vin dir=out}
+T {vin} 5 -16 0 0 0.15 0.15 {layer=7}
+L 4 0 -60 0 -40 {}
+B 5 -2.5 -62.5 2.5 -57.5 {name=vdd dir=inout}
+T {vdd} 4 -56 0 0 0.15 0.15 {layer=7}
+L 4 0 60 0 40 {}
+B 5 -2.5 57.5 2.5 62.5 {name=vss dir=inout}
+T {vss} 4 44 0 0 0.15 0.15 {layer=7}
+T {@name} -58 -58 0 0 0.25 0.25 {}
+T {midref_div} -58 24 0 0 0.2 0.2 {layer=13}

@@ -1,23 +1,15 @@
 #!/bin/sh
+# comparator, the comparator of the 8-bit true bottom-plate unit cell re-sized
+# with every L <= 0.36 um (mixed_signal/comparator, 2026-10-06):
+# short-L gm/Id tables, then ngspice verification of the selected design
+# (delay from the static trip over four levels, dout fall into 10 fF, noise at
+# the pins, Monte Carlo sigma(Vos)).
+#
+#   ./scripts/sim.sh comparator
+#   ./scripts/sim.sh comparator PHASES='lut size verify'
 set -eu
 
 . "$(dirname -- "$0")/eda-common.sh"
 
-result_dir="$PROJECT_ROOT/simulations/gf180_comparator/work"
-mkdir -p "$result_dir"
-
-"$DOCKER_CLI" run --rm \
-    --entrypoint /bin/bash \
-    -v "$PROJECT_ROOT:/foss/designs:rw" \
-    "$EDA_IMAGE" -lc '
-        set -euo pipefail
-        cd /foss/designs/simulations/gf180_comparator
-        ngspice -b -o work/comparator.log comparator.spice
-        test -s work/comparator.csv
-        grep -E "^(crossing_delay|output_low|output_high|avg_power)" \
-            work/comparator.log | tee work/measurements.txt
-        awk -f check-measurements.awk work/measurements.txt
-    '
-
-printf '%s\n' "Waveform: $result_dir/comparator.csv"
-printf '%s\n' "Measurements: $result_dir/measurements.txt"
+cd "$PROJECT_ROOT/mixed_signal/comparator"
+TARGET=comparator NO_RECORD=1 ./run.sh

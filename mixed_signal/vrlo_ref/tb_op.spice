@@ -1,0 +1,47 @@
+* tb_op -- operating point of vrlo_ref in the reset state (XRST on, the ramp
+* current flowing in) at one corner and temperature, the supply looped over
+* 3.0 / 3.3 / 3.6 V (verify_vrlo.py phase op).
+*
+* One line per supply:
+*   OP <tag> <vdd> hrt hrk hr1 hr2 hrs hr5 err ireg vg
+* hr = |vds| - |vdsat| (BSIM4) of the tail XMT, keep-alive XMK, pair XM1/XM2,
+* shunt XMS and g-node diode XM5; err = v(vrlo) - 5/33 VDD; ireg = the
+* regulator's supply current incl. its ideal bias; vg = the shunt gate.
+* TEMPLATE: CORNER MIMCORNER RESCORNER TEMP IB IRD TAG RATIO
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @RESCORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ramp_simple.spice
+.include dut.spice
+.temp @TEMP@
+
+VAVDD avdd 0 3.3
+VAMR avdd avdd_r 0
+IB avdd_r ib @IB@
+XREG vrlo ib avdd_r 0 vrlo_ref
+IRD pbias_r 0 @IRD@
+XRD pbias_r pbias_r avdd avdd pfet_03v3 L=1u W=20u nf=10
+XRAMP vramp avdd vrlo pbias_r avdd 0 ramp_simple
+
+.options gmin=1e-15
+.control
+set num_threads=1
+foreach v 3.0 3.3 3.6
+  alter VAVDD dc = $v
+  op
+  let hrt = abs(@m.xreg.xmt.m0[vds]) - abs(@m.xreg.xmt.m0[vdsat])
+  let hrk = abs(@m.xreg.xmk.m0[vds]) - abs(@m.xreg.xmk.m0[vdsat])
+  let hr1 = abs(@m.xreg.xm1.m0[vds]) - abs(@m.xreg.xm1.m0[vdsat])
+  let hr2 = abs(@m.xreg.xm2.m0[vds]) - abs(@m.xreg.xm2.m0[vdsat])
+  let hrs = abs(@m.xreg.xms.m0[vds]) - abs(@m.xreg.xms.m0[vdsat])
+  let hr5 = abs(@m.xreg.xm5.m0[vds]) - abs(@m.xreg.xm5.m0[vdsat])
+  let err = v(vrlo) - @RATIO@ * $v
+  let ireg = i(VAMR)
+  let vg = v(xreg.g)
+  echo "OP @TAG@ $v $&hrt $&hrk $&hr1 $&hr2 $&hrs $&hr5 $&err $&ireg $&vg"
+end
+quit
+.endc
+.end

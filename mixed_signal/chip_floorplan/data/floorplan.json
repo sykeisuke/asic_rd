@@ -1,0 +1,1304 @@
+{
+ "slot": "1x0p5",
+ "die": [
+  3932.0,
+  2531.0
+ ],
+ "core": [
+  442.0,
+  442.0,
+  3490.0,
+  2089.0
+ ],
+ "pad_cell": [
+  75.32,
+  350.0
+ ],
+ "corner": 355.02,
+ "k_layout": 3.266230057654067,
+ "mim_keep_um": 1.9130488327232458,
+ "blocks": {
+  "bias_gen_s": {
+   "dev_um2": 4202.6,
+   "mim_um2": 1371.5,
+   "n_mos": 17,
+   "n_res": 5,
+   "n_mim": 2,
+   "instances": 1
+  },
+  "midref_div": {
+   "dev_um2": 281.3,
+   "mim_um2": 68.0,
+   "n_mos": 0,
+   "n_res": 2,
+   "n_mim": 1,
+   "instances": 1
+  },
+  "midref_buf": {
+   "dev_um2": 335.7,
+   "mim_um2": 241.1,
+   "n_mos": 11,
+   "n_res": 0,
+   "n_mim": 1,
+   "instances": 1
+  },
+  "vrlo_ref": {
+   "dev_um2": 1855.1,
+   "mim_um2": 2742.3,
+   "n_mos": 11,
+   "n_res": 33,
+   "n_mim": 2,
+   "instances": 1
+  },
+  "ramp_simple_d": {
+   "dev_um2": 778.3,
+   "mim_um2": 2345.1,
+   "n_mos": 3,
+   "n_res": 0,
+   "n_mim": 1,
+   "instances": 1
+  },
+  "atop_cell": {
+   "dev_um2": 160.1,
+   "mim_um2": 77.9,
+   "n_mos": 22,
+   "n_res": 0,
+   "n_mim": 1,
+   "instances": 4
+  }
+ },
+ "macro": {
+  "w": 229.12,
+  "h": 127.09053329094898,
+  "x": 492.0,
+  "y": 1310.7356953732774,
+  "boxes": [
+   {
+    "key": "test",
+    "label": "TEST (reserved)",
+    "x": 8.0,
+    "y": 40.48,
+    "w": 26.97,
+    "h": 48.43,
+    "kind": "reserved",
+    "note": "CMP_OUT driver, AMON follower + 4:1 mux, EXT_RAMP TG mux"
+   },
+   {
+    "key": "vrlo",
+    "label": "vrlo_ref",
+    "x": 38.97,
+    "y": 40.48,
+    "w": 71.55,
+    "h": 45.33,
+    "kind": "ref",
+    "note": "3.47 + 1.02 pF MIM over"
+   },
+   {
+    "key": "ramp",
+    "label": "ramp_simple_d",
+    "x": 114.52,
+    "y": 40.48,
+    "w": 48.43,
+    "h": 48.43,
+    "kind": "ramp",
+    "note": "4 pF MIM over"
+   },
+   {
+    "key": "midref",
+    "label": "midref",
+    "x": 166.95,
+    "y": 40.48,
+    "w": 24.84,
+    "h": 24.84,
+    "kind": "ref",
+    "note": "div + 1 buffer"
+   },
+   {
+    "key": "bg",
+    "label": "bias_gen_s",
+    "x": 8.0,
+    "y": 92.9,
+    "w": 213.12,
+    "h": 26.19,
+    "kind": "bias",
+    "note": "2 rows, 2 x 1 pF MIM over"
+   },
+   {
+    "key": "decapB",
+    "label": "AVDD decap",
+    "x": 195.79,
+    "y": 40.48,
+    "w": 25.33,
+    "h": 48.43,
+    "kind": "decap",
+    "note": "MOS caps on AVDD"
+   },
+   {
+    "key": "rep",
+    "label": "replica",
+    "x": 8.0,
+    "y": 8.0,
+    "w": 15.98,
+    "h": 16.8,
+    "kind": "reserved",
+    "note": "S0/S1/S2 + 54.5 fF MIM over comparator_d; dfxtn_2 row"
+   },
+   {
+    "key": "c0",
+    "label": "cell 0",
+    "x": 27.98,
+    "y": 8.0,
+    "w": 15.98,
+    "h": 16.8,
+    "kind": "cell",
+    "note": "S0/S1/S2 + 54.5 fF MIM over comparator_d; dfxtn_2 row"
+   },
+   {
+    "key": "c1",
+    "label": "cell 1",
+    "x": 47.96,
+    "y": 8.0,
+    "w": 15.98,
+    "h": 16.8,
+    "kind": "cell",
+    "note": "S0/S1/S2 + 54.5 fF MIM over comparator_d; dfxtn_2 row"
+   },
+   {
+    "key": "c2",
+    "label": "cell 2",
+    "x": 67.94,
+    "y": 8.0,
+    "w": 15.98,
+    "h": 16.8,
+    "kind": "cell",
+    "note": "S0/S1/S2 + 54.5 fF MIM over comparator_d; dfxtn_2 row"
+   },
+   {
+    "key": "c3",
+    "label": "cell 3",
+    "x": 87.92,
+    "y": 8.0,
+    "w": 15.98,
+    "h": 16.8,
+    "kind": "cell",
+    "note": "S0/S1/S2 + 54.5 fF MIM over comparator_d; dfxtn_2 row"
+   },
+   {
+    "key": "decapC",
+    "label": "AVDD decap",
+    "x": 107.9,
+    "y": 8.0,
+    "w": 113.22,
+    "h": 16.8,
+    "kind": "decap",
+    "note": "MOS caps on AVDD + substrate taps"
+   },
+   {
+    "key": "bus",
+    "label": "bus channel",
+    "x": 8.0,
+    "y": 24.8,
+    "w": 213.12,
+    "h": 11.68,
+    "kind": "channel",
+    "note": "vin vramp vref ibias[4:0], AVSS shields"
+   }
+  ],
+  "pins_west": {
+   "VIN": 30.637637960056008,
+   "EXT_RAMP": 50.16285749314531,
+   "AMON": 64.69068679277925,
+   "CMP_OUT": 79.21851609241321
+  },
+  "pins_south": [
+   "S0[0]",
+   "S0[1]",
+   "S0[2]",
+   "S0[3]",
+   "S1[0]",
+   "S1[1]",
+   "S1[2]",
+   "S1[3]",
+   "S2[0]",
+   "S2[1]",
+   "S2[2]",
+   "S2[3]",
+   "RAMP_RST",
+   "CNT_CLK",
+   "Q[0]",
+   "Q[1]",
+   "Q[2]",
+   "Q[3]",
+   "RAMP_SEL",
+   "AMON_SEL[0]",
+   "AMON_SEL[1]",
+   "CMP_SA_EN"
+  ],
+  "pin_status": {
+   "VIN": "core",
+   "EXT_RAMP": "planned",
+   "AMON": "planned",
+   "CMP_OUT": "planned",
+   "S0[0]": "core",
+   "S0[1]": "core",
+   "S0[2]": "core",
+   "S0[3]": "core",
+   "S1[0]": "core",
+   "S1[1]": "core",
+   "S1[2]": "core",
+   "S1[3]": "core",
+   "S2[0]": "core",
+   "S2[1]": "core",
+   "S2[2]": "core",
+   "S2[3]": "core",
+   "RAMP_RST": "core",
+   "CNT_CLK": "core",
+   "Q[0]": "core",
+   "Q[1]": "core",
+   "Q[2]": "core",
+   "Q[3]": "core",
+   "RAMP_SEL": "planned",
+   "AMON_SEL[0]": "planned",
+   "AMON_SEL[1]": "planned",
+   "CMP_SA_EN": "planned",
+   "AVDD": "core",
+   "AVSS": "core"
+  },
+  "pin_fn": {
+   "VIN": "sampling input -> 4 x S0 (vin bus)",
+   "EXT_RAMP": "external ramp in, replaces vramp (selected by RAMP_SEL)",
+   "AMON": "analog monitor out: buffer + 4:1 mux (vramp / vref / vrlo / replica plate), AMON_SEL[1:0]",
+   "CMP_OUT": "replica comparator + latch in standalone mode (CMP_SA_EN); not a signal cell",
+   "AVDD": "analog 3.3 V, macro ring only",
+   "AVSS": "analog ground (common on the COB)"
+  }
+ },
+ "netlist": "Analog_top/analog_top.spice",
+ "chip": [
+  {
+   "key": "macro",
+   "label": "Analog_top (hard macro)",
+   "x": 492.0,
+   "y": 1310.74,
+   "w": 229.12,
+   "h": 127.09,
+   "kind": "analog",
+   "note": ""
+  },
+  {
+   "key": "digital",
+   "label": "asic_digital_top (soft, region = its hardened outline)",
+   "x": 492.0,
+   "y": 970.47,
+   "w": 292.35,
+   "h": 310.27,
+   "kind": "digital",
+   "note": ""
+  },
+  {
+   "key": "cdm_analog[0]",
+   "label": "CDM",
+   "x": 446.0,
+   "y": 1781.61,
+   "w": 24.0,
+   "h": 30.0,
+   "kind": "cdm",
+   "note": ""
+  },
+  {
+   "key": "cdm_analog[1]",
+   "label": "CDM",
+   "x": 446.0,
+   "y": 1629.87,
+   "w": 24.0,
+   "h": 30.0,
+   "kind": "cdm",
+   "note": ""
+  },
+  {
+   "key": "cdm_analog[2]",
+   "label": "CDM",
+   "x": 446.0,
+   "y": 1478.12,
+   "w": 24.0,
+   "h": 30.0,
+   "kind": "cdm",
+   "note": ""
+  },
+  {
+   "key": "cdm_analog[3]",
+   "label": "CDM",
+   "x": 446.0,
+   "y": 1326.37,
+   "w": 24.0,
+   "h": 30.0,
+   "kind": "cdm",
+   "note": ""
+  }
+ ],
+ "pads": [
+  {
+   "name": "clk",
+   "side": "S",
+   "x": 384.4841666666666,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 422.14416666666665,
+   "type": "input",
+   "label": "clk"
+  },
+  {
+   "name": "rst_n",
+   "side": "S",
+   "x": 518.7325,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 556.3924999999999,
+   "type": "input",
+   "label": "rst_n"
+  },
+  {
+   "name": "bidir[0]",
+   "side": "S",
+   "x": 652.9808333333334,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 690.6408333333334,
+   "type": "bidir",
+   "label": "bidir[0]"
+  },
+  {
+   "name": "bidir[1]",
+   "side": "S",
+   "x": 787.2291666666666,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 824.8891666666666,
+   "type": "bidir",
+   "label": "bidir[1]"
+  },
+  {
+   "name": "dvss[0]",
+   "side": "S",
+   "x": 921.4775000000001,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 959.1375,
+   "type": "iopwr",
+   "label": "dvss[0]"
+  },
+  {
+   "name": "dvdd[0]",
+   "side": "S",
+   "x": 1055.7258333333332,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1093.3858333333333,
+   "type": "iopwr",
+   "label": "dvdd[0]"
+  },
+  {
+   "name": "bidir[2]",
+   "side": "S",
+   "x": 1189.9741666666666,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1227.6341666666667,
+   "type": "bidir",
+   "label": "bidir[2]"
+  },
+  {
+   "name": "bidir[3]",
+   "side": "S",
+   "x": 1324.2224999999999,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1361.8825,
+   "type": "bidir",
+   "label": "bidir[3]"
+  },
+  {
+   "name": "bidir[4]",
+   "side": "S",
+   "x": 1458.4708333333333,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1496.1308333333334,
+   "type": "bidir",
+   "label": "bidir[4]"
+  },
+  {
+   "name": "bidir[5]",
+   "side": "S",
+   "x": 1592.7191666666665,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1630.3791666666666,
+   "type": "bidir",
+   "label": "bidir[5]"
+  },
+  {
+   "name": "bidir[6]",
+   "side": "S",
+   "x": 1726.9675,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1764.6275,
+   "type": "bidir",
+   "label": "bidir[6]"
+  },
+  {
+   "name": "bidir[7]",
+   "side": "S",
+   "x": 1861.2158333333332,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1898.8758333333333,
+   "type": "bidir",
+   "label": "bidir[7]"
+  },
+  {
+   "name": "bidir[8]",
+   "side": "S",
+   "x": 1995.4641666666666,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2033.1241666666667,
+   "type": "bidir",
+   "label": "bidir[8]"
+  },
+  {
+   "name": "bidir[9]",
+   "side": "S",
+   "x": 2129.7125,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2167.3725,
+   "type": "bidir",
+   "label": "bidir[9]"
+  },
+  {
+   "name": "bidir[10]",
+   "side": "S",
+   "x": 2263.9608333333335,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2301.6208333333334,
+   "type": "bidir",
+   "label": "bidir[10]"
+  },
+  {
+   "name": "bidir[11]",
+   "side": "S",
+   "x": 2398.209166666667,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2435.869166666667,
+   "type": "bidir",
+   "label": "bidir[11]"
+  },
+  {
+   "name": "bidir[12]",
+   "side": "S",
+   "x": 2532.4575,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2570.1175,
+   "type": "bidir",
+   "label": "bidir[12]"
+  },
+  {
+   "name": "bidir[13]",
+   "side": "S",
+   "x": 2666.7058333333334,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2704.3658333333333,
+   "type": "bidir",
+   "label": "bidir[13]"
+  },
+  {
+   "name": "dvss[1]",
+   "side": "S",
+   "x": 2800.954166666667,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2838.6141666666667,
+   "type": "iopwr",
+   "label": "dvss[1]"
+  },
+  {
+   "name": "dvdd[1]",
+   "side": "S",
+   "x": 2935.2025000000003,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2972.8625,
+   "type": "iopwr",
+   "label": "dvdd[1]"
+  },
+  {
+   "name": "bidir[14]",
+   "side": "S",
+   "x": 3069.4508333333333,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3107.110833333333,
+   "type": "bidir",
+   "label": "bidir[14]"
+  },
+  {
+   "name": "bidir[15]",
+   "side": "S",
+   "x": 3203.6991666666668,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3241.3591666666666,
+   "type": "bidir",
+   "label": "bidir[15]"
+  },
+  {
+   "name": "bidir[16]",
+   "side": "S",
+   "x": 3337.9475,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3375.6075,
+   "type": "bidir",
+   "label": "bidir[16]"
+  },
+  {
+   "name": "bidir[17]",
+   "side": "S",
+   "x": 3472.1958333333337,
+   "y": 0.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3509.8558333333335,
+   "type": "bidir",
+   "label": "bidir[17]"
+  },
+  {
+   "name": "bidir[45]",
+   "side": "N",
+   "x": 384.4841666666666,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 422.14416666666665,
+   "type": "avdd",
+   "label": "AVDD",
+   "signal": "AVDD",
+   "fn": "analog 3.3 V, macro ring only"
+  },
+  {
+   "name": "bidir[44]",
+   "side": "N",
+   "x": 518.7325,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 556.3924999999999,
+   "type": "avss",
+   "label": "AVSS",
+   "signal": "AVSS",
+   "fn": "analog ground (common on the COB)"
+  },
+  {
+   "name": "bidir[43]",
+   "side": "N",
+   "x": 652.9808333333334,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 690.6408333333334,
+   "type": "bidir",
+   "label": "bidir[43]"
+  },
+  {
+   "name": "bidir[42]",
+   "side": "N",
+   "x": 787.2291666666666,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 824.8891666666666,
+   "type": "bidir",
+   "label": "bidir[42]"
+  },
+  {
+   "name": "dvss[5]",
+   "side": "N",
+   "x": 921.4775000000001,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 959.1375,
+   "type": "iopwr",
+   "label": "dvss[5]"
+  },
+  {
+   "name": "dvdd[5]",
+   "side": "N",
+   "x": 1055.7258333333332,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1093.3858333333333,
+   "type": "iopwr",
+   "label": "dvdd[5]"
+  },
+  {
+   "name": "bidir[41]",
+   "side": "N",
+   "x": 1189.9741666666666,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1227.6341666666667,
+   "type": "bidir",
+   "label": "bidir[41]"
+  },
+  {
+   "name": "bidir[40]",
+   "side": "N",
+   "x": 1324.2224999999999,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1361.8825,
+   "type": "bidir",
+   "label": "bidir[40]"
+  },
+  {
+   "name": "bidir[39]",
+   "side": "N",
+   "x": 1458.4708333333333,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1496.1308333333334,
+   "type": "bidir",
+   "label": "bidir[39]"
+  },
+  {
+   "name": "bidir[38]",
+   "side": "N",
+   "x": 1592.7191666666665,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1630.3791666666666,
+   "type": "bidir",
+   "label": "bidir[38]"
+  },
+  {
+   "name": "bidir[37]",
+   "side": "N",
+   "x": 1726.9675,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1764.6275,
+   "type": "bidir",
+   "label": "bidir[37]"
+  },
+  {
+   "name": "bidir[36]",
+   "side": "N",
+   "x": 1861.2158333333332,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 1898.8758333333333,
+   "type": "bidir",
+   "label": "bidir[36]"
+  },
+  {
+   "name": "bidir[35]",
+   "side": "N",
+   "x": 1995.4641666666666,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2033.1241666666667,
+   "type": "bidir",
+   "label": "bidir[35]"
+  },
+  {
+   "name": "bidir[34]",
+   "side": "N",
+   "x": 2129.7125,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2167.3725,
+   "type": "bidir",
+   "label": "bidir[34]"
+  },
+  {
+   "name": "bidir[33]",
+   "side": "N",
+   "x": 2263.9608333333335,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2301.6208333333334,
+   "type": "bidir",
+   "label": "bidir[33]"
+  },
+  {
+   "name": "bidir[32]",
+   "side": "N",
+   "x": 2398.209166666667,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2435.869166666667,
+   "type": "bidir",
+   "label": "bidir[32]"
+  },
+  {
+   "name": "bidir[31]",
+   "side": "N",
+   "x": 2532.4575,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2570.1175,
+   "type": "bidir",
+   "label": "bidir[31]"
+  },
+  {
+   "name": "bidir[30]",
+   "side": "N",
+   "x": 2666.7058333333334,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2704.3658333333333,
+   "type": "bidir",
+   "label": "bidir[30]"
+  },
+  {
+   "name": "dvss[4]",
+   "side": "N",
+   "x": 2800.954166666667,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2838.6141666666667,
+   "type": "iopwr",
+   "label": "dvss[4]"
+  },
+  {
+   "name": "dvdd[4]",
+   "side": "N",
+   "x": 2935.2025000000003,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 2972.8625,
+   "type": "iopwr",
+   "label": "dvdd[4]"
+  },
+  {
+   "name": "bidir[29]",
+   "side": "N",
+   "x": 3069.4508333333333,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3107.110833333333,
+   "type": "bidir",
+   "label": "bidir[29]"
+  },
+  {
+   "name": "bidir[28]",
+   "side": "N",
+   "x": 3203.6991666666668,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3241.3591666666666,
+   "type": "bidir",
+   "label": "bidir[28]"
+  },
+  {
+   "name": "bidir[27]",
+   "side": "N",
+   "x": 3337.9475,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3375.6075,
+   "type": "bidir",
+   "label": "bidir[27]"
+  },
+  {
+   "name": "bidir[26]",
+   "side": "N",
+   "x": 3472.1958333333337,
+   "y": 2181.0,
+   "w": 75.32,
+   "h": 350.0,
+   "c": 3509.8558333333335,
+   "type": "bidir",
+   "label": "bidir[26]"
+  },
+  {
+   "name": "vss[0]",
+   "side": "W",
+   "x": 0.0,
+   "y": 393.23333333333335,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 430.8933333333333,
+   "type": "corepwr",
+   "label": "vss[0]"
+  },
+  {
+   "name": "vdd[0]",
+   "side": "W",
+   "x": 0.0,
+   "y": 544.98,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 582.64,
+   "type": "corepwr",
+   "label": "vdd[0]"
+  },
+  {
+   "name": "inputs[3]",
+   "side": "W",
+   "x": 0.0,
+   "y": 696.7266666666667,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 734.3866666666667,
+   "type": "input",
+   "label": "inputs[3]"
+  },
+  {
+   "name": "inputs[2]",
+   "side": "W",
+   "x": 0.0,
+   "y": 848.4733333333334,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 886.1333333333333,
+   "type": "input",
+   "label": "inputs[2]"
+  },
+  {
+   "name": "inputs[1]",
+   "side": "W",
+   "x": 0.0,
+   "y": 1000.2200000000001,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1037.88,
+   "type": "input",
+   "label": "inputs[1]"
+  },
+  {
+   "name": "inputs[0]",
+   "side": "W",
+   "x": 0.0,
+   "y": 1151.9666666666665,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1189.6266666666666,
+   "type": "input",
+   "label": "inputs[0]"
+  },
+  {
+   "name": "analog[3]",
+   "side": "W",
+   "x": 0.0,
+   "y": 1303.7133333333334,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1341.3733333333334,
+   "type": "asig_5p0",
+   "label": "analog[3]",
+   "signal": "VIN",
+   "fn": "sampling input -> 4 x S0 (vin bus)"
+  },
+  {
+   "name": "analog[2]",
+   "side": "W",
+   "x": 0.0,
+   "y": 1455.4599999999998,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1493.12,
+   "type": "bi_a",
+   "label": "analog[2]",
+   "signal": "EXT_RAMP",
+   "fn": "external ramp in, replaces vramp (selected by RAMP_SEL)"
+  },
+  {
+   "name": "analog[1]",
+   "side": "W",
+   "x": 0.0,
+   "y": 1607.2066666666667,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1644.8666666666668,
+   "type": "bi_a",
+   "label": "analog[1]",
+   "signal": "AMON",
+   "fn": "analog monitor out: buffer + 4:1 mux (vramp / vref / vrlo / replica plate), AMON_SEL[1:0]"
+  },
+  {
+   "name": "analog[0]",
+   "side": "W",
+   "x": 0.0,
+   "y": 1758.9533333333331,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1796.6133333333332,
+   "type": "bi_a",
+   "label": "analog[0]",
+   "signal": "CMP_OUT",
+   "fn": "replica comparator + latch in standalone mode (CMP_SA_EN); not a signal cell"
+  },
+  {
+   "name": "dvss[6]",
+   "side": "W",
+   "x": 0.0,
+   "y": 1910.7,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1948.3600000000001,
+   "type": "iopwr",
+   "label": "dvss[6]"
+  },
+  {
+   "name": "dvdd[6]",
+   "side": "W",
+   "x": 0.0,
+   "y": 2062.4466666666667,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 2100.1066666666666,
+   "type": "iopwr",
+   "label": "dvdd[6]"
+  },
+  {
+   "name": "dvss[2]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 393.23333333333335,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 430.8933333333333,
+   "type": "iopwr",
+   "label": "dvss[2]"
+  },
+  {
+   "name": "dvdd[2]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 544.98,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 582.64,
+   "type": "iopwr",
+   "label": "dvdd[2]"
+  },
+  {
+   "name": "bidir[18]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 696.7266666666667,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 734.3866666666667,
+   "type": "bidir",
+   "label": "bidir[18]"
+  },
+  {
+   "name": "bidir[19]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 848.4733333333334,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 886.1333333333333,
+   "type": "bidir",
+   "label": "bidir[19]"
+  },
+  {
+   "name": "bidir[20]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 1000.2200000000001,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1037.88,
+   "type": "bidir",
+   "label": "bidir[20]"
+  },
+  {
+   "name": "bidir[21]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 1151.9666666666665,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1189.6266666666666,
+   "type": "bidir",
+   "label": "bidir[21]"
+  },
+  {
+   "name": "bidir[22]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 1303.7133333333334,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1341.3733333333334,
+   "type": "bidir",
+   "label": "bidir[22]"
+  },
+  {
+   "name": "bidir[23]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 1455.4599999999998,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1493.12,
+   "type": "bidir",
+   "label": "bidir[23]"
+  },
+  {
+   "name": "bidir[24]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 1607.2066666666667,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1644.8666666666668,
+   "type": "bidir",
+   "label": "bidir[24]"
+  },
+  {
+   "name": "bidir[25]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 1758.9533333333331,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1796.6133333333332,
+   "type": "bidir",
+   "label": "bidir[25]"
+  },
+  {
+   "name": "dvss[3]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 1910.7,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 1948.3600000000001,
+   "type": "iopwr",
+   "label": "dvss[3]"
+  },
+  {
+   "name": "dvdd[3]",
+   "side": "E",
+   "x": 3582.0,
+   "y": 2062.4466666666667,
+   "w": 350.0,
+   "h": 75.32,
+   "c": 2100.1066666666666,
+   "type": "iopwr",
+   "label": "dvdd[3]"
+  }
+ ],
+ "wires": {
+  "VIN": {
+   "pad": "analog[3]",
+   "pts": [
+    [
+     350.0,
+     1341.3733333333334
+    ],
+    [
+     492.0,
+     1341.3733333333334
+    ]
+   ],
+   "len_um": 142.0
+  },
+  "EXT_RAMP": {
+   "pad": "analog[2]",
+   "pts": [
+    [
+     350.0,
+     1493.12
+    ],
+    [
+     480.0,
+     1493.12
+    ],
+    [
+     480.0,
+     1360.8985528664227
+    ],
+    [
+     492.0,
+     1360.8985528664227
+    ]
+   ],
+   "len_um": 274.22144713357716
+  },
+  "AMON": {
+   "pad": "analog[1]",
+   "pts": [
+    [
+     350.0,
+     1644.8666666666668
+    ],
+    [
+     485.0,
+     1644.8666666666668
+    ],
+    [
+     485.0,
+     1375.4263821660566
+    ],
+    [
+     492.0,
+     1375.4263821660566
+    ]
+   ],
+   "len_um": 411.44028450061023
+  },
+  "CMP_OUT": {
+   "pad": "analog[0]",
+   "pts": [
+    [
+     350.0,
+     1796.6133333333332
+    ],
+    [
+     490.0,
+     1796.6133333333332
+    ],
+    [
+     490.0,
+     1389.9542114656906
+    ],
+    [
+     492.0,
+     1389.9542114656906
+    ]
+   ],
+   "len_um": 548.6591218676426
+  }
+ },
+ "straps": {
+  "AVDD": {
+   "pad": "bidir[45]",
+   "pts": [
+    [
+     422.14416666666665,
+     2181.0
+    ],
+    [
+     422.14416666666665,
+     2054.0
+    ],
+    [
+     676.12,
+     2054.0
+    ],
+    [
+     676.12,
+     1437.8262286642264
+    ]
+   ],
+   "len_um": 997.149604669107
+  },
+  "AVSS": {
+   "pad": "bidir[44]",
+   "pts": [
+    [
+     556.3924999999999,
+     2181.0
+    ],
+    [
+     556.3924999999999,
+     2074.0
+    ],
+    [
+     705.12,
+     2074.0
+    ],
+    [
+     705.12,
+     1437.8262286642264
+    ]
+   ],
+   "len_um": 891.9012713357737
+  }
+ },
+ "digital": {
+  "gds": "digital/asic_digital_top/physical/final_views/gds/asic_digital_top.gds",
+  "top": "asic_digital_top",
+  "w_um": 292.35,
+  "h_um": 310.27,
+  "bbox": [
+   0.0,
+   0.0,
+   292.35,
+   310.27
+  ]
+ },
+ "areas": {
+  "core": 5020056.0,
+  "die": 9951892.0,
+  "analog": 31998.982987622232,
+  "digital": 90707.4345,
+  "macro": 29118.982987622232,
+  "cdm": 2880.0
+ },
+ "cell": {
+  "w": 15.98,
+  "h": 16.797637960056008,
+  "ha": 10.017637960056009,
+  "latch": [
+   15.98,
+   4.78
+  ]
+ },
+ "test_area": 1306.078801093885,
+ "bus_ch": 15.68
+}

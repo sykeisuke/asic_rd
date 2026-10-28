@@ -1,0 +1,99 @@
+* The S2 event of the unit cell on the ONE output of midref (vref = vbl),
+* any PVT cell. ../midrail_ref_bkp/midrail_ref_v2/tb_kick.spice with the second buffer
+* removed: VBL is the same node, so v2's VBL-crosstalk measures are gone
+* (what the kick does to a HELD cell's decision is tb_cmp.spice's job).
+* TEMPLATE: if p (measure prefix) corner mimcorner temp vdd top1 top2 (the
+* top plate's start, VDD/2 + 1.34 V and VDD/2 + 0.10 V). dut.spice is midref.spice.
+*
+* One cell's passive load: the 54.52 fF MIM, the top-plate parasitic CTOP,
+* S2 as RS2, S0 as RS0. S2 and S0 close together at TK:
+*   case 1  top from VREF + 1.34 V, bottom to 2.0 V  -> VREF sinks ~80 fC
+*   case 2  top from VREF + 0.10 V, bottom to 0.5 V  -> VREF sources ~80 fC
+*   <P>_cN_pkr_mv, tsr_ns    VREF peak and the last crossing of EPS after TK
+*   <P>_cN_rr250_mv, rr300   residual at TK + 250 ns (spec) and + 300 ns (TS)
+*   <P>_cN_qk_fc             charge through S2
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.temp @TEMP@
+.include dut.spice
+.param VDD=@VDD@
+.param CS_W=5u
+.param CS_L=5u
+* top-plate parasitic from comparator's alpha 0.761: CS (1/alpha - 1) [D]
+.param CTOP=17.12f
+.param RS2=1k
+.param RS0=100
+.param EPS=2.9297m
+.param TK=1u
+.param VBOT0=2.117
+.param TOP0=@TOP1@
+.param VFE1=2.0
+.csparam cs_eps={EPS}
+
+VDD_SOURCE vdd 0 {VDD}
+IREF vdd ib @IF@
+XR vref ib vdd 0 midref
+XCS top bot cap_mim_2f0_m4m5_noshield c_width={CS_W} c_length={CS_L}
+CTOPP top 0 {CTOP}
+RLKT top 0 1e15
+VTOP0 vtop0 0 {TOP0}
+VSPRE spre 0 PWL(0 2 {TK-5n} 2 {TK-4n} 0)
+SPRE top vtop0 spre 0 swpre
+VSNS vref vrefs 0
+VS2 s2 0 PWL(0 0 {TK} 0 {TK+0.1n} 2)
+S2 vrefs top s2 0 sws2
+VBOT bots 0 PWL(0 {VBOT0} {TK} {VBOT0} {TK+0.1n} {VFE1})
+RS0 bots bot {RS0}
+.model swpre sw vt=1 vh=0.1 ron=100 roff=1e14
+.model sws2 sw vt=1 vh=0.1 ron={RS2} roff=1e14
+
+.control
+set num_threads=1
+tran 0.1n 2.0u 0 1n
+meas tran v0r avg v(vref) from=0.8u to=0.99u
+let devr = abs(v(vref) - v0r)
+meas tran pkr max devr from=1u to=2u
+meas tran rr250 find devr at=1.25u
+meas tran rr300 find devr at=1.3u
+meas tran qk integ i(vsns) from=0.99u to=1.3u
+let @P@_c1_pkr_mv = pkr * 1e3
+let @P@_c1_rr250_mv = rr250 * 1e3
+let @P@_c1_rr300_mv = rr300 * 1e3
+let @P@_c1_qk_fc = qk * 1e15
+let @P@_c1_v0r_v = v0r
+print @P@_c1_pkr_mv
+print @P@_c1_rr250_mv
+print @P@_c1_rr300_mv
+print @P@_c1_qk_fc
+print @P@_c1_v0r_v
+meas tran tsra when devr=$&cs_eps cross=last from=1u to=1.999u
+let @P@_c1_tsr_ns = (tsra - 1u) * 1e9
+print @P@_c1_tsr_ns
+alterparam TOP0=@TOP2@
+alterparam VFE1=0.5
+reset
+tran 0.1n 2.0u 0 1n
+meas tran v0r avg v(vref) from=0.8u to=0.99u
+let devr = abs(v(vref) - v0r)
+meas tran pkr max devr from=1u to=2u
+meas tran rr250 find devr at=1.25u
+meas tran rr300 find devr at=1.3u
+meas tran qk integ i(vsns) from=0.99u to=1.3u
+let @P@_c2_pkr_mv = pkr * 1e3
+let @P@_c2_rr250_mv = rr250 * 1e3
+let @P@_c2_rr300_mv = rr300 * 1e3
+let @P@_c2_qk_fc = qk * 1e15
+let @P@_c2_v0r_v = v0r
+print @P@_c2_pkr_mv
+print @P@_c2_rr250_mv
+print @P@_c2_rr300_mv
+print @P@_c2_qk_fc
+print @P@_c2_v0r_v
+meas tran tsra when devr=$&cs_eps cross=last from=1u to=1.999u
+let @P@_c2_tsr_ns = (tsra - 1u) * 1e9
+print @P@_c2_tsr_ns
+quit
+.endc
+.end

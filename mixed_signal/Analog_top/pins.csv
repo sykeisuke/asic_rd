@@ -1,0 +1,20 @@
+pin,width,dir,type,domain,level,function,internal_net,connects_to,side,status
+AVDD,1,supply,power,AVDD,3.3 V,analog supply,vdd,cells; bias_gen_K; bias_gen_C; midref_b x2; ramp_gen; bias_gen_R,north-west,core
+AVSS,1,supply,ground,GND,0 V,analog ground (common on COB),vss,same,north-west,core
+DVDD,1,supply,power,VDD_core,3.3 V,latch and clock supply (NOISE_BUDGET L7),dvdd,tspc_dff x4; clock spine; control receivers,south,core
+DVSS,1,supply,ground,GND,0 V,digital ground (common on COB),dvss,same,south,core
+VIN,1,in,analog,AVDD,0.5-2.0 V,sampled input,vfe,S0[i].a,north,core
+VRLO,1,in,analog,AVDD,0.5 V,ramp start level (v4: made inside by vrlo_ref; no pin),vrlo,vrlo_ref.vrlo,none,internal
+S2,4,in,digital,AVDD,0/3.3 V HIGH=closed,bottom-plate switch; falling edge = sampling instant,s2[i],cell[i].s2,south,core
+S0,4,in,digital,AVDD,0/3.3 V HIGH=closed,input TG; opens TNOV after S2,s0[i],cell[i].s0,south,core
+S1,4,in,digital,AVDD,0/3.3 V HIGH=closed,ramp TG; closes after S0 opens,s1[i],cell[i].s1,south,core
+RAMP_RST,1,in,digital,AVDD,0/3.3 V HIGH=reset,ramp reset; falling edge starts ramp,rst,ramp_gen.rst,south,core
+CNT_CLK,1,in,digital,DVDD,0/3.3 V 20 MHz,count clock; latch samples on falling edge,clk,tspc_dff[i].clk,south,core
+Q,4,out,digital,DVDD,0/3.3 V,retimed comparator decision; falls once per conversion (Gray capture clock),q[i],tspc_dff[i].q,south,core
+EXT_RAMP,1,in,analog,AVDD,0.5-2.0 V,external ramp injection,ext_ramp,vramp via RAMP_SEL TG,north,proposed
+RAMP_SEL,1,in,digital,AVDD,0/3.3 V,0 = internal ramp; 1 = EXT_RAMP,ramp_sel,ramp select TG,south,proposed
+AMON,1,out,analog,AVDD,0-3.3 V,buffered monitor of vramp/vref/vbl/replica bot,amon,monitor buffer,north,proposed
+AMON_SEL,2,in,digital,AVDD,0/3.3 V,monitor select,amon_sel[1:0],monitor mux,south,proposed
+ATEST,1,inout,analog,AVDD,0-3.3 V,analog test mux: bias current; replica MOS/cap; standalone cmp input,atest,test mux,north,proposed
+CMP_SA_OUT,1,out,digital,DVDD,0/3.3 V,standalone replica comparator output,cmp_sa_q,replica cmp + tspc,south,proposed
+BIAS_EN,1,in,digital,AVDD,0/3.3 V,bias generator enable (power-down),bias_en,bias_gen_K; bias_gen_C; bias_gen_R,south,proposed

@@ -1,0 +1,51 @@
+{
+  "target": "comparator-pvt",
+  "timestamp": "20261007T024232Z",
+  "corner": "pvt",
+  "exit_status": 1,
+  "pass": false,
+  "metrics": {
+    "pvt_delay_max_s": 1.2754e-08,
+    "pvt_delay_min_s": 8.7211e-09,
+    "pvt_fall_max_s": 1.03822e-08,
+    "pvt_noise_max_v": 0.000189009,
+    "pvt_power_dec_max_w": 0.000394063,
+    "pvt_power_avg_max_w": 9.81596e-05,
+    "mc_pvt_sigma_max_lsb": 2.19259,
+    "mc_pvt_sigma_min_lsb": 1.77768
+  },
+  "checks": [
+    "FAIL: pvt_delay: delay from the static trip <= 12.5 ns at 42/45 cells; range 8.72..12.75 ns, worst ss_85_3.6",
+    "PASS: pvt_spread: level spread max 0.00 ns (<= 5)",
+    "FAIL: pvt_fall: dout fall <= 6 ns at 29/45 cells; max 10.38 ns at ff_85_3.6",
+    "PASS: pvt_armed: dout high at TR at every cell",
+    "PASS: pvt_noise: noise at the pins max 0.189 mV at fs_85_3.6 (< 1.2 mV)",
+    "FAIL: pvt_sigma: sigma(Vos) at the ADC input 1.78..2.19 LSB over 7 corner cells (contract 4/3 LSB)",
+    "FAIL: at least one PVT check failed"
+  ],
+  "reports": [
+    "REPORT: PVT of f003: ideal bias 1.931 uA into one tail finger, constant over PVT; alpha 0.761 (typical) for the ADC-input referral",
+    "REPORT: slowest: ss_85_3.6 delay 12.75 ns, fall 6.12 ns, gain 44.8, noise 0.179 mV",
+    "REPORT: slowest: ss_85_3.3 delay 12.68 ns, fall 5.43 ns, gain 45.3, noise 0.179 mV",
+    "REPORT: slowest: ss_85_3 delay 12.62 ns, fall 4.83 ns, gain 45.7, noise 0.179 mV",
+    "REPORT: slowest: ss_27_3.3 delay 12.29 ns, fall 4.50 ns, gain 48.2, noise 0.164 mV",
+    "REPORT: slowest: ss_27_3 delay 12.23 ns, fall 4.00 ns, gain 48.8, noise 0.164 mV",
+    "REPORT: slowest fall: ff_85_3.6 10.38 ns",
+    "REPORT: slowest fall: ff_85_3.3 8.40 ns",
+    "REPORT: slowest fall: ff_27_3.6 7.91 ns",
+    "REPORT: MC typical_27_3.3: 100 samples, sigma(Vos) 8.98 mV = 2.016 LSB, mean +0.63 mV",
+    "REPORT: MC ss_85_3: 100 samples, sigma(Vos) 9.46 mV = 2.123 LSB, mean -0.28 mV",
+    "REPORT: MC ff_0_3.6: 100 samples, sigma(Vos) 9.49 mV = 2.129 LSB, mean -1.48 mV",
+    "REPORT: MC sf_27_3.3: 100 samples, sigma(Vos) 7.92 mV = 1.778 LSB, mean +0.03 mV",
+    "REPORT: MC fs_27_3.3: 100 samples, sigma(Vos) 9.58 mV = 2.149 LSB, mean -0.32 mV",
+    "REPORT: MC ss_0_3: 100 samples, sigma(Vos) 9.77 mV = 2.193 LSB, mean -1.24 mV",
+    "REPORT: MC ff_85_3.6: 100 samples, sigma(Vos) 9.02 mV = 2.024 LSB, mean -0.29 mV"
+  ],
+  "artifacts": [
+    "/root/github/asic_rd/mixed_signal/comparator/data/pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/mc_pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/vmc.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/trannoise_summary.json",
+    "/root/github/asic_rd/mixed_signal/comparator/assets/pvt_summary.png"
+  ]
+}

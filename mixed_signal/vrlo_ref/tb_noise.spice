@@ -1,0 +1,46 @@
+* tb_noise -- output noise of vrlo_ref in the reset state (XRST on, the ramp and
+* four cells' bottom plates hanging on vrlo through it), 1 Hz - 1 GHz, and the
+* supply transfer AVDD -> vrlo (verify_vrlo.py phase noise).
+* vrlo's noise at the instant rst falls is the ramp's start level, i.e. an
+* offset common to the record's four codes and random record to record: it
+* is integrated from 1 Hz, as the ramp terms of the noise budget are.
+* Writes nz_vrlo.txt (onoise at vrlo, V/rtHz), nz_vramp.txt (at vramp) and
+* psr.txt (|vrlo / avdd| for 1 V AC on AVDD).
+* TEMPLATE: CORNER MIMCORNER RESCORNER TEMP VDD IB IRD CEQ
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @RESCORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ramp_simple.spice
+.include dut.spice
+.temp @TEMP@
+
+VAVDD avdd 0 DC @VDD@ AC 1
+IB avdd ib @IB@
+XREG vrlo ib avdd 0 vrlo_ref
+IRD pbias_r 0 @IRD@
+XRD pbias_r pbias_r avdd avdd pfet_03v3 L=1u W=20u nf=10
+XRAMP vramp avdd vrlo pbias_r avdd 0 ramp_simple
+CEQ vramp 0 {4*@CEQ@}
+* the noise analysis' nominal input: a dummy, isolated from the circuit
+VNIN nin 0 DC 0 AC 1
+RNIN nin 0 1g
+
+.options gmin=1e-15
+.control
+set num_threads=1
+set wr_singlescale
+noise v(vrlo) VNIN dec 20 1 1g
+setplot noise1
+wrdata nz_vrlo.txt onoise_spectrum
+setplot const
+noise v(vramp) VNIN dec 20 1 1g
+setplot noise3
+wrdata nz_vramp.txt onoise_spectrum
+setplot const
+ac dec 10 1 1g
+wrdata psr.txt vm(vrlo)
+quit
+.endc
+.end

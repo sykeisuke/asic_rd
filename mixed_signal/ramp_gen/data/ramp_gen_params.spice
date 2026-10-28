@@ -1,0 +1,27 @@
+* Written by size_ramp.py. Do not edit by hand; re-run the sizer.
+* Rationale: DESIGN_RECIPE.md. Topology: ../ramp_gen.spice.
+.param RG_CCW=15.600u
+.param RG_CIW=44.600u
+.param RG_COW=31.500u
+.param RG_KD=4
+.param RG_L1=4.000u
+.param RG_L3=12.000u
+.param RG_L5=1.000u
+.param RG_LN=20.000u
+.param RG_LPS=4.000u
+.param RG_M6=1
+.param RG_NF1=4
+.param RG_NF5=2
+.param RG_NF6=16
+.param RG_NFND=2
+.param RG_NFPS=5
+.param RG_NFT=4
+.param RG_RZL=29.700u
+.param RG_W1=11.260u
+.param RG_W3=1.660u
+.param RG_W5=9.290u
+.param RG_W6=86.390u
+.param RG_WNS=1.510u
+.param RG_WPS=50.160u
+.param RG_WRST=0.500u
+.param RG_WT=16.050u

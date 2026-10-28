@@ -1,0 +1,12 @@
+name,model,value,unit,note
+XR1,ppolyf_u,4083.57,ohm,one strip (replica)
+XR_string,ppolyf_u,20417.9,ohm,5 strips in series (replica)
+XCP,cap_mim_2f0_m4m5_noshield,1.01635e-12,F,replica AC at 1e+06 Hz
+XCN,cap_mim_2f0_m4m5_noshield,1.01635e-12,F,replica AC at 1e+06 Hz
+v_ns,,0.0697391,V,node
+v_nb,,0.626437,V,node
+v_pb,,2.51463,V,node
+i_icmp,,3.24529e-06,A,port icmp0 (each of icmp0..3) into its diode
+i_iramp,,3.25653e-06,A,port iramp into the ramp diode
+i_ivref,,1.11651e-05,A,port ivref (= ivbl) into the midref diode
+i_vdd,,4.55667e-05,A,supply current incl. the sourced midref currents

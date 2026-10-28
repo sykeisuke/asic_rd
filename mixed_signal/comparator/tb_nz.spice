@@ -1,0 +1,71 @@
+* Input-referred noise of one candidate at its decision point (size_v3.py,
+* stage B). As ../comparator_bkp/comparator_updt_v2/tb_noise.spice: dout fed back to inn
+* through a 1 TH inductor parks the OTA at its own trip; CINN (1 F)
+* AC-grounds inn; the reference is the inp source, at VBL = VDD/2.
+*
+*   nz_own_vin   OUTPUT noise on outa from 1 kHz to 10 GHz (the OTA's own pole
+*                band-limits it) divided by the DC gain: the input-referred
+*                rms over the comparator's own band, thermal + 1/f. The gated
+*                number (user, 2026-10-06: < 1.2 mV at the pins).
+*   nz_lo_vin    the same from 1 kHz to 100 kHz: the flicker-dominated part
+*   nz_ugb_vin   input-referred spectrum integrated 1 kHz .. unity-gain
+*                frequency: a pessimistic bound, reported
+*
+* TEMPLATE: size_v3.py replaces @DUT@ @IREF@ @REFP@ @CLOAD@.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.include @DUT@
+
+.param VDD=@VDD@
+.temp @TEMP@
+.param IREF=@IREF@
+
+.options savecurrents
+
+VDD_SOURCE vdd 0 {VDD}
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREF}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREF}
+@REFP@
+VCLK clk 0 {VDD}
+
+VINP inp 0 DC @VCM@ AC 1
+CINN inn 0 1
+LFB dout inn 1T
+
+XDUT inp inn dout clk vdd 0 nbias pbias cmp
+CLOAD dout 0 @CLOAD@
+
+.control
+op
+let op_i_vdd = -i(vdd_source)
+set s_op_i = $&op_i_vdd
+ac dec 20 10 100G
+meas ac ota_gain_vv find vm(xdut.outa) at=10
+let g3 = ota_gain_vv / sqrt(2)
+meas ac ota_pole_hz when vm(xdut.outa)=$&g3 fall=1
+meas ac ota_ugbw_hz when vm(xdut.outa)=1 fall=1
+set g = $&ota_gain_vv
+set ugb = $&ota_ugbw_hz
+set fp = $&ota_pole_hz
+noise v(xdut.outa) vinp dec 20 1k 10G
+let nz_own_vin = onoise_total / $g
+set s_own = $&nz_own_vin
+noise v(xdut.outa) vinp dec 20 1k 100k
+let nz_lo_vin = onoise_total / $g
+set s_lo = $&nz_lo_vin
+noise v(xdut.outa) vinp dec 20 1k $ugb
+let nz_ugb_vin = inoise_total
+set s_ugb = $&nz_ugb_vin
+echo "RESULT_BEGIN"
+echo "ota_gain_vv = $g"
+echo "ota_pole_hz = $fp"
+echo "nz_own_vin = $s_own"
+echo "nz_lo_vin = $s_lo"
+echo "nz_ugb_vin = $s_ugb"
+echo "op_i_vdd = $s_op_i"
+echo "RESULT_END"
+quit
+.endc
+.end

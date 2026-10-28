@@ -1,0 +1,10 @@
+name,model,value,unit,note
+XRT,ppolyf_u_3k,204125,ohm,replica at 1.65 V
+XRB,ppolyf_u_3k,204125,ohm,replica at 1.65 V
+XCD,cap_mim_2f0_m4m5_noshield,2.83572e-13,F,replica AC at 1e+06 Hz
+XCT,cap_mim_2f0_m4m5_noshield,4.31475e-14,F,replica AC at 1e+06 Hz
+v_out,,1.64602,V,node
+v_tap,,1.65,V,node
+v_p,,2.64889,V,node
+v_n,,0.785422,V,node
+i_vdd,,7.88654e-05,A,supply current of the buffer + its divider incl. the ideal ib

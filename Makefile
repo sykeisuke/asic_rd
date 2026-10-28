@@ -1,4 +1,4 @@
-.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep layout drc lvs gf-inverter top-placement vnc stop
+.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep layout drc lvs gf-inverter top-placement comparator-pvt comparator-schematic latch midrail-ref bias-gen vrlo-ref ramp-gen analog-top cell-trannoise chip-floorplan vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -90,6 +90,53 @@ four-cell-cosim:
 
 phase-sweep:
 	./scripts/run-four-cell-phase-sweep.sh
+
+# ---- 8-bit analog blocks, one folder each under mixed_signal/ (spec 0.7:
+# ---- true bottom-plate cells, one 20 MHz clock, 20 MSa/s). `comparator`
+# ---- above runs mixed_signal/comparator. Blocks that use the frozen 3.3 V
+# ---- libraries (latch, analog-top, cell-trannoise, chip-floorplan) need
+# ---- `make pdk` first (scripts/eda-common.sh, PDK_LIBS_ROOT).
+
+# Comparator over PVT / Monte Carlo / VACASK noise; its xschem views.
+comparator-pvt:
+	./scripts/run-comparator-pvt.sh
+
+comparator-schematic:
+	./scripts/run-comparator-schematic.sh
+
+# Clocked latch `latch`: one gf180mcu_as_sc_mcu7t3v3 dfxtn_2 negative-edge flop.
+latch:
+	./scripts/run-latch.sh
+
+# VDD/2 reference `midref`, one buffer for VREF and VBL.
+midrail-ref:
+	./scripts/run-midrail-ref.sh
+
+# Bias generator `bias_gen`, current outputs.
+bias-gen:
+	./scripts/run-bias-gen.sh
+
+# VR_LO (0.5 V) shunt regulator for the ramp's reset.
+vrlo-ref:
+	./scripts/run-vrlo-ref.sh
+
+# Ramp generators ramp_gen / ramp_simple.
+ramp-gen:
+	./scripts/run-ramp-gen.sh
+
+# The analog macro `analog_top` (mixed_signal/Analog_top): four cells, ramp,
+# bias, VDD/2 and VR_LO references.
+analog-top:
+	./scripts/run-analog-top.sh
+
+# One Analog_top cell, VACASK transient noise (slow: hours; STEPS=reduce
+# re-judges the cached runs).
+cell-trannoise:
+	./scripts/run-cell-trannoise.sh
+
+# Chip floorplan: the Analog_top macro + digital top in the 1x0p5 ring.
+chip-floorplan:
+	./scripts/run-chip-floorplan.sh
 
 vnc:
 	./scripts/eda-vnc.sh

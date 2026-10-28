@@ -1,0 +1,106 @@
+{
+ "source": "intent_op.py: ngspice op of the drawing (work/comparator_sch.spice), typical 27 C, I_B 1.93077e-06 A, inn = inp = 1.65 V",
+ "id_ua": {
+  "xtail": 16.8917,
+  "xinp": 8.44587,
+  "xinn": 8.44587,
+  "xloadd": 8.44587,
+  "xloadm": 8.44587,
+  "xbst": 9.62558,
+  "xbuf4": 5.34069
+ },
+ "gm_id": {
+  "xtail": 12.0997,
+  "xinp": 14.9321,
+  "xinn": 14.9321,
+  "xloadd": 5.57605,
+  "xloadm": 5.57605,
+  "xbst": 10.6575,
+  "xbuf4": 5.90749
+ },
+ "i_b_ua": 1.93077,
+ "gain_vv": {
+  "ota": 45.39500000374392,
+  "starved": 55.77107553946189,
+  "outinv": 29.09043332361,
+  "total": 69410.1800057101
+ },
+ "macro_i_b_ua": 3.25,
+ "gain_vv_macro": {
+  "ota": 44.90000000374857,
+  "starved": 50.48199162484525,
+  "outinv": 29.11806814464586,
+  "total": 60884.99499824876
+ },
+ "static_power_uw": {
+  "trip": 111.52,
+  "below": 62.9802,
+  "above": 61.9077,
+  "mtrip": 283.135,
+  "mlo": 156.842,
+  "mhi": 111.976,
+  "mbelow": 109.464,
+  "mabove": 108.363
+ },
+ "macro_states_ua": {
+  "mtrip": {
+   "xrefp": 3.25,
+   "xtail": 29.6879,
+   "xinp": 14.8439,
+   "xinn": 14.8439,
+   "xloadd": 14.8439,
+   "xloadm": 14.8439,
+   "xbst": 15.6204,
+   "xbuf4": 37.2396
+  },
+  "mlo": {
+   "xrefp": 3.25,
+   "xtail": 29.6968,
+   "xinp": 14.5656,
+   "xinn": 15.1312,
+   "xloadd": 14.5656,
+   "xloadm": 15.1312,
+   "xbst": 14.5806,
+   "xbuf4": 4.81483e-06
+  },
+  "mhi": {
+   "xrefp": 3.25,
+   "xtail": 29.6768,
+   "xinp": 15.1929,
+   "xinn": 14.4839,
+   "xloadd": 15.1929,
+   "xloadm": 14.484,
+   "xbst": 1.00516,
+   "xbuf4": 2.10258e-09
+  },
+  "mbelow": {
+   "xrefp": 3.25,
+   "xtail": 29.7161,
+   "xinp": 13.9731,
+   "xinn": 15.7431,
+   "xloadd": 13.9731,
+   "xloadm": 15.7271,
+   "xbst": 0.204268,
+   "xbuf4": 3.34375e-06
+  },
+  "mabove": {
+   "xrefp": 3.25,
+   "xtail": 29.5867,
+   "xinp": 18.2208,
+   "xinn": 11.3659,
+   "xloadd": 18.2208,
+   "xloadm": 11.3665,
+   "xbst": 1.41146e-05,
+   "xbuf4": 1.38157e-09
+  }
+ },
+ "macro_gm_id": {
+  "xtail": 9.57564,
+  "xinp": 12.4685,
+  "xinn": 12.4685,
+  "xloadd": 3.95802,
+  "xloadm": 3.95802,
+  "xbst": 8.52894,
+  "xbuf4": 1.85201
+ }
+}

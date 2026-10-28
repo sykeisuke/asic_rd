@@ -1,0 +1,8 @@
+# xschemrc for mixed_signal/ramp_gen: the PDK's rc, plus the unit-cell block
+# on the symbol path. ../ramp_gen/ref/unit_cell_bps/cell_bps.sch names its switch and
+# comparator symbols by bare name (sw_blk.sym, cmp_blk.sym); without this
+# line xschem, started here, cannot find them and silently drops XS0/XS1/XS2
+# and XCMP from the testbench netlist. xschem reads ./xschemrc by itself when
+# started in this directory; phases.sh passes it with --rcfile.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc
+append XSCHEM_LIBRARY_PATH :[file normalize [file join [file dirname [info script]] ref unit_cell_bps]]

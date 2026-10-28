@@ -1,0 +1,41 @@
+event,t_us,value,comment
+avdd at 90 %,0.09,,supply ramp 0 -> 3.3 V in TPWR
+vref settled to 1 mV,0.112934,1.64571,value at TS0
+vbl settled to 1 mV,0.112934,1.64571,value at TS0
+vmid settled to 1 mV,0.1583396,1.65,value at TS0
+pbias_r settled to 1 mV,0.4063847,2.45132,value at TS0
+pbias0 settled to 1 mV,0.4364627,2.40202,value at TS0
+pbias1 settled to 1 mV,0.4364627,2.40202,value at TS0
+pbias2 settled to 1 mV,0.4364627,2.40202,value at TS0
+pbias3 settled to 1 mV,0.4364627,2.40202,value at TS0
+vrlo settled to 1 mV,1.823696,0.500637,value at TS0
+vramp settled to 1 mV,1.836507,0.502356,value at TS0
+T0,3,,"bias, references and ramp reset settled (tb_params.inc)"
+TS0: S2_0 opens (sample),3.3,1.64571,bot_0 at TS
+S0_0 opens,3.305,0.590772,top_0 before S1
+S1_0 closes,3.31,1.6063,bot_0 20 ns after
+TS1: S2_1 opens (sample),3.35,1.64543,bot_1 at TS
+S0_1 opens,3.355,0.968906,top_1 before S1
+S1_1 closes,3.36,1.34408,bot_1 20 ns after
+TS2: S2_2 opens (sample),3.4,1.64549,bot_2 at TS
+S0_2 opens,3.405,1.44899,top_2 before S1
+S1_2 closes,3.41,1.00638,bot_2 20 ns after
+TS3: S2_3 opens (sample),3.45,1.64561,bot_3 at TS
+S0_3 opens,3.455,1.93116,top_3 before S1
+S1_3 closes,3.46,0.668573,bot_3 20 ns after
+"TR: ramp_rst falls, count 0",3.75,0.502357,vramp
+cell 0: bot crosses vbl,4.58836,0.602751,vramp (= top)
+cell 0: dout falls,4.59483,6.46815e-09,comparator delay
+cell 0: q falls,4.62542,17,code
+cell 1: bot crosses vbl,7.70636,0.977908,vramp (= top)
+cell 1: dout falls,7.71293,6.57372e-09,comparator delay
+cell 1: q falls,7.72542,79,code
+cell 2: bot crosses vbl,11.6022,1.44658,vramp (= top)
+cell 2: dout falls,11.6087,6.57535e-09,comparator delay
+cell 2: q falls,11.6254,157,code
+cell 3: bot crosses vbl,15.497,1.91519,vramp (= top)
+cell 3: dout falls,15.5035,6.57952e-09,comparator delay
+cell 3: q falls,15.5254,235,code
+vramp reaches VR_HI,16.2023,249.046,counts after TR
+TE,16.55,2.04191,vramp
+TE + TOVR,17.55,2.16243,vramp

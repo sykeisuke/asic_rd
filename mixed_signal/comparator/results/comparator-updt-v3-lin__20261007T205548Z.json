@@ -1,0 +1,52 @@
+{
+  "target": "comparator-lin",
+  "timestamp": "20261007T205548Z",
+  "corner": "pvt",
+  "exit_status": 0,
+  "pass": true,
+  "metrics": {
+    "lin_typical_27_3p3_worst_level_spread_lsb": 0.00018,
+    "lin_typical_27_3p3_mean_level_spread_lsb": 7.2e-05,
+    "lin_typical_27_3p3_nominal_level_spread_lsb": 0.000124,
+    "lin_typical_27_3p3_code_offset_sigma_lsb": 4.15226,
+    "lin_typical_27_3p3_code_offset_mean_lsb": 1.97571,
+    "lin_typical_27_3p3_code_offset_min_lsb": -4.51779,
+    "lin_typical_27_3p3_code_offset_max_lsb": 11.3377,
+    "lin_typical_27_3p3_dead_zone_samples": 2,
+    "lin_ss_85_3_worst_level_spread_lsb": 0.00016,
+    "lin_ss_85_3_mean_level_spread_lsb": 8.01333e-05,
+    "lin_ss_85_3_nominal_level_spread_lsb": 0.00016,
+    "lin_ss_85_3_code_offset_sigma_lsb": 4.234,
+    "lin_ss_85_3_code_offset_mean_lsb": 2.12911,
+    "lin_ss_85_3_code_offset_min_lsb": -4.39625,
+    "lin_ss_85_3_code_offset_max_lsb": 11.4803,
+    "lin_ss_85_3_dead_zone_samples": 2,
+    "lin_ff_85_3p6_worst_level_spread_lsb": 0.00172,
+    "lin_ff_85_3p6_mean_level_spread_lsb": 0.000120533,
+    "lin_ff_85_3p6_nominal_level_spread_lsb": 0.00012,
+    "lin_ff_85_3p6_code_offset_sigma_lsb": 3.81339,
+    "lin_ff_85_3p6_code_offset_mean_lsb": 1.76714,
+    "lin_ff_85_3p6_code_offset_min_lsb": -4.1141,
+    "lin_ff_85_3p6_code_offset_max_lsb": 10.3358,
+    "lin_ff_85_3p6_dead_zone_samples": 0
+  },
+  "checks": [
+    "PASS: offset signal-independence at typical_27_3.3: over 30/30 mismatch samples, the code offset moves at most 0.0002 LSB (mean 0.0001) across the levels 4.5..250.5 LSB (gate 0.1 LSB); nominal 0.0001 LSB",
+    "PASS: offset signal-independence at ss_85_3: over 30/30 mismatch samples, the code offset moves at most 0.0002 LSB (mean 0.0001) across the levels 4.5..250.5 LSB (gate 0.1 LSB); nominal 0.0002 LSB",
+    "PASS: offset signal-independence at ff_85_3.6: over 30/30 mismatch samples, the code offset moves at most 0.0017 LSB (mean 0.0001) across the levels 4.5..250.5 LSB (gate 0.1 LSB); nominal 0.0001 LSB",
+    "PASS: offset_lin complete"
+  ],
+  "reports": [
+    "REPORT: offset signal-independence: 3 cells x (30 mismatch samples + nominal) x levels 4.5, 40.5, 128.5, 250.5 LSB = 372 transients",
+    "REPORT: code offset at typical_27_3.3 over the samples: mean +1.98, sigma 4.15, range -4.52..+11.34 LSB; 2 samples already tripped at 4.5 LSB (offset below -4.5 LSB: -4.43, -4.52), covered by the ramp pre-roll",
+    "REPORT: code offset at ss_85_3 over the samples: mean +2.13, sigma 4.23, range -4.40..+11.48 LSB; 2 samples already tripped at 4.5 LSB (offset below -4.5 LSB: -4.40, -4.37), covered by the ramp pre-roll",
+    "REPORT: code offset at ff_85_3.6 over the samples: mean +1.77, sigma 3.81, range -4.11..+10.34 LSB; 0 samples already tripped at 4.5 LSB (offset below -4.5 LSB: none), covered by the ramp pre-roll"
+  ],
+  "artifacts": [
+    "/root/github/asic_rd/mixed_signal/comparator/data/pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/mc_pvt.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/vmc.csv",
+    "/root/github/asic_rd/mixed_signal/comparator/data/trannoise_summary.json",
+    "/root/github/asic_rd/mixed_signal/comparator/assets/pvt_summary.png"
+  ]
+}

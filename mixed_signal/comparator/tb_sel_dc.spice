@@ -1,0 +1,34 @@
+* Static trip point of one candidate (size_v3.py, stage B): inp = VBL,
+* inn swept through it, dout's crossing of VDD/2. Rendered by size_v3.py
+* (@DUT@ @IREF@ @REFP@ @CLOAD@) and run before tb_sel.spice, whose dynamic delay is
+* measured from the instant the top plate crosses this level.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.include @DUT@
+
+.param VDD=@VDD@
+.temp @TEMP@
+.param IREF=@IREF@
+
+VDD_SOURCE vdd 0 {VDD}
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREF}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREF}
+@REFP@
+VCLK clk 0 0
+VVBL vbl 0 {VDD/2}
+VDC vdc 0 @VCM@
+XDC vbl vdc doutdc clk vdd 0 nbias pbias cmp
+CLDC doutdc 0 @CLOAD@
+
+.control
+dc VDC @VLO50@ @VHI50@ 25u
+meas dc vtrip when v(doutdc)=@VCM@ fall=1
+echo "RESULT_BEGIN"
+print vtrip
+echo "RESULT_END"
+quit
+.endc
+
+.end

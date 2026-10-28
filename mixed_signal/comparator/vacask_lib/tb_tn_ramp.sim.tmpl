@@ -1,0 +1,52 @@
+Comparator crossing jitter under the 8-bit ramp, VACASK transient noise
+
+// TEMPLATE. trannoise.py substitutes @TAG@ @CORNER@ @TEMP@ @VDD@ @IREF@
+// @VLEVEL@ @VLO@ @VHI@ @TDELAY@ @TRISE@ @TWIDTH@ @TFALL@ @TPER@ @TSTOP@
+// @FMAX@ @FMIN@ @SEED@ @NSCALE@ and writes work/tn/<tag>.sim.
+//
+// The decision the comparator makes in the Wilkinson conversion, repeated
+// hundreds of times in one record: inp holds the sampled level (an ideal,
+// noiseless source, so every bit of jitter below is the comparator's own),
+// and inn receives a sawtooth at the conversion slope that starts 30 mV
+// below the level, crosses it, and resets. Every period is one conversion;
+// its dout falling edge against the ideal crossing instant is the
+// crossing delay, and the spread of that delay over the conversions, times
+// the ramp slope, is the input-referred noise the conversion actually sees.
+//
+// All device noise sources are on (thermal and flicker, every transistor,
+// including the reference legs). The ramp and the held level are ideal.
+// @NSCALE@ = 0 runs the identical time grid without noise: that is the
+// numerical floor of the jitter measurement.
+
+ground 0
+
+include "../gf180_03v3_@CORNER@.inc"
+load "capacitor.osdi"
+model capacitor capacitor
+model vsource vsource
+model isource isource
+
+include "../dut.inc"
+
+vdd (vdd 0) vsource dc=@VDD@
+vddb (vddb 0) vsource dc=@VDD@
+irefn (vddb nbias) isource dc=@IREF@
+xrefn (nbias nbias 0 0) nfet_03v3 l=1u w=20u nf=10 m=1
+irefp (pbias 0) isource dc=@IREF@
+@REFP@
+vclk (clk 0) vsource dc=@VDD@
+
+vinp (inp 0) vsource dc=@VLEVEL@
+vramp (inn 0) vsource type="pulse" val0=@VLO@ val1=@VHI@ delay=@TDELAY@ rise=@TRISE@ width=@TWIDTH@ fall=@TFALL@ period=@TPER@
+
+xdut (inp inn dout clk vdd 0 nbias pbias) cmp
+cload (dout 0) capacitor c=@CLOAD@
+
+control
+  var mm=0
+  options temp=@TEMP@ tnom=27
+  save v(dout) v('xdut:outa')
+  // SDE noise generation, as in the kT/C bench: it works with the adaptive
+  // integrator; the step is capped at 1/(2 * 6 * noisefmax) either way.
+  analysis @TAG@ tran stop=@TSTOP@ step=10p noisemode="sde" noisefmax=@FMAX@ noisefmin=@FMIN@ noiseseed=@SEED@ noisescale=@NSCALE@
+endc

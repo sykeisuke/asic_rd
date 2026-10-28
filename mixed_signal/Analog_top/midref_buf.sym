@@ -1,0 +1,44 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=X1"
+description="midref_buf of ../midrail_ref (subckt midref_buf of midref.spice): class-AB flipped-voltage follower: VDD/2 from the divider tap in (vin), the same VDD/2 out with drive (out), drawn as a unity-gain buffer with its feedback; ib the bias current input. Local symbol of Analog_top (pin order as the block's); xschem descends into ../midrail_ref/midref_buf.sch"
+schematic=midref_buf.sch
+}
+V {}
+S {}
+E {}
+L 4 -50 -45 50 0 {}
+L 4 50 0 -50 45 {}
+L 4 -50 45 -50 -45 {}
+L 4 -80 0 -50 0 {}
+T {+} -46 -10 0 0 0.24 0.24 {}
+L 4 -64 -24 -50 -24 {}
+T {-} -45 -36 0 0 0.24 0.24 {}
+L 4 -64 -24 -64 -56 {bus=true}
+L 4 -64 -56 64 -56 {bus=true}
+L 4 64 -56 64 0 {bus=true}
+L 4 50 0 80 0 {}
+A 4 64 0 3 0 360 {fill=true}
+T {x1} -26 -10 0 0 0.3 0.3 {layer=13}
+L 4 0 -70 0 -22 {}
+L 4 0 70 0 22 {}
+L 4 -80 40 -50 40 {}
+L 4 -76 40 -54 40 {}
+L 4 -54 40 -58.39 37.6 {}
+L 4 -54 40 -58.39 42.4 {}
+B 5 77.5 -2.5 82.5 2.5 {name=out dir=out}
+B 5 -82.5 -2.5 -77.5 2.5 {name=vin dir=in}
+B 5 -82.5 37.5 -77.5 42.5 {name=ib dir=in}
+B 5 -2.5 -72.5 2.5 -67.5 {name=vdd dir=inout}
+B 5 -2.5 67.5 2.5 72.5 {name=vss dir=inout}
+T {VDD/2} -110 -20 0 0 0.2 0.2 {layer=13}
+T {VDD/2} 66 -20 0 0 0.2 0.2 {layer=13}
+T {in} -104 4 0 0 0.16 0.16 {}
+T {out} 66 4 0 0 0.16 0.16 {}
+T {ib} -98 44 0 0 0.16 0.16 {}
+T {vdd} 4 -84 0 0 0.16 0.16 {}
+T {vss} 4 58 0 0 0.16 0.16 {}
+T {@name} -60 -100 0 0 0.25 0.25 {}
+T {FVF buffer} -40 50 0 0 0.16 0.16 {layer=13}

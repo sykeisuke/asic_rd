@@ -1,0 +1,6 @@
+* Written by size_simple.py. Do not edit by hand; re-run the sizer.
+.param RS_CW=44.600u
+.param RS_LPS=8.000u
+.param RS_NFPS=3
+.param RS_WPS=23.910u
+.param RS_WRST=0.500u

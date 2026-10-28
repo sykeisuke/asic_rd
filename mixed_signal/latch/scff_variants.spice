@@ -1,0 +1,31 @@
+* Candidate clocked latches from the frozen digital library
+* gf180mcu_as_sc_mcu7t3v3, for bench.py explore (SPEC.md s.3). Each has the
+* port list of ../latch_bkp/cmp_tspc/tspc_dff (d clk q vdd vss), so it drops into
+* atop_cell in its place.
+*
+* The library has one negative-edge flip-flop, dfxtn_2 (Q = D at the falling
+* edge of CLK; static master-slave, 26 devices). There is no dffnq cell: that
+* name is the fd_sc libraries'.
+*
+* The cell's well and substrate pins: VNW = vdd, VPW = vss (the tap cells tie
+* them in a row the same way).
+*
+* Needs, before this file:
+*   .include /foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice
+
+* the flop alone, its own output stage drives q
+.subckt scff_bare d clk q vdd vss
+XFF vdd vdd vss vss clk d q gf180mcu_as_sc_mcu7t3v3__dfxtn_2
+.ends scff_bare
+
+* the flop, then buff_2 drives q
+.subckt scff_b2 d clk q vdd vss
+XFF vdd vdd vss vss clk d qi gf180mcu_as_sc_mcu7t3v3__dfxtn_2
+XB vdd vdd vss vss qi q gf180mcu_as_sc_mcu7t3v3__buff_2
+.ends scff_b2
+
+* the flop, then buff_4 drives q
+.subckt scff_b4 d clk q vdd vss
+XFF vdd vdd vss vss clk d qi gf180mcu_as_sc_mcu7t3v3__dfxtn_2
+XB vdd vdd vss vss qi q gf180mcu_as_sc_mcu7t3v3__buff_4
+.ends scff_b4

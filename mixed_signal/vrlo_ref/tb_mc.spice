@@ -1,0 +1,38 @@
+* tb_mc -- vrlo under the PDK's local mismatch, reset state (verify_vrlo.py phase
+* mc). ONE DRAW PER RUN: `.param sw_stat_mismatch=1` after the PDK include
+* switches on the agauss() draws in every nfet_03v3 / pfet_03v3 wrapper and
+* `.options seed` fixes them, so draw k runs with seed BASE + k (a `reset` loop
+* under one seed redraws the SAME sample: ../midrail_ref_bkp/midrail_ref_v2 and
+* ../comparator recorded the trap). Draw 0 is mismatch-free (MM 0).
+* The ppolyf_u_3k model carries global variation only: the divider ratio's
+* own mismatch is NOT in this figure (README.md s.6).
+*
+* One line:  MC <k> <v(vrlo) - 5/33 VDD> <v(vramp) - 5/33 VDD>
+* TEMPLATE: CORNER MIMCORNER RESCORNER TEMP VDD IB IRD MM SEED K RATIO
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @RESCORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ramp_simple.spice
+.include dut.spice
+.param sw_stat_mismatch=@MM@
+.temp @TEMP@
+.options seed=@SEED@ gmin=1e-15
+
+VAVDD avdd 0 @VDD@
+IB avdd ib @IB@
+XREG vrlo ib avdd 0 vrlo_ref
+IRD pbias_r 0 @IRD@
+XRD pbias_r pbias_r avdd avdd pfet_03v3 L=1u W=20u nf=10
+XRAMP vramp avdd vrlo pbias_r avdd 0 ramp_simple
+
+.control
+set num_threads=1
+op
+let er = v(vrlo) - @RATIO@ * @VDD@
+let ep = v(vramp) - @RATIO@ * @VDD@
+echo "MC @K@ $&er $&ep"
+quit
+.endc
+.end

@@ -1,0 +1,32 @@
+Quiet-model probe: one normal and one quiet device, same bias, output noise
+
+// Each device sinks its drain current from an ideal source through a
+// noiseless resistor; the noise at each drain is that device's alone. The
+// quiet copy must contribute nothing; the normal one thermal + flicker.
+ground 0
+include "work/models.inc"
+load "resistor.osdi"
+model resistor resistor
+model vsource vsource
+
+vdd (vdd 0) vsource dc=3.3
+vg (g 0) vsource dc=1.0
+rn (vdd dn) resistor r=100k noisy=0
+rq (vdd dq) resistor r=100k noisy=0
+xn (dn g 0 0) nfet_03v3 l=2u w=2u nf=1 m=1
+xq (dq g 0 0) nfet_03v3_q l=2u w=2u nf=1 m=1
+rp (dp 0) resistor r=100k noisy=0
+rpq (dpq 0) resistor r=100k noisy=0
+vgp (gp 0) vsource dc=2.3
+xp (dp gp vdd vdd) pfet_03v3 l=2u w=4u nf=1 m=1
+xpq (dpq gp vdd vdd) pfet_03v3_q l=2u w=4u nf=1 m=1
+
+control
+  var mm=0
+  options temp=27 tnom=27
+  analysis nn noise out="dn" in="vg" from=10 to=10e6 mode="dec" points=2
+  analysis nq noise out="dq" in="vg" from=10 to=10e6 mode="dec" points=2
+  analysis pn noise out="dp" in="vgp" from=10 to=10e6 mode="dec" points=2
+  analysis pq noise out="dpq" in="vgp" from=10 to=10e6 mode="dec" points=2
+  postprocess(PYTHON, "probe_models.py")
+endc

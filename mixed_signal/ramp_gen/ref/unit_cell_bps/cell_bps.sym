@@ -1,0 +1,62 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=XCELL"
+description="The unit cell proper (unit_cell_bps.spice, .subckt unit_cell_bps):
+three switches, their control inverters, the 54.52 fF MIM and cmp_updt.
+type=subcircuit: xschem descends into cell_bps.sch and writes the
+subcircuit from the drawing; check-schematic.awk compares it with the
+deck's unit_cell_bps device by device and the port order below with the
+deck's.
+Pins in the subcircuit order: vfe vramp s0 s1 s2 vref vbl dout clk pbias nbias vdd vss."
+}
+V {}
+S {}
+E {}
+L 4 -120 -140 120 -140 {}
+L 4 120 -140 120 140 {}
+L 4 120 140 -120 140 {}
+L 4 -120 140 -120 -140 {}
+L 4 -140 -120 -120 -120 {}
+L 4 -140 -90 -120 -90 {}
+L 4 -140 -60 -120 -60 {}
+L 4 -140 -30 -120 -30 {}
+L 4 -140 0 -120 0 {}
+L 4 -140 30 -120 30 {}
+L 4 -140 60 -120 60 {}
+L 4 120 -120 140 -120 {}
+L 4 120 -90 140 -90 {}
+L 4 120 -30 140 -30 {}
+L 4 120 0 140 0 {}
+L 4 0 -160 0 -140 {}
+L 4 0 140 0 160 {}
+B 5 -142.5 -122.5 -137.5 -117.5 {name=vfe dir=in}
+B 5 -142.5 -92.5 -137.5 -87.5 {name=vramp dir=in}
+B 5 -142.5 -62.5 -137.5 -57.5 {name=s0 dir=in}
+B 5 -142.5 -32.5 -137.5 -27.5 {name=s1 dir=in}
+B 5 -142.5 -2.5 -137.5 2.5 {name=s2 dir=in}
+B 5 -142.5 27.5 -137.5 32.5 {name=vref dir=in}
+B 5 -142.5 57.5 -137.5 62.5 {name=vbl dir=in}
+B 5 137.5 -122.5 142.5 -117.5 {name=dout dir=out}
+B 5 137.5 -92.5 142.5 -87.5 {name=clk dir=in}
+B 5 137.5 -32.5 142.5 -27.5 {name=pbias dir=in}
+B 5 137.5 -2.5 142.5 2.5 {name=nbias dir=in}
+B 5 -2.5 -162.5 2.5 -157.5 {name=vdd dir=inout}
+B 5 -2.5 157.5 2.5 162.5 {name=vss dir=inout}
+T {vfe} -114 -126 0 0 0.2 0.2 {}
+T {vramp} -114 -96 0 0 0.2 0.2 {}
+T {s0} -114 -66 0 0 0.2 0.2 {}
+T {s1} -114 -36 0 0 0.2 0.2 {}
+T {s2} -114 -6 0 0 0.2 0.2 {}
+T {vref} -114 24 0 0 0.2 0.2 {}
+T {vbl} -114 54 0 0 0.2 0.2 {}
+T {dout} 80 -126 0 0 0.2 0.2 {}
+T {clk} 86 -96 0 0 0.2 0.2 {}
+T {pbias} 74 -36 0 0 0.2 0.2 {}
+T {nbias} 74 -6 0 0 0.2 0.2 {}
+T {vdd} 6 -154 0 0 0.2 0.2 {}
+T {vss} 6 144 0 0 0.2 0.2 {}
+T {@name} -120 -176 0 0 0.3 0.3 {}
+T {@symname} -30 100 0 0 0.3 0.3 {}
+T {true bottom-plate} -70 80 0 0 0.25 0.25 {layer=13}

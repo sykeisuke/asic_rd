@@ -1,0 +1,57 @@
+Comparator threshold spread: Monte Carlo mismatch on the PDK's own model, VACASK
+
+// TEMPLATE. run.sh substitutes @CORNER@ @TEMP@ @VDD@ @VCM@ @IREF@ @TAG@
+// @SAMPLES@ @SEED@ and writes work/mc_<tag>.sim next to the model include.
+//
+// Every nfet_03v3/pfet_03v3 wrapper in the converted model library draws its
+// own threshold shift and mobility factor from the PDK's fets_mm statistics
+// (par_vth, par_k over 1/sqrt(Leff Weff)) whenever the circuit variable mm
+// is 1 -- the same numbers ngspice draws with sw_stat_mismatch=1. Inside the
+// `mc` loop VACASK redraws them per sample (Latin hypercube by default).
+//
+// Per sample, inn is swept through a +-40 mV window about the common mode
+// with inp fixed, and mc_reduce.py interpolates where dout crosses VDD/2:
+// that is the trip point, and trip - inp is the input-referred offset of
+// that sample. Its standard deviation over the samples is the threshold
+// spread. The reference leg devices (xrefn, xrefp) also draw mismatch, as
+// they would in silicon; they shift the bias, not the trip point.
+//
+// The nominal (mm=0) sweep is run first as sample 0, so the systematic
+// offset is separated from the random part in the same file set.
+
+ground 0
+
+include "gf180_03v3_@CORNER@.inc"
+load "capacitor.osdi"
+model capacitor capacitor
+model vsource vsource
+model isource isource
+
+include "dut.inc"
+
+vdd (vdd 0) vsource dc=@VDD@
+vddb (vddb 0) vsource dc=@VDD@
+irefn (vddb nbias) isource dc=@IREF@
+xrefn (nbias nbias 0 0) nfet_03v3 l=1u w=20u nf=10 m=1
+irefp (pbias 0) isource dc=@IREF@
+@REFP@
+vclk (clk 0) vsource dc=@VDD@
+
+vinp (inp 0) vsource dc=@VCM@
+vinn (inn 0) vsource dc=@VCM@
+
+xdut (inp inn dout clk vdd 0 nbias pbias) cmp
+cload (dout 0) capacitor c=@CLOAD@
+
+control
+  options temp=@TEMP@
+  save v(dout) v('xdut:outa') v(inn)
+  var mm=0
+  sweep vin instance="vinn" parameter="dc" from=@VCM@-40m to=@VCM@+40m mode="lin" points=160
+    analysis nom_@TAG@ op
+  var mm=1
+  mc mc_@TAG@ samples=@SAMPLES@ seed=@SEED@
+    sweep vin instance="vinn" parameter="dc" from=@VCM@-40m to=@VCM@+40m mode="lin" points=160
+      analysis dc op
+  endmc
+endc

@@ -1,0 +1,57 @@
+Comparator noise spectrum, VACASK transient noise against VACASK noise analysis
+
+// TEMPLATE. trannoise.py fills in the corner, temperature, VDD, VCM and
+// reference current, the inn connection and the analysis lines, and writes
+// two files per case:
+//
+//   <tag>_ss.sim  op, ac and noise, biased exactly like tb_noise.sim.tmpl:
+//                 dout is fed back to inn through a 1 TH inductor, which
+//                 parks the OTA at its own crossing condition (inn = dout =
+//                 inp + Vos at DC) and opens the loop above a few microhertz;
+//                 cinn (1 F) holds inn. The ac gives A(f) = outa / vinp, the
+//                 noise analysis the small-signal input-referred PSD that
+//                 RESULTS.md s.4 quotes.
+//   <tag>.sim     the same circuit in the time domain with every device
+//                 noise source injecting. inn is driven by a noiseless DC
+//                 source at the V(inn) the _ss operating point found, which
+//                 is the same small-signal circuit (cinn is an AC short).
+//                 The inductor loop cannot be kept here: VACASK 764f693
+//                 aborts a noisy tran with it ("Attempt to advance noise
+//                 generator to last accepted time").
+//
+// Welch's PSD of v(outa) from <tag>.sim, divided by |A(f)|^2, must land on
+// the noise analysis if the transient noise engine and the converted models
+// are right; that is what licenses the jitter numbers of tb_tn_ramp.
+
+ground 0
+
+include "../gf180_03v3_@CORNER@.inc"
+load "capacitor.osdi"
+load "inductor.osdi"
+model capacitor capacitor
+model inductor inductor
+model vsource vsource
+model isource isource
+
+include "../dut.inc"
+
+vdd (vdd 0) vsource dc=@VDD@
+vddb (vddb 0) vsource dc=@VDD@
+irefn (vddb nbias) isource dc=@IREF@
+xrefn (nbias nbias 0 0) nfet_03v3 l=1u w=20u nf=10 m=1
+irefp (pbias 0) isource dc=@IREF@
+@REFP@
+vclk (clk 0) vsource dc=@VDD@
+
+vinp (inp 0) vsource dc=@VCM@ mag=1
+@INNBIAS@
+
+xdut (inp inn dout clk vdd 0 nbias pbias) cmp
+cload (dout 0) capacitor c=@CLOAD@
+
+control
+  var mm=0
+  options temp=@TEMP@ tnom=27
+  save v('xdut:outa') v(inn) v(dout)
+@ANALYSES@
+endc

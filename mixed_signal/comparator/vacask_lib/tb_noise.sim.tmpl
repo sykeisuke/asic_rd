@@ -1,0 +1,60 @@
+Comparator input-referred noise at one common mode, VACASK
+
+// TEMPLATE. run.sh substitutes @CORNER@ @TEMP@ @VDD@ @VCM@ @IREF@ @TAG@ and
+// writes work/nz_<tag>.sim next to the generated model include.
+//
+// Same bias as tb_noise.spice: unity feedback from dout to inn through a
+// 1 TH inductor parks the OTA at its crossing condition (inn = dout = inp +
+// Vos at DC; the loop is open above a few hertz). cinn (1 F) AC-grounds
+// inn. The noise output is the OTA node outa, where the decision is
+// resolved; the input reference is vinp, the held-signal source, so
+// onoise/gain is the input-referred PSD in V^2/Hz. noise_reduce.py
+// integrates it over the decision band and the OTA's own band and reports
+// the flicker share, exactly as the ngspice deck does, so the two can be
+// compared number for number.
+//
+// `save full` keeps the per-instance contributions n(xdut:xinp:m0) etc., so
+// the report can say which device the noise comes from.
+
+ground 0
+
+include "gf180_03v3_@CORNER@.inc"
+load "capacitor.osdi"
+load "inductor.osdi"
+model capacitor capacitor
+model inductor inductor
+model vsource vsource
+model isource isource
+
+include "dut.inc"
+
+vdd (vdd 0) vsource dc=@VDD@
+vddb (vddb 0) vsource dc=@VDD@
+irefn (vddb nbias) isource dc=@IREF@
+xrefn (nbias nbias 0 0) nfet_03v3 l=1u w=20u nf=10 m=1
+irefp (pbias 0) isource dc=@IREF@
+@REFP@
+vclk (clk 0) vsource dc=@VDD@
+
+vinp (inp 0) vsource dc=@VCM@ mag=1
+cinn (inn 0) capacitor c=1
+lfb (dout inn) inductor l=1T
+
+xdut (inp inn dout clk vdd 0 nbias pbias) cmp
+cload (dout 0) capacitor c=@CLOAD@
+
+control
+  var mm=0
+  options temp=@TEMP@
+  save v('xdut:outa') v('xdut:left') v('xdut:tail') v(inn) v(dout)
+  // The inductor-closed loop has one physical solution (inn = dout = inp +
+  // Vos) and, for VACASK's Newton solver without a hint, at least one
+  // unphysical one (dout railed, the tail at -13 V). A nodeset at the
+  // expected crossing condition selects the physical one; the ac and noise
+  // analyses then start from the stored operating point.
+  analysis op_@TAG@ op nodeset={"inn", @VCM@, "dout", @VCM@, "xdut:outa", 0.85, "xdut:left", 0.6, "xdut:tail", @VCM@+0.9, "xdut:outb", 3.3} store="bias"
+  save dv('xdut:outa')
+  analysis ac_@TAG@ ac nodeset="bias" from=1 to=100G mode="dec" points=20
+  save full
+  analysis nz_@TAG@ noise nodeset="bias" out="xdut:outa" in="vinp" from=1 to=1G mode="dec" points=20
+endc

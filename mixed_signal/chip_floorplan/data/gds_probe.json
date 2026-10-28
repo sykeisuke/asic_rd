@@ -1,0 +1,81 @@
+{
+ "digital": {
+  "gds": "digital/asic_digital_top/physical/final_views/gds/asic_digital_top.gds",
+  "top": "asic_digital_top",
+  "w_um": 292.35,
+  "h_um": 310.27,
+  "bbox": [
+   0.0,
+   0.0,
+   292.35,
+   310.27
+  ]
+ },
+ "pads": {
+  "asig_5p0": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "bi_24t": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "bi_a": {
+   "w_um": 75.32,
+   "h_um": 350.005
+  },
+  "in_c": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "in_s": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "vdd": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "vss": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "dvdd": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "dvss": {
+   "w_um": 75.32,
+   "h_um": 350.0
+  },
+  "cor": {
+   "w_um": 355.02,
+   "h_um": 355.02
+  }
+ },
+ "stdcell": {
+  "dfxtn_2": {
+   "w_um": 15.98,
+   "h_um": 4.78
+  }
+ },
+ "pad_cells_in_library": [
+  "gf180mcu_ocd_io__asig_5p0",
+  "gf180mcu_ocd_io__bi_24t",
+  "gf180mcu_ocd_io__bi_a",
+  "gf180mcu_ocd_io__bi_t",
+  "gf180mcu_ocd_io__brk2",
+  "gf180mcu_ocd_io__brk5",
+  "gf180mcu_ocd_io__cor",
+  "gf180mcu_ocd_io__dvdd",
+  "gf180mcu_ocd_io__dvss",
+  "gf180mcu_ocd_io__fill1",
+  "gf180mcu_ocd_io__fill10",
+  "gf180mcu_ocd_io__fill5",
+  "gf180mcu_ocd_io__fillnc",
+  "gf180mcu_ocd_io__in_c",
+  "gf180mcu_ocd_io__in_s",
+  "gf180mcu_ocd_io__vdd",
+  "gf180mcu_ocd_io__vss"
+ ]
+}

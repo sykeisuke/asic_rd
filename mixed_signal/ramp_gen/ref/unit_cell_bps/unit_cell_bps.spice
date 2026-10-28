@@ -1,0 +1,62 @@
+* unit_cell_bps -- the 8-bit true bottom-plate-sampled single-slope unit cell
+* and the channel that biases it. Netlist only: no model lines, no stimulus.
+* The testbench (tb_unit_cell_bps.spice) includes, by path and in this order,
+*   the PDK models, cmp_updt.spice (comparator_updt), bias_gen.spice and its
+*   params (bias_gen), ref_fvf_biased.spice and its params (midrail_ref),
+*   switches.spice (this block), then this file.
+* Every name here is frozen in CONTRACT.md.
+*
+*                 S0                            comparator (cmp_updt)
+*   vfe ---------/  ------+              vbl --- inp (+)
+*                         |                          >---- dout
+*   vramp -------/  ------+---- bot  top ---+---- inn (-)
+*                 S1          |   |         |
+*                           ==== CS (54.52 fF MIM)
+*                                           |
+*                         vref -------/  ---+
+*                                     S2
+*
+* Switch controls s0 s1 s2 are 0 / VDD, HIGH = CLOSED. Their complements are
+* made here by three minimum 3.3 V inverters, so the testbench (and later the
+* digital sequencer) drives one line per switch. The inverter delay (tens of
+* ps) is the only skew between a switch's two gates.
+
+* ---------------------------------------------------------------------------
+* The cell: three switches, the hold capacitor, the comparator
+* ---------------------------------------------------------------------------
+.subckt unit_cell_bps vfe vramp s0 s1 s2 vref vbl dout clk pbias nbias vdd vss
+* complements of the switch controls
+XI0N s0b s0 vss vss nfet_03v3 L=0.28u W=0.44u nf=1 m=1
+XI0P s0b s0 vdd vdd pfet_03v3 L=0.28u W=0.88u nf=1 m=1
+XI1N s1b s1 vss vss nfet_03v3 L=0.28u W=0.44u nf=1 m=1
+XI1P s1b s1 vdd vdd pfet_03v3 L=0.28u W=0.88u nf=1 m=1
+XI2N s2b s2 vss vss nfet_03v3 L=0.28u W=0.44u nf=1 m=1
+XI2P s2b s2 vdd vdd pfet_03v3 L=0.28u W=0.88u nf=1 m=1
+* switches (switches.spice): a = driving side, b = plate side
+XS0 vfe   bot s0 s0b vdd vss sw_s0
+XS1 vramp bot s1 s1b vdd vss sw_s1
+XS2 vref  top s2 s2b vdd vss sw_s2
+* the hold capacitor, 5 x 5 um MIM = 54.52 fF; top = comparator side
+XCS top bot cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
+* DC paths for the two plates while they float (1.5 fA at 1.5 V)
+RLKT top vss 1e15
+RLKB bot vss 1e15
+* comparator: inp = vbl, inn = top; dout HIGH before the crossing, FALLS at it
+XCMP vbl top dout clk vdd vss nbias pbias cmp
+.ends unit_cell_bps
+
+* ---------------------------------------------------------------------------
+* The channel: bias generator, the two VDD/2 buffers, one cell.
+* The four 0 V sources split the supply current per block for the measures
+* (i(v.xtop.vmcmp) etc.); they are not part of the design.
+* ---------------------------------------------------------------------------
+.subckt unit_cell_top vfe vramp s0 s1 s2 dout clk vdd vss
+VMBIAS vdd vdd_bias 0
+VMREF  vdd vdd_ref  0
+VMVBL  vdd vdd_vbl  0
+VMCELL vdd vdd_cell 0
+XBIAS vdd_bias vss pbias nbias bias_gen
+XVREF vref pbias vdd_ref vss midref_b
+XVBL  vbl  pbias vdd_vbl vss midref_b
+XCELL vfe vramp s0 s1 s2 vref vbl dout clk pbias nbias vdd_cell vss unit_cell_bps
+.ends unit_cell_top

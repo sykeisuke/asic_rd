@@ -1,0 +1,42 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=primitive
+format="@name @pinlist @model"
+template="name=XVREF model=midref_b"
+description="midrail_ref option C, biased: FVF class-AB VDD/2 buffer with its
+IB from one pbias slave of the shared generator. Subcircuit midref_b of
+/foss/designs/mixed_signal/ramp_gen/ref/midrail_ref/ref_fvf_biased.spice, reused by path
+through .include. type=primitive: the subcircuit comes from that file, so
+xschem netlists this line and never descends into a schematic. The drawing
+of the inside is midref_b.sch in the same directory.
+Pins in the subcircuit order: out pbias vdd vss."
+}
+V {}
+S {}
+E {}
+L 4 -60 -40 60 -40 {}
+L 4 60 -40 60 40 {}
+L 4 60 40 -60 40 {}
+L 4 -60 40 -60 -40 {}
+L 4 -80 0 -60 0 {}
+L 4 60 0 80 0 {}
+L 4 0 -60 0 -40 {}
+L 4 0 40 0 60 {}
+L 4 -40 -10 -20 -10 {}
+L 4 -20 -10 -20 10 {}
+L 4 -20 10 0 10 {}
+L 4 0 10 0 -10 {}
+L 4 0 -10 20 -10 {}
+L 4 20 -10 20 10 {}
+L 4 20 10 40 10 {}
+B 5 77.5 -2.5 82.5 2.5 {name=out dir=out}
+B 5 -82.5 -2.5 -77.5 2.5 {name=pbias dir=in}
+B 5 -2.5 -62.5 2.5 -57.5 {name=vdd dir=inout}
+B 5 -2.5 57.5 2.5 62.5 {name=vss dir=inout}
+T {@name} -58 -58 0 0 0.25 0.25 {}
+T {@model} -58 24 0 0 0.2 0.2 {layer=13}
+T {VDD/2} 22 -34 0 0 0.2 0.2 {}
+T {pbias} -58 -16 0 0 0.15 0.15 {layer=7}
+T {out} 42 -16 0 0 0.15 0.15 {layer=7}
+T {vdd} 4 -56 0 0 0.15 0.15 {layer=7}
+T {vss} 4 44 0 0 0.15 0.15 {layer=7}

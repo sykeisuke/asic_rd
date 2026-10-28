@@ -1,0 +1,66 @@
+* tb_loop -- loop gain of the ramp generator, Middlebrook double injection.
+*
+* The loop is broken at the OTA's inverting input: run.sh writes
+* work/ramp_gen_lb.spice, a copy of ramp_gen.spice in which XM1's gate is a
+* separate port vxg (the design file is not touched). VP (voltage injection)
+* sits in series between vx (the network: XCI, XNS, XRST) and vxg (the gate);
+* IP (current injection) drives the junction. With
+*   Tv = -v(vx) / v(vxg)                 (voltage-injection run)
+*   Ti = -i(VP) / (1 - i(VP))            (current-injection run)
+*   T  = (Tv Ti - 1) / (Tv + Ti + 2)
+* T is exact whatever the impedances on either side (Middlebrook 1975).
+*
+* MODE (case.spice): 1 = reset (rst high, XCI shorted, follower), 0 = ramp
+* (rst low; the DC path a ramp has not got is LDC + VOP_SRC from vramp to vx:
+* a short at DC that holds vramp at VOP, open above ~1 kHz). VOP: the output
+* level of the linearisation in ramp mode. NCELL x CLOAD_CELL of load.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice moscap_typical
+.include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/data/bias_gen_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/bias_gen.spice
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_gen_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/work/ramp_gen_lb.spice
+.param VDD=3.3
+.param CLOAD_CELL=10f
+.include case.spice
+
+VDD_SOURCE vdd 0 {VDD}
+VRLO vrlo 0 0.5
+VRST rst 0 {MODE*VDD}
+XBIAS vdd 0 pbias nbias bias_gen
+XRG vramp rst vrlo pbias vdd 0 vx vxg ramp_gen_lb
+CL vramp 0 {NCELL*CLOAD_CELL+1f}
+VP vxg vx DC 0 AC 1
+IP 0 vxg DC 0 AC 0
+* ramp-mode DC path (MODE = 0 only; at MODE = 1 the switch is the path)
+LDC vramp nl {1e9*(1-MODE)+1e-9}
+VOP_SRC nl vxo {(VOP-0.5)*(1-MODE)}
+RDCX vxo vx {1+1e15*MODE}
+.options gmin=1e-15
+
+.control
+set num_threads=1
+set wr_singlescale
+set wr_vecnames
+op
+echo "op_vramp = $&v(vramp)"
+echo "op_vx = $&v(vx)"
+ac dec 40 1k 1G
+let tv = -v(vx)/v(vxg)
+setplot const
+alter VP acmag=0
+alter IP acmag=1
+ac dec 40 1k 1G
+let ipr = i(vp)
+let ti = -ipr/(1-ipr)
+let tv = ac1.tv
+let t = (tv*ti-1)/(tv+ti+2)
+let tmag = db(t)
+let tph = 180/pi*cph(t)
+wrdata loop.csv tmag tph
+quit
+.endc
+.end

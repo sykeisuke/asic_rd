@@ -1,0 +1,43 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=XCMP"
+description="comparator_d: comparator (10 devices) with its own pbias PMOS diode XREFP, drawn flat in comparator_d.sch; ibias is a CURRENT input (bias_gen_s sinks icmp_k from it). Pins: inp inn ibias dout vdd vss. dout falls when inn rises through inp"
+}
+V {}
+S {}
+E {}
+L 4 -100 -100 100 0 {}
+L 4 100 0 -100 100 {}
+L 4 -100 100 -100 -100 {}
+L 4 -120 -40 -100 -40 {}
+L 4 -120 40 -100 40 {}
+L 4 100 0 120 0 {}
+L 4 -40 -120 -40 -70 {}
+L 4 20 -120 20 -40 {}
+L 4 20 40 20 120 {}
+L 4 -40 -116 -40 -76 {}
+L 4 -40 -76 -37.12 -81.27 {}
+L 4 -40 -76 -42.88 -81.27 {}
+B 5 -122.5 -42.5 -117.5 -37.5 {name=inp dir=in}
+B 5 -122.5 37.5 -117.5 42.5 {name=inn dir=in}
+B 5 -42.5 -122.5 -37.5 -117.5 {name=ibias dir=in}
+B 5 117.5 -2.5 122.5 2.5 {name=dout dir=out}
+B 5 17.5 -122.5 22.5 -117.5 {name=vdd dir=inout}
+B 5 17.5 117.5 22.5 122.5 {name=vss dir=inout}
+T {+} -92 -62 0 0 0.6 0.6 {}
+T {-} -90 18 0 0 0.6 0.6 {}
+T {inp} -170 -66 0 0 0.25 0.25 {}
+T {inn} -170 14 0 0 0.25 0.25 {}
+T {dout} 104 -26 0 0 0.25 0.25 {}
+T {ibias} -96 -150 0 0 0.25 0.25 {}
+T {vdd} 26 -122 0 0 0.25 0.25 {}
+T {vss} 26 98 0 0 0.25 0.25 {}
+T {@name} -160 104 0 0 0.4 0.4 {}
+L 4 -70 -30 -38 -30 {bus=true}
+L 4 -38 -30 -38 14 {bus=true}
+L 4 -38 14 -6 14 {bus=true}
+L 8 -70 26 -2 26 {}
+T {inn} -4 22 0 0 0.14 0.14 {layer=8}
+T {comparator_d} -80 54 0 0 0.18 0.18 {layer=13}

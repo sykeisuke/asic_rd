@@ -1,0 +1,75 @@
+* tb_ramp_simple -- the simple ramp (ramp_simple) alone, the same bench as
+* tb_ramp.spice for ramp_gen: its own bias_gen, NCELL x CLOAD_CELL of
+* bottom-plate load, the S1-connection kick as a 1 ns charge pulse at TCONN,
+* the same timeline (rst high until TR - TPRE, high again at TRST2).
+* vrlo is an ideal source here, as for ramp_gen; for this circuit that is a
+* favour: it sinks the source current through XRST during reset and absorbs
+* the S1 charge, which a real VR_LO reference would have to do.
+*
+* Results: wrdata -> ramp.csv (the vx column is vrlo, constant, so
+* reduce_ramp.py's vx figures are meaningless here), reduced by
+* reduce_ramp.py like ramp_gen's. Run from a directory holding case.spice.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice moscap_typical
+.include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/data/bias_gen_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/bias_gen.spice
+.include /foss/designs/mixed_signal/ramp_gen/data/ramp_simple_params.spice
+.include /foss/designs/mixed_signal/ramp_gen/ramp_simple.spice
+
+.param VDD=3.3
+.param TCOUNT=50n
+.param VR_LO=0.5
+.param VR_HI=2.0
+.param LSB='(VR_HI-VR_LO)/256'
+.param TRAMP='256*TCOUNT'
+.param SLOPE='(VR_HI-VR_LO)/TRAMP'
+.param CLOAD_CELL=10f
+.include case.spice
+.param TPWR=100n
+.param T0=1u
+.param TS='T0+300n'
+.param TCONN='TS+10n'
+.param TR='T0+400n'
+.param TE='TR+TRAMP'
+.param TOVR='20*TCOUNT'
+.param TRST2='TE+TOVR+50n'
+.param TSTOP='TRST2+600n'
+.param QKICK='NCELL*CLOAD_CELL*(VKICK-VR_LO)'
+
+VDD_SOURCE vdd 0 PWL(0 0 {TPWR} {VDD*VDDX} {TSTOP} {VDD*VDDX})
+VRLO vrlo 0 {VR_LO-SLOPE*TPRE}
+VRST rst 0 PWL(0 0 {TPWR} {VDD} {TR-TPRE} {VDD} {TR-TPRE+100p} 0 {TRST2} 0 {TRST2+100p} {VDD})
+XBIAS vdd 0 pbias nbias bias_gen
+XRG vramp rst vrlo pbias vdd 0 ramp_simple
+CL vramp 0 {NCELL*CLOAD_CELL+1f}
+IKICK 0 vramp PULSE(0 {QKICK/1n} {TCONN} 100p 100p 0.9n 1)
+
+.options reltol=1e-5 abstol=1e-13 vntol=1e-7 gmin=1e-15 savecurrents
+.tran 0.2n {TSTOP} 0 2n
+.save v(vramp) v(vrlo) v(rst) v(pbias) i(vdd_source)
+.save @m.xrg.xps.m0[vds] @m.xrg.xps.m0[vdsat] @m.xrg.xps.m0[id]
+
+.measure tran vr_tconn FIND v(vramp) AT={TCONN}
+.measure tran vr_kick_max MAX v(vramp) FROM={TCONN} TO={TR}
+.measure tran vr_tr FIND v(vramp) AT={TR}
+.measure tran vr_te FIND v(vramp) AT={TE}
+.measure tran vr_ovr FIND v(vramp) AT={TE+TOVR}
+.measure tran i_ps AVG @m.xrg.xps.m0[id] FROM={TR} TO={TE}
+.measure tran i_total AVG i(vdd_source) FROM={TR} TO={TE}
+.measure tran ps_vds_top FIND @m.xrg.xps.m0[vds] AT={TE+TOVR}
+.measure tran ps_vdsat FIND @m.xrg.xps.m0[vdsat] AT={TE+TOVR}
+.measure tran ps_margin PARAM='abs(ps_vds_top)-abs(ps_vdsat)'
+.measure tran pbias_tr FIND v(pbias) AT={TR}
+
+.control
+set num_threads=1
+set wr_singlescale
+set wr_vecnames
+run
+wrdata ramp.csv v(vramp) v(vrlo) v(rst) v(pbias)
+quit
+.endc
+.end
