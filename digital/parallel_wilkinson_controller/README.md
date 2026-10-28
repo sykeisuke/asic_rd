@@ -25,7 +25,8 @@ The digital side of the 8-bit true bottom-plate ADC of
   (`done` pulses once). Codes are packed `{cell3, cell2, cell1, cell0}`.
 
 Parameters: `WIDTH` 8, `CELLS` 4, `TR_CYCLES` 6, `S0_STAGES` 12,
-`S1_STAGES` 25. The delay-line length is the only PVT-dependent timing
+`S1_STAGES` 25, `Q_FALLS_AT_CROSSING` 1 (set 0 if the comparator inputs are
+swapped and `q` rises at the crossing instead). The delay-line length is the only PVT-dependent timing
 (about +-40 % on TNOV); it moves a per-cell offset of about 1 LSB that the
 pedestal calibration removes.
 

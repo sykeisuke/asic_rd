@@ -30,7 +30,11 @@ module parallel_wilkinson_controller #(
     parameter CELLS = 4,
     parameter TR_CYCLES = 6,
     parameter S0_STAGES = 12,
-    parameter S1_STAGES = 25
+    parameter S1_STAGES = 25,
+    // 1: q is HIGH before the crossing and falls after it (Analog_top v5,
+    // comparator inn = bottom plate). 0: the opposite polarity, should the
+    // comparator inputs be swapped.
+    parameter Q_FALLS_AT_CROSSING = 1
 ) (
     input  wire                   clk,
     input  wire                   rst_n,
@@ -74,7 +78,7 @@ module parallel_wilkinson_controller #(
     assign s0 = s2_d1;                          // opens TNOV after s2
     assign s1 = {CELLS{s1_en}} & ~s2_d2;        // closes 2 TNOV after s2, off at retrack
 
-    wire [CELLS-1:0] crossed = ~q;
+    wire [CELLS-1:0] crossed = (Q_FALLS_AT_CROSSING != 0) ? ~q : q;
     wire all_captured = &captured;
     integer i;
 
