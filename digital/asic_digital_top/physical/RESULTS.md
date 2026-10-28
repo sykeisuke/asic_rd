@@ -1,8 +1,10 @@
 # Digital RTL-to-GDS results
 
-Date: 2026-09-25 (8-bit parallel top, **3.3 V library `gf180mcu_as_sc_mcu7t3v3`**;
-the 2026-08-11 reference run was the 6-bit sequential top at 5 V:
-798 cells, 50297.5 um^2 die)
+Date: 2026-10-28 (digital top for the Analog_top interface: sampling
+sequencer with delay lines, synchronous `q` capture; **3.3 V library
+`gf180mcu_as_sc_mcu7t3v3`**. The 2026-09-25 asynchronous-capture run was
+292 x 310 um with 1508 standard cells; the 2026-08-11 reference run the 6-bit
+sequential top at 5 V: 798 cells, 50297.5 um^2 die)
 
 Tool environment: LibreLane in the pinned IIC-OSIC-TOOLS 2026.07 container
 (OpenROAD, Magic, KLayout, Netgen), PDK commit `f6eeac7d` with the 3.3 V
@@ -10,16 +12,16 @@ standard cells fetched by `make pdk`.
 
 | Metric | Result |
 | --- | ---: |
-| Die size | 292.35 um x 310.27 um |
-| Die area | 90707 um^2 |
-| Core utilization | 37.3 % |
-| Routed standard cells | 1508 (4327 instances incl. fill/tap) |
-| Sequential cells | 152 |
-| Routed wire length | 29114 um |
-| Routed vias | 5039 |
-| Estimated total power (20 MHz) | 2.76 mW |
-| Worst setup slack (all corners) | 42.59 ns |
-| Worst hold slack (all corners) | 0.318 ns |
+| Die size | 274.11 um x 292.03 um |
+| Die area | 80048 um^2 |
+| Core utilization | 36.4 % |
+| Routed standard cells | 1324 (3808 instances incl. fill/tap; 148 delay-line stages) |
+| Sequential cells | 112 |
+| Routed wire length | 22833 um |
+| Routed vias | 4057 |
+| Estimated total power (20 MHz) | 1.99 mW |
+| Worst setup slack (all corners) | 29.47 ns |
+| Worst hold slack (all corners) | 0.373 ns |
 
 Signoff-oriented checks:
 
@@ -34,7 +36,8 @@ Signoff-oriented checks:
 | Setup / hold (9 corner-RC combinations) | PASS, 0 violations |
 | Max slew | PASS, 0 violations |
 
-The four comparator inputs are constrained as one asynchronous clock group
-against the conversion clock (see `physical.sdc`); metastability of the
-Gray-capture flops is not covered by STA. IR-drop numbers are provisional
+Single clock: `q[3:0]` are synchronous data inputs (latched on the falling
+edge inside the analog cells, ADR 0010); `cnt_clk` is the clock forwarded to
+the macro. The cell switch timing (5 ns / 10 ns) comes from kept delay-line
+cells, not from STA. IR-drop numbers are provisional
 because package source locations are not yet known.

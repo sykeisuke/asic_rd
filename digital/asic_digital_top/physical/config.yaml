@@ -1,5 +1,6 @@
 DESIGN_NAME: asic_digital_top
 VERILOG_FILES:
+  - dir::../../parallel_wilkinson_controller/delay_line.v
   - dir::../../parallel_wilkinson_controller/parallel_wilkinson_controller.v
   - dir::../serial_readout.v
   - dir::../asic_digital_top.v
