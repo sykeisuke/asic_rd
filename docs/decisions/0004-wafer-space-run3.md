@@ -114,3 +114,29 @@ clean (DRC/LVS/antenna/density/timing) with the second core pair, and the
 provider precheck with `--cob` (slot size, COB pad mask, density, antenna,
 Magic/KLayout DRC) is clear (2026-10-03). The `0.5x1` platform project
 (`G803UHWS`) is superseded.
+
+## Addendum 2026-11-01: PDK baseline moved to `792ef670`
+
+The provider released PDK `792ef67037d74c8c51811eab3ce23cf793491296` (2026-10-20) with project
+template 1.6.0 and precheck 1.7.4, and asked projects to update: new KLayout
+DRC decks (DCF.1a added, DF.11 fixed, CO.5a/b improved), filler generation
+honouring DCF.1a, LVS fixes, an updated `gf180mcu_as_sc_mcu7t3v3` (24 new
+cells; of the existing ones only `nand3_2`/`nand4_2` re-characterized —
+`dfxtn_2` and `dlybuff_2` identical), and a new `gf180mcu_ocd_sc_rt12t3v3`.
+Against `f6eeac7d`: `ocd_io` LEF identical (bond-pad positions unchanged),
+GDS changed; ngspice models differ only in the `fox_sub` capacitor syntax;
+the Magic tech file changed (well painting, resistor layers).
+
+Decision: the frozen PDK commit becomes `792ef67037d74c8c51811eab3ce23cf793491296`;
+precheck 1.7.4 and template 1.6.0 go with it (the template fork's `1x0.5`
+branch is rebased separately). Verified before the move: precheck 1.7.4 with
+the new PDK passes on the last full-chip GDS (pad mask, density, antenna,
+Magic DRC, KLayout DRC with 733 rules).
+
+Consequences: `make pdk` fetches the new commit into `.eda-tools/pdk`
+(now also the 5 V cells); every flow must use that root, because the
+container image's built-in `/foss/pdks` stays at `f6eeac7d` — the analog
+benches that include `/foss/pdks` model files and the `pdk-libs`
+byte-identity check must switch to the fetched root (design team). The new
+KLayout decks are slow (about 5 h single-threaded for a full-die DRC); the
+nightly chip job needs its timeout and worker count set accordingly.

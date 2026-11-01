@@ -41,7 +41,7 @@ is replaced by three pillars:
 | --- | --- | --- |
 | Provider template | [x] | `wafer-space/gf180mcu-project-template` commit `0de7e394337a1f7f5303ac7a3681bf2481b58176` |
 | PDK family/variant | [x] | `gf180mcuD`, five metals, 11K top metal |
-| PDK/Ciel commit | [x] | `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` |
+| PDK/Ciel commit | [x] revised 2026-11-01 | `792ef67037d74c8c51811eab3ce23cf793491296` (provider update of 2026-10-20: new DRC decks, updated `as_sc_mcu7t3v3`; previous `f6eeac7d`). Precheck 1.7.4 with it passes on the last full-chip GDS |
 | Analog primitive voltage | [x] | 3.3 V `nfet_03v3` / `pfet_03v3` |
 | Analog supply target | [x] | `AVDD = 3.3 V`, `AVSS = 0 V` |
 | Digital core supply target | [x] | `DVDD_CORE = 3.3 V`, `DVSS_CORE = 0 V` |
@@ -119,7 +119,7 @@ evidence, by a conservative design rule, or by an automated platform check.
 
 | ID | Required information | Status | Evidence / closure route |
 | --- | --- | --- | --- |
-| WS-01 | Exact accepted PDK/Ciel commit | [x] public, re-verify at submission | Template `main` Makefile pins `PDK_COMMIT ?= f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` (matches this repo's freeze). The pin is updated periodically; re-check at purchase and again before submission |
+| WS-01 | Exact accepted PDK/Ciel commit | [x] public, re-verify at submission | Template release 1.6.0 (2026-10-20) pins `PDK_COMMIT ?= 792ef67037d74c8c51811eab3ce23cf793491296`, which this repo follows since 2026-11-01 (earlier freeze `f6eeac7d`, template `0de7e394`). The pin is updated periodically; re-check before submission |
 | WS-02 | Accepted project-template commit | [x] public | Frozen commit `0de7e394` is `main` HEAD as of 2026-08-30 |
 | WS-03 | Approved 3.3 V standard-cell and I/O-library combination | [~] template-supported | `SCL=gf180mcu_as_sc_mcu7t3v3` and `PAD=gf180mcu_ocd_io` are official template build options (`macros_3v3.yaml`, `pdn_3v3_sram.tcl`). Final acceptance = passing platform precheck; no written approval exists |
 | WS-04 | Accepted I/O cell names and signoff views | [x] public | Template `src/chip_top.sv` instantiates exactly `gf180mcu_ocd_io__{vdd,vss,dvdd,dvss,in_s,in_c,bi_24t,asig_5p0}` (clock uses `in_s`; reset and inputs use `in_c`) |
