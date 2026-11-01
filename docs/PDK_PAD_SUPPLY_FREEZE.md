@@ -39,7 +39,7 @@ is replaced by three pillars:
 
 | Item | Status | Frozen value |
 | --- | --- | --- |
-| Provider template | [x] | `wafer-space/gf180mcu-project-template` commit `0de7e394337a1f7f5303ac7a3681bf2481b58176` |
+| Provider template | [x] | `wafer-space/gf180mcu-project-template` release 1.6.0, commit `d99f6e1ba14e549e80d5d83e113fbd82ed37ed5c` (since 2026-11-01; earlier `0de7e394`) |
 | PDK family/variant | [x] | `gf180mcuD`, five metals, 11K top metal |
 | PDK/Ciel commit | [x] revised 2026-11-01 | `792ef67037d74c8c51811eab3ce23cf793491296` (provider update of 2026-10-20: new DRC decks, updated `as_sc_mcu7t3v3`; previous `f6eeac7d`). Precheck 1.7.4 with it passes on the last full-chip GDS |
 | Analog primitive voltage | [x] | 3.3 V `nfet_03v3` / `pfet_03v3` |
@@ -120,7 +120,7 @@ evidence, by a conservative design rule, or by an automated platform check.
 | ID | Required information | Status | Evidence / closure route |
 | --- | --- | --- | --- |
 | WS-01 | Exact accepted PDK/Ciel commit | [x] public, re-verify at submission | Template release 1.6.0 (2026-10-20) pins `PDK_COMMIT ?= 792ef67037d74c8c51811eab3ce23cf793491296`, which this repo follows since 2026-11-01 (earlier freeze `f6eeac7d`, template `0de7e394`). The pin is updated periodically; re-check before submission |
-| WS-02 | Accepted project-template commit | [x] public | Frozen commit `0de7e394` is `main` HEAD as of 2026-08-30 |
+| WS-02 | Accepted project-template commit | [x] public | Release 1.6.0 (`d99f6e1b`, 2026-10-20) since 2026-11-01; the 1x0.5 fork branch rebased onto it builds clean and passes precheck 1.7.4. Earlier freeze `0de7e394` (`main` HEAD 2026-08-30); the diff is Makefile/README/nix only |
 | WS-03 | Approved 3.3 V standard-cell and I/O-library combination | [~] template-supported | `SCL=gf180mcu_as_sc_mcu7t3v3` and `PAD=gf180mcu_ocd_io` are official template build options (`macros_3v3.yaml`, `pdn_3v3_sram.tcl`). Final acceptance = passing platform precheck; no written approval exists |
 | WS-04 | Accepted I/O cell names and signoff views | [x] public | Template `src/chip_top.sv` instantiates exactly `gf180mcu_ocd_io__{vdd,vss,dvdd,dvss,in_s,in_c,bi_24t,asig_5p0}` (clock uses `in_s`; reset and inputs use `in_c`) |
 | WS-05 | Analog-pad ESD, clamp, leakage, and capacitance limits | [x] closed by design rule | No data will be provided. Adopt GF180MCU DRM rules: HBM diodes only on `asig` pads; add local CDM secondary protection (diode perimeter > 25 um, poly series R > 50 ohm) at every gate-connected pad; no reliance on characterized limits |

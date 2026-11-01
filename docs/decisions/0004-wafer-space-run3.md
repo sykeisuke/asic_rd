@@ -48,7 +48,7 @@ multiplexed or reduced before schematic freeze.
 
 ## Technology baseline frozen after template review
 
-- Provider template commit: `0de7e394337a1f7f5303ac7a3681bf2481b58176`.
+- Provider template commit: `0de7e394337a1f7f5303ac7a3681bf2481b58176` (release 1.6.0 `d99f6e1ba14e549e80d5d83e113fbd82ed37ed5c` since 2026-11-01, see addendum).
 - PDK/Ciel commit: `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`.
 - Process: `gf180mcuD`.
 - Analog, digital-core, and I/O nominal voltage: 3.3 V.
@@ -128,8 +128,10 @@ GDS changed; ngspice models differ only in the `fox_sub` capacitor syntax;
 the Magic tech file changed (well painting, resistor layers).
 
 Decision: the frozen PDK commit becomes `792ef67037d74c8c51811eab3ce23cf793491296`;
-precheck 1.7.4 and template 1.6.0 go with it (the template fork's `1x0.5`
-branch is rebased separately). Verified before the move: precheck 1.7.4 with
+precheck 1.7.4 and template 1.6.0 (`d99f6e1b`, the new `WS_TEMPLATE_COMMIT`)
+go with it; the template diff since `0de7e394` is Makefile/README/nix only.
+The template fork's `1x0.5` branch rebased onto 1.6.0 builds clean on the
+new PDK and passes precheck 1.7.4 (2026-10-31). Verified before the move: precheck 1.7.4 with
 the new PDK passes on the last full-chip GDS (pad mask, density, antenna,
 Magic DRC, KLayout DRC with 733 rules).
 

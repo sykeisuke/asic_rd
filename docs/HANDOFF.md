@@ -96,7 +96,7 @@ spec; the v0.5 blocks listed below remain as legacy references.
   authority is the automated precheck and CoB checks on
   <https://platform.wafer.space>. Community help: the provider Discord
   (public archive at <https://discord.wafer.space>).
-- Frozen baseline (revised 2026-11-01): PDK/Ciel commit `792ef670`, template release 1.6.0 (fork rebase pending; `0de7e394` until then),
+- Frozen baseline (revised 2026-11-01): PDK/Ciel commit `792ef670`, template release 1.6.0 (`d99f6e1b`),
   `gf180mcu_as_sc_mcu7t3v3` cells + `gf180mcu_ocd_io` pads, everything 3.3 V,
   `1x0.5` slot + chip-on-board (COB) packaging (changed from `0.5x1` on
   2026-10-02 when the other slots sold out; ADR 0004 addendum).
