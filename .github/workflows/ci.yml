@@ -52,7 +52,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .eda-tools/pdk
-          key: gf180mcu-pdk-f6eeac7d-3v3-v1
+          key: gf180mcu-pdk-792ef670-v1
 
       - name: Fetch frozen PDK libraries not in the image
         run: umask 000 && make pdk
@@ -94,7 +94,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .eda-tools/pdk
-          key: gf180mcu-pdk-f6eeac7d-3v3-v1
+          key: gf180mcu-pdk-792ef670-v1
 
       - name: Fetch frozen PDK libraries not in the image
         run: umask 000 && make pdk
@@ -192,7 +192,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .eda-tools/pdk
-          key: gf180mcu-pdk-f6eeac7d-3v3-v1
+          key: gf180mcu-pdk-792ef670-v1
 
       - name: Fetch frozen PDK libraries not in the image
         run: umask 000 && make pdk

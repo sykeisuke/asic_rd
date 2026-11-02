@@ -116,8 +116,8 @@ formally revised.
 | --- | --- | --- |
 | MPW provider | [x] | wafer.space GF180MCU Run 3 |
 | Schedule | [x] published / [ ] reconfirm | Clean GDS 2026-12-16; parts Q2 2027 |
-| Provider template | [x] | Commit `0de7e394337a1f7f5303ac7a3681bf2481b58176` |
-| Process | [x] | `gf180mcuD`, PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` |
+| Provider template | [x] | Release 1.6.0, commit `d99f6e1ba14e549e80d5d83e113fbd82ed37ed5c` |
+| Process | [x] | `gf180mcuD`, PDK/Ciel commit `792ef67037d74c8c51811eab3ce23cf793491296` (moved from `f6eeac7d` on 2026-11-01, ADR 0004 addendum) |
 | Analog devices/supply | [x] | 3.3 V devices; `AVDD=3.3 V`, `AVSS=0 V` |
 | Digital cells/supply | [x] | `gf180mcu_as_sc_mcu7t3v3`; `DVDD_CORE=3.3 V` |
 | Pad library/I/O supply | [x] platform precheck passed | `gf180mcu_ocd_io`; `IOVDD=3.3 V`. No written provider acceptance exists; the platform's automated checks are the authority |

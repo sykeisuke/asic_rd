@@ -100,8 +100,8 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | --- | --- | --- |
 | MPW事業者 | wafer.space GF180MCU Run 3 | [x] |
 | 提出予定 | Clean GDS 2026-12-16、parts shipment Q2 2027。購入前に再確認 | [x] 公開日程 / [ ] 再確認 |
-| Provider template | commit `0de7e394337a1f7f5303ac7a3681bf2481b58176` | [x] |
-| プロセス | `gf180mcuD`、PDK/Ciel commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7` | [x] |
+| Provider template | release 1.6.0, commit `d99f6e1ba14e549e80d5d83e113fbd82ed37ed5c` | [x] |
+| プロセス | `gf180mcuD`、PDK/Ciel commit `792ef67037d74c8c51811eab3ce23cf793491296`（2026-11-01 に `f6eeac7d` から移行、ADR 0004 追記） | [x] |
 | Analog device/supply | 3.3 V device、`AVDD=3.3 V`、`AVSS=0 V` | [x] |
 | Digital cell/supply | `gf180mcu_as_sc_mcu7t3v3`、`DVDD_CORE=3.3 V` | [x] |
 | Pad library/I/O supply | `gf180mcu_ocd_io`、`IOVDD=3.3 V`。事業者の書面認定は存在せず、platformの自動checkが判定基準 | [x] platform precheck合格 |

@@ -11,7 +11,7 @@
 - IIC-OSIC-TOOLS index digest:
   `sha256:5d6adf1f437cd0f2f8f8614488ec3c247ba8c768f4663a25d5e997b30ccb13b0`
 - IIC-OSIC-TOOLS architecture: native arm64
-- GF180 Ciel revision: `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`
+- GF180 Ciel revision: `792ef67037d74c8c51811eab3ce23cf793491296` (baseline moved from `f6eeac7d` on 2026-11-01, ADR 0004 addendum; the container image's built-in `/foss/pdks` is still `f6eeac7d`, so flows must use the fetched `.eda-tools/pdk` root)
 - gdsfactory (in image): 9.46.0; kfactory 3.0.3; KLayout 0.30.9
 - gdsfactory `gf180mcu` PDK plugin (via `make tools`): 1.0.0
 

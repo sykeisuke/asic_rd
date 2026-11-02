@@ -9,7 +9,7 @@ chip. The following items cannot be treated as optional:
 
 1. wafer.space GF180MCU Run 3 is selected. Updated 2026-08-30: the provider
    issues no written confirmations (DRC-only checking, no IP guarantees), so
-   acceptance of PDK commit `f6eeac7dad085ffcc829ccfd721f7b4ce39edcf7`, the
+   acceptance of PDK commit `792ef67037d74c8c51811eab3ce23cf793491296` (provider update 2026-10-20), the
    3.3 V library set, and the pad ring is established by passing the
    automated precheck and COB checks on platform.wafer.space. The PDK/template
    commits match the public template `main` as of 2026-08-30; re-verify at

@@ -5,8 +5,11 @@ the 2026-08-11 reference run was the 6-bit sequential top at 5 V:
 798 cells, 50297.5 um^2 die)
 
 Tool environment: LibreLane in the pinned IIC-OSIC-TOOLS 2026.07 container
-(OpenROAD, Magic, KLayout, Netgen), PDK commit `f6eeac7d` with the 3.3 V
-standard cells fetched by `make pdk`.
+(OpenROAD, Magic, KLayout, Netgen), PDK commit `792ef670` (baseline since
+2026-11-01; re-verified clean on it: 0 routing/Magic/KLayout DRC, 0 LVS,
+0 timing/antenna violations) with the 3.3 V standard cells fetched by
+`make pdk`. The figures below are from the `f6eeac7d` run; the committed
+views are refreshed with the next design change.
 
 | Metric | Result |
 | --- | ---: |
