@@ -13,16 +13,10 @@ create_clock -name conversion_clk -period $::env(CLOCK_PERIOD) \
 # (wilkinson_gray_counter, ADR 0003). It has two sources, selected by
 # test_mode: the comparator macro's output and the ext_compare pad. They
 # never run together, and neither is related to the conversion clock.
-create_clock -name comparator_event -period $::env(CLOCK_PERIOD) \
-    [get_pins {i_chip_core.u_cmp/dout}]
-create_clock -name comparator_test -period $::env(CLOCK_PERIOD) \
-    [get_pins {inputs\[3\].pad/Y}]
-set_clock_groups -asynchronous \
-    -group [get_clocks conversion_clk] \
-    -group [get_clocks {comparator_event comparator_test}]
-set_clock_groups -physically_exclusive \
-    -group [get_clocks comparator_event] \
-    -group [get_clocks comparator_test]
+# Synchronous capture (ADR 0010): the comparator output and the ext_compare
+# pad are latched on the falling clock edge inside chip_core (stand-in for
+# the latch in the analog cell); the comparator output is a data input.
+set_false_path -from [get_pins {i_chip_core.u_cmp/dout}]
 
 set conv [get_clocks conversion_clk]
 set input_delay_value [expr $::env(CLOCK_PERIOD) * $::env(IO_DELAY_CONSTRAINT) / 100]
@@ -43,7 +37,7 @@ set_false_path -from [get_ports {rst_n_PAD}]
 
 # start, shift_en, test_mode are conversion-clock inputs. input_PAD[3]
 # is ext_compare, a clock source, and gets no input delay.
-set clk_core_input_ports [get_ports {input_PAD[0] input_PAD[1] input_PAD[2]}]
+set clk_core_input_ports [get_ports {input_PAD[0] input_PAD[1] input_PAD[2] input_PAD[3]}]
 set_input_delay -min 0 -clock $conv $clk_core_input_ports
 set_input_delay -max $input_delay_value -clock $conv $clk_core_input_ports
 

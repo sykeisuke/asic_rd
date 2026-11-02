@@ -13,6 +13,7 @@ mkdir -p "$result_dir"
         set -euo pipefail
         cd /foss/designs/digital/parallel_wilkinson_controller
         iverilog -g2012 -Wall -o work/tb_parallel_wilkinson_controller \
+            delay_line.v \
             parallel_wilkinson_controller.v \
             tb_parallel_wilkinson_controller.v
         vvp work/tb_parallel_wilkinson_controller | tee work/simulation.log
@@ -21,7 +22,7 @@ mkdir -p "$result_dir"
         liberty=/foss/designs/.eda-tools/pdk/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/lib/gf180mcu_as_sc_mcu7t3v3__tt_025C_3v30.lib
         yosys -Q -T -l work/gf180_synthesis.log -p "
             read_liberty -lib $liberty;
-            read_verilog parallel_wilkinson_controller.v;
+            read_verilog delay_line.v parallel_wilkinson_controller.v;
             synth -top parallel_wilkinson_controller -noabc;
             dfflibmap -liberty $liberty;
             abc -liberty $liberty;

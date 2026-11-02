@@ -114,8 +114,8 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | ADC方式 | Wilkinson: 共有 ramp と 8-bit Gray counter、cell ごとの comparator。**ramp は保持容量に印加**（comparator 入力ではない）: comparator は先に凍結された極板を見て固定基準で判定するため、同相依存が伝達関数に入らない | [x] |
 | 入力電圧窓 | 幅 1.5 V、IRSX 相当の 0.5–2.0 V を作業仮定。3.3 V 電源では窓の**位置**はフロントエンドの基線で決まる自由変数。comparator 変種と同時に凍結 | [ ] target |
 | Comparator 入力対 | 固定基準判定（2026-09-18）により「0.5–2.0 V 全域でのオフセット精度」要求は消え、被測定ノードが判定点へ向かって動く間に入力対が動作し続ける耐性だけが残る（5.3 節）。判定レベル `V_BL` は自由変数になったので NMOS/PMOS どちらも選べる。≈150 µm² / ≈50 µW のサイズは再導出。2026-10-02 レビューの指針: 電流源デバイスはマッチング、出力インバータは立上り/立下り対称に、フィンガー幅は約 5 µm（15 µm は大きすぎ）、PDK の幅パラメータは**フィンガーあたり**。示されたサイズからの入力オフセット σ は約 5 mV の見積り。遅延結果は要修正、資料の整合性を保つ | [ ] 再導出 |
-| Comparator 出力 | 2026-10-02 レビュー推奨: アナログセルが変換クロックを受け取り、**セル内で comparator 出力をラッチ**して同期化したフラグを出す。comparator 出力はメタステーブルになり得るのでチップレベルのネットとして P&R に渡さない。採用すればデジタル側の捕捉は同期式になる（5.4 節） | [ ] 決定 |
-| Counter capture | 共有 8-bit Gray counter と cell ごとの comparator-edge capture 4 系統、cell ごとの timeout flag | [x] |
+| Comparator 出力 | アナログセルが変換クロック `cnt_clk` を受け取り、**セル内で comparator 出力をラッチ**（`mixed_signal/latch`: `dfxtn_2`、負エッジ）。出力 `q[i]` は交差前 HIGH、交差後最初のクロック立下がりで 1 回だけ LOW になる。comparator 出力そのものはチップレベルのネットにしない。デジタル側の捕捉は同期式（5.4 節） | [x] 2026-10-09 決定、I/F 2026-10-28 |
+| Counter capture | 共有 8-bit counter、`q` フラグ 4 本の同期サンプリング、cell ごとの timeout flag（Gray 捕捉は 2026-10-28 に廃止） | [x] |
 | Result storage | 8-bit word 4個、合計 32 bit `{cell3, cell2, cell1, cell0}` | [x] |
 | Readout | 低速同期CMOS serial | [x] |
 | Ramp | 保持容量に印加する内部 ramp（Tape-out 1 の負荷 4 × ≈60 fF）と外部 debug/bypass 経路。Tape-out 1 は簡素に（2026-10-02 レビュー）: 精密積分器ではなく電流源 + 容量（外付けも可）。最初の案（積分器、4 pF、0.5–2.0 V を数 µs）は出発点 | [x] 再定義 |
@@ -134,9 +134,9 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | 名前 | 種類 | 役割 |
 | --- | --- | --- |
 | `VIN` | Analog voltage | 4 cell へ共通に配る連続入力 |
-| `SAMPLE[i]` / `SAMPLE_B[i]` | 相補 digital control | 入力 transmission gate `VIN` → `VTOP[i]` |
-| `HOLD_REF[i]` | Digital control | `VBOT[i]` → `VREF`（固定電位）の switch。**`SAMPLE[i]` より先に開く** |
-| `RAMP_CONNECT` | Digital control（全 cell 共通） | 変換中に `VTOP[i]` → `VRAMP` バスへ接続する switch |
+| `s0[i]` | Digital control、HIGH = 閉 | 入力 transmission gate `VIN` → `VTOP[i]`（Analog_top の `S0`） |
+| `s2[i]` | Digital control、HIGH = 閉 | `VBOT[i]` → `VREF` の switch。**立下がりがサンプル時刻。`s0[i]` より TNOV = 5 ns 先に開く**（Analog_top の `S2`） |
+| `s1[i]` | Digital control、HIGH = 閉 | `VTOP[i]` → `VRAMP` の switch。`s2[i]` の 2 TNOV 後に閉じ、変換中は閉じたまま（Analog_top の `S1`） |
 | `VREF` | Analog 基準 | 基準極板の固定電位。comparator の判定基準でもある |
 | `VRAMP` | Analog voltage | 全 cell 共通の ramp。0 V から開始 |
 
@@ -186,10 +186,10 @@ code範囲 = 0 ... 255。交差しない cell は 255 を返し timeout[i] = 1
 Controller の順序:
 
 ```text
-IDLE（acquire）→ CONNECT → CONVERT → [overflow 時 DRAIN] → DONE
+IDLE（track）→ SAMPLE（s2[k] を 1 clock ずつ）→ WAIT（6 clock）→ CONVERT → [full scale 時 DRAIN] → RETRACK → DONE
 ```
 
-- 共有 8-bit binary counter を Gray 符号化し、各 cell は自身の comparator 立下がりで Gray word を capture（局所 capture clock）。toggle synchronizer で conversion clock domain へ戻す。*検討中の代替（2026-10-02 レビュー）:* アナログセルが comparator 出力を変換クロックでラッチするなら、捕捉は同期式になる（毎クロックで 4 本のフラグをサンプルし、最初に立ったサイクルの count を記録）。Gray 符号化とクロックドメイン交差がデジタル側から消える。
+- 共有 8-bit binary counter。controller は毎立上がりで 4 本のラッチ済みフラグ `q[3:0]` をサンプルし、`q[i]` が最初に LOW と見えた edge の count を cell ごとに記録する（`floor((t_qfall − TR)/TCOUNT)` に等しい。ADR 0010、以前の非同期 Gray 捕捉の記述は廃止）。Gray 符号化もクロックドメイン交差もデジタル側に無い。
 - 4 個の 8-bit 結果を cell 順に保持し、cell ごとの `timeout` flag を添える。
 - 明示的な変更がない限り、32-bit payload を `{cell3, cell2, cell1, cell0}` とする。
 - Serial の bit 順（LSB first）、使用 clock edge、frame 開始、data valid timing を文書化する。
@@ -242,7 +242,7 @@ PVT、mismatch、PEX、package効果、測定不確かさを含めるまでは�
 ### 7.2 デジタル回路
 
 - 共有 8-bit counter と Gray-coded asynchronous capture 4 系統。
-- 並列 conversion controller（acquire / connect / convert / drain）。
+- 並列 conversion controller（sampling sequence / wait / convert / drain / retrack）と cell スイッチ用遅延線。
 - 8-bit result register 4 個と cell ごとの timeout flag。
 - 32-bit 同期 serial readout。
 - Reset、test mode、timeout、status logic。

@@ -1,18 +1,25 @@
 `timescale 1ns/1ps
 `default_nettype none
 
-// Tape-out 1 digital top (architecture of 2026-09-18): four storage cells are
-// converted in parallel by one broadcast ramp and one comparator per cell;
-// four 8-bit results are read out through a 32-bit synchronous serial port.
+// Tape-out 1 digital top for the Analog_top macro (mixed_signal/Analog_top):
+// four storage cells converted in parallel on one ramp, one comparator and
+// one clocked latch per cell. The digital top generates the sampling
+// sequence (s2/s0/s1 per cell, one cell per clock, switch order by delay
+// lines), the ramp reset, and the count; it samples the cells' latched
+// flags q[3:0] and reads the four 8-bit codes out through a 32-bit
+// synchronous serial port. cnt_clk is the conversion clock handed to the
+// macro's latches (they sample on its falling edge).
 module asic_digital_top (
     input  wire        clk,
     input  wire        rst_n,
     input  wire        start,
-    input  wire [3:0]  compare_high,
+    input  wire [3:0]  q,
     input  wire        shift_en,
-    output wire        acquire,
-    output wire        ramp_connect,
-    output wire        ramp_reset,
+    output wire [3:0]  s0,
+    output wire [3:0]  s1,
+    output wire [3:0]  s2,
+    output wire        ramp_rst,
+    output wire        cnt_clk,
     output wire        serial_data,
     output wire        data_ready,
     output wire        conversion_busy,
@@ -21,10 +28,11 @@ module asic_digital_top (
 );
     wire [31:0] conversion_codes;
 
+    assign cnt_clk = clk;
+
     parallel_wilkinson_controller #(.WIDTH(8), .CELLS(4)) controller (
-        .clk(clk), .rst_n(rst_n), .start(start),
-        .compare_high(compare_high), .acquire(acquire),
-        .ramp_connect(ramp_connect), .ramp_reset(ramp_reset),
+        .clk(clk), .rst_n(rst_n), .start(start), .q(q),
+        .s2(s2), .s0(s0), .s1(s1), .ramp_rst(ramp_rst),
         .codes(conversion_codes), .timeout(conversion_timeout),
         .busy(conversion_busy), .done(conversion_done)
     );

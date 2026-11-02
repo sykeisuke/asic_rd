@@ -149,20 +149,21 @@ spec; the v0.5 blocks listed below remain as legacy references.
 5. **Test-MUX truth table freeze** — the logical interface exceeds the six
    true analog pads; monitor/bias functions must be multiplexed (see
    [`TOP_LEVEL_INTERFACE.md`](TOP_LEVEL_INTERFACE.md)).
-6. Gray-capture metastability characterization at transistor level (the
-   v0.5 phase-sweep finding of a ~500 ps margin on one cell applies to the
-   parallel capture channels as well).
+6. ~~Gray-capture metastability characterization~~ — no longer needed in
+   the digital block (synchronous capture); the latch's aperture is
+   characterized in `mixed_signal/latch` (SPEC S7).
 7. **Ramp generator** for the capacitor load (4 x ~60 fF now, tens of pF to
    nF in later tape-outs), kept simple for Tape-out 1 (current source into a
    capacitor, possibly external); together with `V_BL`/`VREF`, ramp range and
    direction under the over-voltage constraint (spec 5.3).
-8. **Synchronous capture option (review of 2026-10-02):** the collaborating
-   group recommends latching the comparator output with the conversion clock
-   *inside the analog cell*, so the digital block receives a clean
-   synchronous flag instead of using the comparator edge as a local capture
-   clock. If adopted, `parallel_wilkinson_controller` simplifies to sampling
-   the flags every clock and recording the count at the first asserted
-   cycle (no Gray capture, no CDC in P&R). Decide together with the pin list.
+8. ~~Synchronous capture option~~ — **adopted 2026-10-09, interface fixed
+   2026-10-28** (ADR 0010): the digital top now matches
+   `mixed_signal/Analog_top` (`q[3:0]` from the cells' `dfxtn_2` latches,
+   `cnt_clk`, the `s0/s1/s2` sampling sequence with 5 ns / 10 ns delay
+   lines, `ramp_rst` at TS_3 + 300 ns). Open: PVT spread of the delay-line
+   TNOV (about +-40 %) — acceptable as a calibrated offset, or make it
+   trimmable; and a mixed-signal co-simulation of `tb_analog_top` with the
+   RTL (the RTL reproduces the bench's latch rule by construction).
 9. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
    times into the parallel controller (replacing the legacy MUX co-sim).
 10. **Digital-on-top integration** (review recommendation) — two implementations
