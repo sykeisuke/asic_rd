@@ -1,0 +1,173 @@
+# Digital-on-top chip, 1x0p5 slot, frozen 3.3 V library set
+# (gf180mcu_as_sc_mcu7t3v3 + gf180mcu_ocd_io). The template's Chip flow
+# (pad ring, core, seal ring, fill) with two hard macros: the hardened
+# digital top and the analog top. Adapted from
+# wafer-space/gf180mcu-project-template librelane/config.yaml at
+# 0de7e394337a1f7f5303ac7a3681bf2481b58176 and from
+# mixed_signal/top_placement/librelane/config.yaml (the same chip, built there).
+#
+# Read together with slot_1x0p5.yaml (die, core, pad order) and
+# macros.yaml (placed hard macros and their power connections).
+meta:
+  version: 3
+  flow: Chip
+  substituting_steps:
+    # Render the layout after sealring insertion
+    KLayout.Render: null
+    +KLayout.SealRing: KLayout.Render
+
+    # Magic is not the signoff tool here (CLAUDE.md): KLayout's
+    # gf180mcu.drc owns the DRC verdict.
+    Magic.DRC: null
+    Checker.MagicDRC: null
+
+    # IR drop is a report, not a gate, and needs a power model this chip
+    # does not have yet.
+    OpenROAD.IRDropReport: null
+
+DESIGN_NAME: chip_top
+VERILOG_FILES:
+- dir::../src/chip_top.sv
+- dir::../src/chip_core.sv
+VERILOG_INCLUDE_DIRS:
+- dir::../src
+
+PRIMARY_GDSII_STREAMOUT_TOOL: klayout
+
+PNR_SDC_FILE: dir::chip_top.sdc
+SIGNOFF_SDC_FILE: dir::chip_top.sdc
+FALLBACK_SDC: dir::chip_top.sdc
+
+# Core supply. AVDD (the avdd_pad's VDD pin and the analog macro's
+# avdd) is wired by PDN_MACRO_CONNECTIONS and power_routes.tcl, not by
+# the core grid.
+VDD_NETS:
+- VDD
+GND_NETS:
+- VSS
+
+# Output-only pads leave bi_24t Y unused, bi_a Y is unused, the ID
+# macros have no pins, brk5 has no power pin LibreLane recognises
+IGNORE_DISCONNECTED_MODULES:
+- gf180mcu_ocd_io__bi_24t
+- gf180mcu_ocd_io__bi_a
+# the AVDD rail break cells (pad_cfg.tcl): a VSS pin only, by design
+- gf180mcu_ocd_io__brk5
+- gf180mcu_ws_ip__qrcode_id
+- gf180mcu_ws_ip__shuttle_id
+- gf180mcu_ws_ip__project_id
+- gf180mcu_ws_ip__logo
+- gf180mcu_ws_ip__marker
+
+# LibreLane's pad ring script plus the AVDD rail break cells
+PAD_CFG: dir::pad_cfg.tcl
+
+# The PDK's list plus bi_a, whose bond pad pin is PAD (its core side,
+# ANA, is a separate net to the analog macro)
+PAD_PLACE_IO_TERMINALS:
+- gf180mcu_ocd_io__asig_5p0/ASIG5V
+- gf180mcu_ocd_io__bi_24t/PAD
+- gf180mcu_ocd_io__bi_t/PAD
+- gf180mcu_ocd_io__bi_a/PAD
+- gf180mcu_ocd_io__in_c/PAD
+- gf180mcu_ocd_io__in_s/PAD
+- gf180mcu_ocd_io__dvss/DVSS
+- gf180mcu_ocd_io__dvdd/DVDD
+- gf180mcu_ocd_io__vss/VSS
+- gf180mcu_ocd_io__vdd/VDD
+
+# Conversion clock: 20 MHz
+CLOCK_PORT: clk_PAD
+CLOCK_NET: clk_pad/Y
+CLOCK_PERIOD: 50
+
+PL_RESIZER_HOLD_SLACK_MARGIN: 0.35
+GRT_RESIZER_HOLD_SLACK_MARGIN: 0.3
+
+PL_TARGET_DENSITY_PCT: 35
+GRT_ALLOW_CONGESTION: true
+PL_MAX_DISPLACEMENT_Y: 200
+
+DRT_ANTENNA_REPAIR_ITERS: 10
+DRT_ANTENNA_REPAIR_MARGIN: 10 # %
+
+# PDN
+PDN_CFG: dir::pdn_cfg.tcl
+PDN_ENABLE_PINS: False
+
+PDN_VWIDTH: 5
+PDN_HWIDTH: 5
+PDN_VSPACING: 1
+PDN_HSPACING: 1
+PDN_VPITCH: 75
+PDN_HPITCH: 75
+
+# Keep-outs for the drawn wiring (analog_routes.tcl, power_routes.tcl;
+# coordinates from macros.yaml and the analog macro's pins.json):
+# - no placement rows between the core's west edge and the two macros,
+#   where the analog pad wires run in Metal3 (no rails, so no Metal1-
+#   Metal4 via stacks under them);
+# - no core Metal4 strap in the columns above the analog macro's
+#   dvss/dvdd pins (x 500.74-521.74) and avss/avdd pins (x 681.24-705.24),
+#   where the drawn Metal4 straps run;
+# - no rows in the band between the core ring and the last core Metal5
+#   strap pair west of x 720, where the AVDD (Metal5) and AVSS (Metal3)
+#   straps turn east after dropping under the ring.
+FP_OBSTRUCTIONS:
+- [442.4, 960.0, 492.24, 1745.0]
+- [442.4, 2040.0, 720.0, 2085.44]
+PDN_OBSTRUCTIONS:
+- [Metal4, 496.0, 1438.0, 527.0, 1620.0]
+- [Metal4, 676.0, 1438.0, 711.0, 2160.0]
+
+PDN_CORE_RING: True
+PDN_CORE_RING_VWIDTH: 25
+PDN_CORE_RING_HWIDTH: 25
+PDN_CORE_RING_CONNECT_TO_PADS: True
+PDN_CORE_VERTICAL_LAYER: Metal4
+PDN_CORE_HORIZONTAL_LAYER: Metal3
+PDN_CORE_RING_CONNECT_TO_PAD_LAYERS: [Metal2]
+
+ERROR_ON_MAGIC_DRC: False
+
+MAGIC_GDS_FLATGLOB:
+- "*_CDNS_*"
+- "*$$*"
+- "M1_N*"
+- "M1_P*"
+- "M2_M1*"
+- "M3_M2*"
+- "nmos_5p0*"
+- "nmos_1p2*"
+- "pmos_5p0*"
+- "pmos_1p2*"
+- "via1_*"
+- "G_ring_*"
+
+KLAYOUT_FILLER_OPTIONS:
+  Metal2_ignore_active: true
+
+MAGIC_EXT_UNIQUE: notopports
+
+KLAYOUT_RENDER_RESOLUTION: 2048
+KLAYOUT_RENDER_OVERSAMPLING: 3
+KLAYOUT_PROPERTIES: dir::../inputs/template/librelane/gf180mcu_render.lyp
+
+# Eight workers, not "max": a full die with fill on max workers exhausts
+# the memory this host has (mixed_signal/top_placement measurement).
+KLAYOUT_DRC_THREADS: 1
+
+KLAYOUT_DRC_OPTIONS:
+  decks: "all,-antenna,-density,-cup"
+  variant: ref::$PDK
+  workers: 8
+
+KLAYOUT_DENSITY_OPTIONS:
+  decks: "density"
+  variant: ref::$PDK
+  workers: 8
+
+KLAYOUT_ANTENNA_OPTIONS:
+  decks: "antenna"
+  variant: ref::$PDK
+  workers: 8

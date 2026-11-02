@@ -1,0 +1,24 @@
+inputs_manifest_ok = 1
+wsa_analog_top_width_um = 229.200
+wsa_analog_top_height_um = 127.100
+wsa_analog_top_pins_contract = 30
+wsa_analog_top_pins_found = 30
+wsa_analog_top_pins_metal2 = 22
+wsa_analog_top_pins_metal3 = 4
+wsa_analog_top_pins_metal4 = 4
+wsa_analog_top_obs_rects = 41
+LEF: /foss/designs/chip_integration/work/macros/wsa_analog_top/lef/wsa_analog_top.lef
+wsa_analog_top_drc_violations = 0
+wsa_analog_top_density_violations = 7
+REPORT: wsa_analog_top density rules (die-level, the chip fill resolves): DCF.1b, M1.4, M2.4, M3.4, M5.4, MT.3, PL.8
+REPORT: magic bbox llx 0
+REPORT: magic bbox lly 0
+REPORT: magic bbox urx 45840
+REPORT: magic bbox ury 25420
+wsa_analog_top_magic_bbox_fields = 4
+digital_timing_model_tt_025C_3v30 = 1
+digital_timing_model_ff_n40C_3v60 = 1
+digital_timing_model_ss_125C_3v00 = 1
+digital_timing_models = 3
+SVG: /foss/designs/chip_integration/renders/03a_analog_macro_lef.svg
+SVG: /foss/designs/chip_integration/renders/03b_digital_macro_lef.svg

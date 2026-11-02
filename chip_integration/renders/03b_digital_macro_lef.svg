@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="992" height="1099" viewBox="0 0 992 1099" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="white"/>
+<text x="16" y="28" font-size="19" font-weight="bold">asic_digital_top: LEF from the digital flow, used as is</text>
+<text x="16" y="50" font-size="13" fill="#555">292.35 x 310.27 um, 21 pins; grey = OBS (router keep-out)</text>
+<rect x="194.6" y="244.6" width="603.0" height="640.0" fill="#e6e6e6"/>
+<rect x="194.6" y="244.6" width="603.0" height="640.0" fill="none" stroke="black" stroke-width="2"/>
+<rect x="216.7" y="277.5" width="4.1" height="575.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="299.2" y="277.5" width="4.1" height="575.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="381.7" y="277.5" width="4.1" height="575.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="464.2" y="277.5" width="4.1" height="575.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="546.7" y="277.5" width="4.1" height="575.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="629.3" y="277.5" width="4.1" height="575.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="711.8" y="277.5" width="4.1" height="575.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="208.5" y="839.9" width="575.3" height="4.1" fill="#d93025" fill-opacity="0.8"/>
+<rect x="208.5" y="757.4" width="575.3" height="4.1" fill="#d93025" fill-opacity="0.8"/>
+<rect x="208.5" y="674.9" width="575.3" height="4.1" fill="#d93025" fill-opacity="0.8"/>
+<rect x="208.5" y="592.4" width="575.3" height="4.1" fill="#d93025" fill-opacity="0.8"/>
+<rect x="208.5" y="509.8" width="575.3" height="4.1" fill="#d93025" fill-opacity="0.8"/>
+<rect x="208.5" y="427.3" width="575.3" height="4.1" fill="#d93025" fill-opacity="0.8"/>
+<rect x="208.5" y="344.8" width="575.3" height="4.1" fill="#d93025" fill-opacity="0.8"/>
+<rect x="224.3" y="277.5" width="4.1" height="575.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="306.9" y="277.5" width="4.1" height="575.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="389.4" y="277.5" width="4.1" height="575.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="471.9" y="277.5" width="4.1" height="575.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="554.4" y="277.5" width="4.1" height="575.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="636.9" y="277.5" width="4.1" height="575.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="719.4" y="277.5" width="4.1" height="575.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="208.5" y="832.2" width="575.3" height="4.1" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="208.5" y="749.7" width="575.3" height="4.1" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="208.5" y="667.2" width="575.3" height="4.1" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="208.5" y="584.7" width="575.3" height="4.1" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="208.5" y="502.2" width="575.3" height="4.1" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="208.5" y="419.7" width="575.3" height="4.1" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="208.5" y="337.2" width="575.3" height="4.1" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="192.7" y="581.2" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="192.7" y="301.7" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="340.5" y="881.5" width="5.0" height="5.0" fill="#e8710a"/>
+<rect x="590.0" y="242.7" width="5.0" height="5.0" fill="#e8710a"/>
+<rect x="192.7" y="336.3" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="794.6" y="632.0" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="192.7" y="576.6" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="794.6" y="791.4" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="444.5" y="881.5" width="5.0" height="5.0" fill="#e8710a"/>
+<rect x="518.4" y="242.7" width="5.0" height="5.0" fill="#e8710a"/>
+<rect x="192.7" y="532.7" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="794.6" y="583.5" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="661.7" y="881.5" width="5.0" height="5.0" fill="#e8710a"/>
+<rect x="192.7" y="578.9" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="192.7" y="708.3" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="794.6" y="798.4" width="5.0" height="5.0" fill="#1e8e3e"/>
+<rect x="657.0" y="881.5" width="5.0" height="5.0" fill="#e8710a"/>
+<rect x="659.3" y="881.5" width="5.0" height="5.0" fill="#e8710a"/>
+<rect x="192.7" y="592.7" width="5.0" height="5.0" fill="#1e8e3e"/>
+<polyline points="194.6,304.2 186.6,304.2 172.6,304.2" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="308.2" text-anchor="end" font-size="11" fill="#202124">clk</text>
+<polyline points="194.6,338.8 186.6,338.8 172.6,338.8" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="342.8" text-anchor="end" font-size="11" fill="#202124">compare_high[2]</text>
+<polyline points="194.6,535.2 186.6,535.2 172.6,535.2" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="539.2" text-anchor="end" font-size="11" fill="#202124">conversion_timeout[2]</text>
+<polyline points="194.6,579.1 186.6,579.1 172.6,579.1" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="583.1" text-anchor="end" font-size="11" fill="#202124">conversion_busy</text>
+<polyline points="194.6,581.4 186.6,581.4 172.6,592.1" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="596.1" text-anchor="end" font-size="11" fill="#202124">ramp_connect</text>
+<polyline points="194.6,583.7 186.6,583.7 172.6,605.1" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="609.1" text-anchor="end" font-size="11" fill="#202124">acquire</text>
+<polyline points="194.6,595.2 186.6,595.2 172.6,618.1" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="622.1" text-anchor="end" font-size="11" fill="#202124">start</text>
+<polyline points="194.6,710.8 186.6,710.8 172.6,710.8" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="168.6" y="714.8" text-anchor="end" font-size="11" fill="#202124">ramp_reset</text>
+<polyline points="797.6,586.0 805.6,586.0 819.6,586.0" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="823.6" y="590.0" font-size="11" fill="#202124">conversion_timeout[3]</text>
+<polyline points="797.6,634.5 805.6,634.5 819.6,634.5" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="823.6" y="638.5" font-size="11" fill="#202124">compare_high[3]</text>
+<polyline points="797.6,793.9 805.6,793.9 819.6,793.9" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="823.6" y="797.9" font-size="11" fill="#202124">conversion_done</text>
+<polyline points="797.6,800.9 805.6,800.9 819.6,806.9" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="823.6" y="810.9" font-size="11" fill="#202124">rst_n</text>
+<polyline points="343.0,884.6 343.0,892.6 343.0,906.6" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(347.0,910.6) rotate(90)" font-size="11" fill="#202124">compare_high[0]</text>
+<polyline points="447.0,884.6 447.0,892.6 447.0,906.6" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(451.0,910.6) rotate(90)" font-size="11" fill="#202124">conversion_timeout[0]</text>
+<polyline points="659.5,884.6 659.5,892.6 659.5,906.6" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(663.5,910.6) rotate(90)" font-size="11" fill="#202124">serial_data</text>
+<polyline points="661.8,884.6 661.8,892.6 672.5,906.6" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(676.5,910.6) rotate(90)" font-size="11" fill="#202124">shift_en</text>
+<polyline points="664.2,884.6 664.2,892.6 685.5,906.6" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(689.5,910.6) rotate(90)" font-size="11" fill="#202124">data_ready</text>
+<polyline points="520.9,244.6 520.9,236.6 520.9,222.6" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(524.9,218.6) rotate(-90)" font-size="11" fill="#202124">conversion_timeout[1]</text>
+<polyline points="592.5,244.6 592.5,236.6 592.5,222.6" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(596.5,218.6) rotate(-90)" font-size="11" fill="#202124">compare_high[1]</text>
+<rect x="16" y="1070" width="13" height="13" fill="#d93025"/>
+<text x="34" y="1081" font-size="12">VDD (power)</text>
+<rect x="123" y="1070" width="13" height="13" fill="#1a73e8"/>
+<text x="141" y="1081" font-size="12">VSS (ground)</text>
+<rect x="237" y="1070" width="13" height="13" fill="#1e8e3e"/>
+<text x="255" y="1081" font-size="12">Metal3 pin</text>
+<rect x="337" y="1070" width="13" height="13" fill="#e8710a"/>
+<text x="355" y="1081" font-size="12">Metal2 pin</text>
+</svg>

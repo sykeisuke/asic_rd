@@ -1,0 +1,48 @@
+inputs_manifest_ok = 1
+PNG: /foss/designs/chip_integration/renders/00a_input_analog_gds.png
+PNG: /foss/designs/chip_integration/renders/00b_input_digital_gds.png
+PNG: /foss/designs/chip_integration/renders/00c_input_template_ip.png
+SVG: /foss/designs/chip_integration/renders/03a_analog_macro_lef.svg
+SVG: /foss/designs/chip_integration/renders/03b_digital_macro_lef.svg
+SVG: /foss/designs/chip_integration/renders/01_template_padring.svg
+SVG: /foss/designs/chip_integration/renders/02_chip_top_wiring.svg
+SVG: /foss/designs/chip_integration/renders/04a_floorplan_macros.svg
+SVG: /foss/designs/chip_integration/renders/04b_power_grid.svg
+SVG: /foss/designs/chip_integration/renders/04c_placement_cts.svg
+render_routed_segments = 2161
+SVG: /foss/designs/chip_integration/renders/04d_routing.svg
+SVG: /foss/designs/chip_integration/renders/05a_analog_routes_zoom.svg
+SVG: /foss/designs/chip_integration/renders/05b_supply_straps_zoom.svg
+render_steps_missing = 0
+PNG: /foss/designs/chip_integration/renders/06a_chip_final.png
+PNG: /foss/designs/chip_integration/renders/06b_chip_macros_zoom.png
+PNG: /foss/designs/chip_integration/renders/06c_chip_analog_wires_zoom.png
+PNG: /foss/designs/chip_integration/renders/06d_chip_supply_straps_zoom.png
+REPORT: render: 00a_input_analog_gds.png
+REPORT: render: 00b_input_digital_gds.png
+REPORT: render: 00c_input_template_ip.png
+REPORT: render: 01_template_padring.png
+REPORT: render: 01_template_padring.svg
+REPORT: render: 02_chip_top_wiring.png
+REPORT: render: 02_chip_top_wiring.svg
+REPORT: render: 03a_analog_macro_lef.png
+REPORT: render: 03a_analog_macro_lef.svg
+REPORT: render: 03b_digital_macro_lef.png
+REPORT: render: 03b_digital_macro_lef.svg
+REPORT: render: 04a_floorplan_macros.png
+REPORT: render: 04a_floorplan_macros.svg
+REPORT: render: 04b_power_grid.png
+REPORT: render: 04b_power_grid.svg
+REPORT: render: 04c_placement_cts.png
+REPORT: render: 04c_placement_cts.svg
+REPORT: render: 04d_routing.png
+REPORT: render: 04d_routing.svg
+REPORT: render: 05a_analog_routes_zoom.png
+REPORT: render: 05a_analog_routes_zoom.svg
+REPORT: render: 05b_supply_straps_zoom.png
+REPORT: render: 05b_supply_straps_zoom.svg
+REPORT: render: 06a_chip_final.png
+REPORT: render: 06b_chip_macros_zoom.png
+REPORT: render: 06c_chip_analog_wires_zoom.png
+REPORT: render: 06d_chip_supply_straps_zoom.png
+renders_files = 27

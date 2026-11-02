@@ -1,0 +1,142 @@
+# Hard macros of the chip.
+#
+# Every input comes from ../inputs (copies, see inputs/README.md) or from
+# ../work/macros (made from those copies by scripts/macros.py, step 3).
+#
+# The five gf180mcu_ws_ip__* cells are required by the provider; they
+# come from the template at its pinned commit (inputs/template/ip) and
+# sit at the template's 3.3 V locations
+# (inputs/template/librelane/macros/macros_3v3.yaml).
+#
+# u_digital is the hardened digital top, used as is (no re-hardening):
+# its GDS, LEF and gate netlist from inputs/digital, plus liberty timing
+# models written from that netlist (scripts/digital_timing_model.tcl).
+# u_analog is the analog GDS of inputs/analog with the LEF, liberty and
+# black boxes that scripts/macros.py derives from its pin labels.
+#
+# Placement: mixed_signal/chip_floorplan/data/floorplan.json (analog at
+# 492.0, 1310.74; digital directly below at 492.0, 970.47), snapped to
+# the 0.56 um routing pitch so both macros' pins stay on track.
+MACROS:
+  gf180mcu_ws_ip__qrcode_id:
+    gds:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__qrcode_id/gds/gf180mcu_ws_ip__qrcode_id.gds
+    lef:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__qrcode_id/lef/gf180mcu_ws_ip__qrcode_id.lef
+    vh:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__qrcode_id/vh/gf180mcu_ws_ip__qrcode_id.v
+    lib:
+      "*":
+        - dir::../inputs/template/ip/gf180mcu_ws_ip__qrcode_id/lib/gf180mcu_ws_ip__qrcode_id.lib
+    instances:
+      qrcode_id:
+        location: [26, 26]
+        orientation: N
+
+  gf180mcu_ws_ip__shuttle_id:
+    gds:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__shuttle_id/gds/gf180mcu_ws_ip__shuttle_id.gds
+    lef:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__shuttle_id/lef/gf180mcu_ws_ip__shuttle_id.lef
+    vh:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__shuttle_id/vh/gf180mcu_ws_ip__shuttle_id.v
+    lib:
+      "*":
+        - dir::../inputs/template/ip/gf180mcu_ws_ip__shuttle_id/lib/gf180mcu_ws_ip__shuttle_id.lib
+    instances:
+      shuttle_id:
+        location: [26, 175.6]
+        orientation: E
+
+  gf180mcu_ws_ip__project_id:
+    gds:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__project_id/gds/gf180mcu_ws_ip__project_id.gds
+    lef:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__project_id/lef/gf180mcu_ws_ip__project_id.lef
+    vh:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__project_id/vh/gf180mcu_ws_ip__project_id.v
+    lib:
+      "*":
+        - dir::../inputs/template/ip/gf180mcu_ws_ip__project_id/lib/gf180mcu_ws_ip__project_id.lib
+    instances:
+      project_id:
+        location: [175.6, 26]
+        orientation: N
+
+  gf180mcu_ws_ip__marker:
+    gds:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__marker/gds/gf180mcu_ws_ip__marker.gds
+    lef:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__marker/lef/gf180mcu_ws_ip__marker.lef
+    vh:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__marker/vh/gf180mcu_ws_ip__marker.v
+    lib:
+      "*":
+        - dir::../inputs/template/ip/gf180mcu_ws_ip__marker/lib/gf180mcu_ws_ip__marker.lib
+    instances:
+      marker:
+        location: ["expr::($DIE_AREA[2] - (245 + 36))", "expr::($DIE_AREA[3] - (245 + 36))"]
+        orientation: N
+
+  gf180mcu_ws_ip__logo:
+    gds:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__logo/gds/gf180mcu_ws_ip__logo.gds
+    lef:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__logo/lef/gf180mcu_ws_ip__logo.lef
+    vh:
+      - dir::../inputs/template/ip/gf180mcu_ws_ip__logo/vh/gf180mcu_ws_ip__logo.v
+    lib:
+      "*":
+        - dir::../inputs/template/ip/gf180mcu_ws_ip__logo/lib/gf180mcu_ws_ip__logo.lib
+    instances:
+      wafer_space_logo:
+        location: [26, "expr::$DIE_AREA[3] - 169.25"]
+        orientation: N
+
+  asic_digital_top:
+    gds:
+      - dir::../inputs/digital/asic_digital_top.gds
+    lef:
+      - dir::../inputs/digital/asic_digital_top.lef
+    nl:
+      - dir::../inputs/digital/asic_digital_top.nl.v
+    vh:
+      - dir::../src/asic_digital_top_bb.v
+    # timing models from the gate netlist (digital_timing_model.tcl,
+    # build.sh macros); without them STA black-boxes the macro
+    lib:
+      "*_tt_025C_3v30":
+        - dir::../work/macros/asic_digital_top/lib/asic_digital_top__tt_025C_3v30.lib
+      "*_ff_n40C_3v60":
+        - dir::../work/macros/asic_digital_top/lib/asic_digital_top__ff_n40C_3v60.lib
+      "*_ss_125C_3v00":
+        - dir::../work/macros/asic_digital_top/lib/asic_digital_top__ss_125C_3v00.lib
+    instances:
+      i_chip_core.u_digital:
+        location: [492.24, 970.48]
+        orientation: N
+
+  wsa_analog_top:
+    gds:
+      - dir::../work/macros/wsa_analog_top/gds/wsa_analog_top.gds
+    lef:
+      - dir::../work/macros/wsa_analog_top/lef/wsa_analog_top.lef
+    vh:
+      - dir::../work/macros/wsa_analog_top/vh/wsa_analog_top.v
+    lib:
+      "*":
+        - dir::../work/macros/wsa_analog_top/lib/wsa_analog_top.lib
+    instances:
+      i_chip_core.u_analog:
+        location: [492.24, 1310.96]
+        orientation: N
+
+# Power: the digital top on the chip's VDD/VSS grid; the avdd_pad's VDD
+# pin on AVDD. The analog macro's supplies are NOT global connections:
+# pdngen would then try to reach its Metal4 pins through its Metal5
+# obstruction and stop (measured: PDN-0006 "dvss on Metal4 is blocked by
+# obstructions on Metal5"). power_routes.tcl connects dvdd/dvss to
+# VDD/VSS, avdd to AVDD and avss to VSS, and draws their straps.
+PDN_MACRO_CONNECTIONS:
+- "i_chip_core.u_digital VDD VSS VDD VSS"
+- "avdd_pad AVDD VSS VDD VSS"
