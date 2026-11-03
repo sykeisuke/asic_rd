@@ -47,3 +47,20 @@ clock nets in a Tape-out 3 array.
   the falling edge as a stand-in until the Analog_top macro is placed.
 - Supersedes ADR 0003 (Gray comparator capture) for the production path;
   the single-channel Gray counter stays as a legacy reference block.
+
+## Addendum 2026-11-03: the cell switch sequence is made inside the analog macro (ADR 0027)
+
+Analog_top v7 (`mixed_signal/Analog_top`, `mixed_signal/sample_seq`,
+merged 2026-11-03) contains the sampling sequencer: from `cnt_clk` and one
+acquire level it makes the twelve switch controls S2/S0/S1 of the four
+cells, with a delay line sized so that every gap is at least 5 ns over 45
+PVT cells. The digital block therefore no longer drives `s0/s1/s2` and has
+no delay lines; its interface to the macro is `acq` (HIGH = track, a flop
+on the rising clock edge), `ramp_rst`, `cnt_clk` and `q[3:0]`. Cell k's S2
+opens at the k-th rising edge after the edge that first sees `acq` low
+(TS_k = TS_0 + k x 50 ns); when `acq` returns high the cells re-enter track
+(S1 opens first, then S0 / S2 close). The TR rule (TS_3 + 6 clocks), the
+capture rule and the codes are unchanged. The open point above on the PVT
+spread of the digital delay lines is closed; the sequencer's own spread is
+recorded in `mixed_signal/sample_seq`. `delay_line.v` is retired to
+`digital/legacy/`.

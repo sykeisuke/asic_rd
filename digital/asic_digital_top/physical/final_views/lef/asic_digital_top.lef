@@ -6,65 +6,57 @@ MACRO asic_digital_top
   CLASS BLOCK ;
   FOREIGN asic_digital_top ;
   ORIGIN 0.000 0.000 ;
-  SIZE 274.110 BY 292.030 ;
+  SIZE 239.440 BY 257.360 ;
   PIN VDD
     DIRECTION INOUT ;
     USE POWER ;
     PORT
       LAYER Metal4 ;
-        RECT 10.720 15.380 12.720 274.700 ;
+        RECT 10.720 15.380 12.720 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 50.720 15.380 52.720 274.700 ;
+        RECT 50.720 15.380 52.720 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 90.720 15.380 92.720 274.700 ;
+        RECT 90.720 15.380 92.720 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 130.720 15.380 132.720 274.700 ;
+        RECT 130.720 15.380 132.720 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 170.720 15.380 172.720 274.700 ;
+        RECT 170.720 15.380 172.720 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 210.720 15.380 212.720 274.700 ;
-    END
-    PORT
-      LAYER Metal4 ;
-        RECT 250.720 15.380 252.720 274.700 ;
+        RECT 210.720 15.380 212.720 239.420 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 19.680 267.120 21.680 ;
+        RECT 6.720 19.680 232.400 21.680 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 59.680 267.120 61.680 ;
+        RECT 6.720 59.680 232.400 61.680 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 99.680 267.120 101.680 ;
+        RECT 6.720 99.680 232.400 101.680 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 139.680 267.120 141.680 ;
+        RECT 6.720 139.680 232.400 141.680 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 179.680 267.120 181.680 ;
+        RECT 6.720 179.680 232.400 181.680 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 219.680 267.120 221.680 ;
-    END
-    PORT
-      LAYER Metal5 ;
-        RECT 6.720 259.680 267.120 261.680 ;
+        RECT 6.720 219.680 232.400 221.680 ;
     END
   END VDD
   PIN VSS
@@ -72,68 +64,69 @@ MACRO asic_digital_top
     USE GROUND ;
     PORT
       LAYER Metal4 ;
-        RECT 14.420 15.380 16.420 274.700 ;
+        RECT 14.420 15.380 16.420 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 54.420 15.380 56.420 274.700 ;
+        RECT 54.420 15.380 56.420 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 94.420 15.380 96.420 274.700 ;
+        RECT 94.420 15.380 96.420 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 134.420 15.380 136.420 274.700 ;
+        RECT 134.420 15.380 136.420 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 174.420 15.380 176.420 274.700 ;
+        RECT 174.420 15.380 176.420 239.420 ;
     END
     PORT
       LAYER Metal4 ;
-        RECT 214.420 15.380 216.420 274.700 ;
-    END
-    PORT
-      LAYER Metal4 ;
-        RECT 254.420 15.380 256.420 274.700 ;
+        RECT 214.420 15.380 216.420 239.420 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 23.380 267.120 25.380 ;
+        RECT 6.720 23.380 232.400 25.380 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 63.380 267.120 65.380 ;
+        RECT 6.720 63.380 232.400 65.380 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 103.380 267.120 105.380 ;
+        RECT 6.720 103.380 232.400 105.380 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 143.380 267.120 145.380 ;
+        RECT 6.720 143.380 232.400 145.380 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 183.380 267.120 185.380 ;
+        RECT 6.720 183.380 232.400 185.380 ;
     END
     PORT
       LAYER Metal5 ;
-        RECT 6.720 223.380 267.120 225.380 ;
-    END
-    PORT
-      LAYER Metal5 ;
-        RECT 6.720 263.380 267.120 265.380 ;
+        RECT 6.720 223.380 232.400 225.380 ;
     END
   END VSS
+  PIN acq
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    ANTENNADIFFAREA 1.237600 ;
+    PORT
+      LAYER Metal3 ;
+        RECT 0.000 29.120 0.560 29.680 ;
+    END
+  END acq
   PIN clk
     DIRECTION INPUT ;
     USE SIGNAL ;
     ANTENNAGATEAREA 4.704000 ;
     PORT
       LAYER Metal3 ;
-        RECT 0.000 260.960 0.560 261.520 ;
+        RECT 0.000 226.240 0.560 226.800 ;
     END
   END clk
   PIN cnt_clk
@@ -142,7 +135,7 @@ MACRO asic_digital_top
     ANTENNADIFFAREA 1.237600 ;
     PORT
       LAYER Metal2 ;
-        RECT 22.400 291.470 22.960 292.030 ;
+        RECT 13.440 256.800 14.000 257.360 ;
     END
   END cnt_clk
   PIN conversion_busy
@@ -150,8 +143,8 @@ MACRO asic_digital_top
     USE SIGNAL ;
     ANTENNADIFFAREA 1.237600 ;
     PORT
-      LAYER Metal2 ;
-        RECT 125.440 0.000 126.000 0.560 ;
+      LAYER Metal3 ;
+        RECT 0.000 30.240 0.560 30.800 ;
     END
   END conversion_busy
   PIN conversion_done
@@ -159,8 +152,8 @@ MACRO asic_digital_top
     USE SIGNAL ;
     ANTENNADIFFAREA 1.237600 ;
     PORT
-      LAYER Metal3 ;
-        RECT 273.550 105.280 274.110 105.840 ;
+      LAYER Metal2 ;
+        RECT 113.120 0.000 113.680 0.560 ;
     END
   END conversion_done
   PIN conversion_timeout[0]
@@ -169,7 +162,7 @@ MACRO asic_digital_top
     ANTENNADIFFAREA 1.237600 ;
     PORT
       LAYER Metal2 ;
-        RECT 135.520 0.000 136.080 0.560 ;
+        RECT 79.520 0.000 80.080 0.560 ;
     END
   END conversion_timeout[0]
   PIN conversion_timeout[1]
@@ -178,7 +171,7 @@ MACRO asic_digital_top
     ANTENNADIFFAREA 1.237600 ;
     PORT
       LAYER Metal2 ;
-        RECT 105.280 0.000 105.840 0.560 ;
+        RECT 94.080 0.000 94.640 0.560 ;
     END
   END conversion_timeout[1]
   PIN conversion_timeout[2]
@@ -186,8 +179,8 @@ MACRO asic_digital_top
     USE SIGNAL ;
     ANTENNADIFFAREA 1.237600 ;
     PORT
-      LAYER Metal3 ;
-        RECT 0.000 132.160 0.560 132.720 ;
+      LAYER Metal2 ;
+        RECT 90.720 0.000 91.280 0.560 ;
     END
   END conversion_timeout[2]
   PIN conversion_timeout[3]
@@ -196,7 +189,7 @@ MACRO asic_digital_top
     ANTENNADIFFAREA 1.237600 ;
     PORT
       LAYER Metal2 ;
-        RECT 134.400 0.000 134.960 0.560 ;
+        RECT 91.840 0.000 92.400 0.560 ;
     END
   END conversion_timeout[3]
   PIN data_ready
@@ -204,8 +197,8 @@ MACRO asic_digital_top
     USE SIGNAL ;
     ANTENNADIFFAREA 1.237600 ;
     PORT
-      LAYER Metal3 ;
-        RECT 273.550 227.360 274.110 227.920 ;
+      LAYER Metal2 ;
+        RECT 226.240 0.000 226.800 0.560 ;
     END
   END data_ready
   PIN q[0]
@@ -214,7 +207,7 @@ MACRO asic_digital_top
     ANTENNAGATEAREA 0.666400 ;
     PORT
       LAYER Metal2 ;
-        RECT 136.640 0.000 137.200 0.560 ;
+        RECT 75.040 0.000 75.600 0.560 ;
     END
   END q[0]
   PIN q[1]
@@ -223,7 +216,7 @@ MACRO asic_digital_top
     ANTENNAGATEAREA 0.666400 ;
     PORT
       LAYER Metal2 ;
-        RECT 112.000 0.000 112.560 0.560 ;
+        RECT 72.800 0.000 73.360 0.560 ;
     END
   END q[1]
   PIN q[2]
@@ -232,7 +225,7 @@ MACRO asic_digital_top
     ANTENNAGATEAREA 0.666400 ;
     PORT
       LAYER Metal3 ;
-        RECT 0.000 137.760 0.560 138.320 ;
+        RECT 0.000 100.800 0.560 101.360 ;
     END
   END q[2]
   PIN q[3]
@@ -240,8 +233,8 @@ MACRO asic_digital_top
     USE SIGNAL ;
     ANTENNAGATEAREA 0.666400 ;
     PORT
-      LAYER Metal3 ;
-        RECT 273.550 131.040 274.110 131.600 ;
+      LAYER Metal2 ;
+        RECT 73.920 0.000 74.480 0.560 ;
     END
   END q[3]
   PIN ramp_rst
@@ -250,7 +243,7 @@ MACRO asic_digital_top
     ANTENNADIFFAREA 1.237600 ;
     PORT
       LAYER Metal3 ;
-        RECT 0.000 66.080 0.560 66.640 ;
+        RECT 0.000 127.680 0.560 128.240 ;
     END
   END ramp_rst
   PIN rst_n
@@ -259,124 +252,16 @@ MACRO asic_digital_top
     ANTENNAGATEAREA 1.999200 ;
     PORT
       LAYER Metal3 ;
-        RECT 0.000 259.840 0.560 260.400 ;
+        RECT 238.880 28.000 239.440 28.560 ;
     END
   END rst_n
-  PIN s0[0]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal2 ;
-        RECT 226.240 0.000 226.800 0.560 ;
-    END
-  END s0[0]
-  PIN s0[1]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal2 ;
-        RECT 225.120 0.000 225.680 0.560 ;
-    END
-  END s0[1]
-  PIN s0[2]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal3 ;
-        RECT 273.550 104.160 274.110 104.720 ;
-    END
-  END s0[2]
-  PIN s0[3]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal2 ;
-        RECT 132.160 0.000 132.720 0.560 ;
-    END
-  END s0[3]
-  PIN s1[0]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal3 ;
-        RECT 273.550 97.440 274.110 98.000 ;
-    END
-  END s1[0]
-  PIN s1[1]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal3 ;
-        RECT 273.550 103.040 274.110 103.600 ;
-    END
-  END s1[1]
-  PIN s1[2]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal3 ;
-        RECT 273.550 107.520 274.110 108.080 ;
-    END
-  END s1[2]
-  PIN s1[3]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal3 ;
-        RECT 273.550 96.320 274.110 96.880 ;
-    END
-  END s1[3]
-  PIN s2[0]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal2 ;
-        RECT 148.960 0.000 149.520 0.560 ;
-    END
-  END s2[0]
-  PIN s2[1]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal2 ;
-        RECT 160.160 0.000 160.720 0.560 ;
-    END
-  END s2[1]
-  PIN s2[2]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal2 ;
-        RECT 152.320 0.000 152.880 0.560 ;
-    END
-  END s2[2]
-  PIN s2[3]
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    ANTENNADIFFAREA 1.237600 ;
-    PORT
-      LAYER Metal2 ;
-        RECT 99.680 0.000 100.240 0.560 ;
-    END
-  END s2[3]
   PIN serial_data
     DIRECTION OUTPUT ;
     USE SIGNAL ;
     ANTENNADIFFAREA 1.237600 ;
     PORT
       LAYER Metal3 ;
-        RECT 273.550 226.240 274.110 226.800 ;
+        RECT 238.880 62.720 239.440 63.280 ;
     END
   END serial_data
   PIN shift_en
@@ -384,8 +269,8 @@ MACRO asic_digital_top
     USE SIGNAL ;
     ANTENNAGATEAREA 0.666400 ;
     PORT
-      LAYER Metal3 ;
-        RECT 273.550 225.120 274.110 225.680 ;
+      LAYER Metal2 ;
+        RECT 225.120 0.000 225.680 0.560 ;
     END
   END shift_en
   PIN start
@@ -393,64 +278,54 @@ MACRO asic_digital_top
     USE SIGNAL ;
     ANTENNAGATEAREA 0.666400 ;
     PORT
-      LAYER Metal2 ;
-        RECT 98.560 0.000 99.120 0.560 ;
+      LAYER Metal3 ;
+        RECT 0.000 31.360 0.560 31.920 ;
     END
   END start
   OBS
       LAYER Nwell ;
-        RECT 6.290 15.250 267.550 274.830 ;
+        RECT 6.290 15.250 232.830 239.550 ;
       LAYER Metal1 ;
-        RECT 6.720 15.380 267.120 274.700 ;
+        RECT 6.720 15.380 232.400 239.420 ;
       LAYER Metal2 ;
-        RECT 8.260 291.170 22.100 291.470 ;
-        RECT 23.260 291.170 266.420 291.470 ;
-        RECT 8.260 0.860 266.420 291.170 ;
-        RECT 8.260 0.560 98.260 0.860 ;
-        RECT 100.540 0.560 104.980 0.860 ;
-        RECT 106.140 0.560 111.700 0.860 ;
-        RECT 112.860 0.560 125.140 0.860 ;
-        RECT 126.300 0.560 131.860 0.860 ;
-        RECT 133.020 0.560 134.100 0.860 ;
-        RECT 137.500 0.560 148.660 0.860 ;
-        RECT 149.820 0.560 152.020 0.860 ;
-        RECT 153.180 0.560 159.860 0.860 ;
-        RECT 161.020 0.560 224.820 0.860 ;
-        RECT 227.100 0.560 266.420 0.860 ;
+        RECT 7.980 256.500 13.140 256.800 ;
+        RECT 14.300 256.500 231.700 256.800 ;
+        RECT 7.980 0.860 231.700 256.500 ;
+        RECT 7.980 0.140 72.500 0.860 ;
+        RECT 75.900 0.140 79.220 0.860 ;
+        RECT 80.380 0.140 90.420 0.860 ;
+        RECT 92.700 0.140 93.780 0.860 ;
+        RECT 94.940 0.140 112.820 0.860 ;
+        RECT 113.980 0.140 224.820 0.860 ;
+        RECT 227.100 0.140 231.700 0.860 ;
       LAYER Metal3 ;
-        RECT 0.560 261.820 273.550 274.540 ;
-        RECT 0.860 259.540 273.550 261.820 ;
-        RECT 0.560 228.220 273.550 259.540 ;
-        RECT 0.560 224.820 273.250 228.220 ;
-        RECT 0.560 138.620 273.550 224.820 ;
-        RECT 0.860 137.460 273.550 138.620 ;
-        RECT 0.560 133.020 273.550 137.460 ;
-        RECT 0.860 131.900 273.550 133.020 ;
-        RECT 0.860 131.860 273.250 131.900 ;
-        RECT 0.560 130.740 273.250 131.860 ;
-        RECT 0.560 108.380 273.550 130.740 ;
-        RECT 0.560 107.220 273.250 108.380 ;
-        RECT 0.560 106.140 273.550 107.220 ;
-        RECT 0.560 102.740 273.250 106.140 ;
-        RECT 0.560 98.300 273.550 102.740 ;
-        RECT 0.560 96.020 273.250 98.300 ;
-        RECT 0.560 66.940 273.550 96.020 ;
-        RECT 0.860 65.780 273.550 66.940 ;
-        RECT 0.560 8.540 273.550 65.780 ;
+        RECT 0.560 227.100 238.880 239.260 ;
+        RECT 0.860 225.940 238.880 227.100 ;
+        RECT 0.560 128.540 238.880 225.940 ;
+        RECT 0.860 127.380 238.880 128.540 ;
+        RECT 0.560 101.660 238.880 127.380 ;
+        RECT 0.860 100.500 238.880 101.660 ;
+        RECT 0.560 63.580 238.880 100.500 ;
+        RECT 0.560 62.420 238.580 63.580 ;
+        RECT 0.560 32.220 238.880 62.420 ;
+        RECT 0.860 28.860 238.880 32.220 ;
+        RECT 0.860 28.820 238.580 28.860 ;
+        RECT 0.560 27.700 238.580 28.820 ;
+        RECT 0.560 7.980 238.880 27.700 ;
       LAYER Metal4 ;
-        RECT 32.060 18.570 50.420 268.710 ;
-        RECT 53.020 18.570 54.120 268.710 ;
-        RECT 56.720 18.570 90.420 268.710 ;
-        RECT 93.020 18.570 94.120 268.710 ;
-        RECT 96.720 18.570 130.420 268.710 ;
-        RECT 133.020 18.570 134.120 268.710 ;
-        RECT 136.720 18.570 170.420 268.710 ;
-        RECT 173.020 18.570 174.120 268.710 ;
-        RECT 176.720 18.570 210.420 268.710 ;
-        RECT 213.020 18.570 214.120 268.710 ;
-        RECT 216.720 18.570 250.420 268.710 ;
-        RECT 253.020 18.570 254.120 268.710 ;
-        RECT 256.720 18.570 260.260 268.710 ;
+        RECT 9.660 21.370 10.420 226.710 ;
+        RECT 13.020 21.370 14.120 226.710 ;
+        RECT 16.720 21.370 50.420 226.710 ;
+        RECT 53.020 21.370 54.120 226.710 ;
+        RECT 56.720 21.370 90.420 226.710 ;
+        RECT 93.020 21.370 94.120 226.710 ;
+        RECT 96.720 21.370 130.420 226.710 ;
+        RECT 133.020 21.370 134.120 226.710 ;
+        RECT 136.720 21.370 170.420 226.710 ;
+        RECT 173.020 21.370 174.120 226.710 ;
+        RECT 176.720 21.370 210.420 226.710 ;
+        RECT 213.020 21.370 214.120 226.710 ;
+        RECT 216.720 21.370 219.940 226.710 ;
   END
 END asic_digital_top
 END LIBRARY

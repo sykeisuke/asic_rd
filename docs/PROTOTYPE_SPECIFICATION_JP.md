@@ -134,9 +134,10 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | 名前 | 種類 | 役割 |
 | --- | --- | --- |
 | `VIN` | Analog voltage | 4 cell へ共通に配る連続入力 |
-| `s0[i]` | Digital control、HIGH = 閉 | 入力 transmission gate `VIN` → `VTOP[i]`（Analog_top の `S0`） |
-| `s2[i]` | Digital control、HIGH = 閉 | `VBOT[i]` → `VREF` の switch。**立下がりがサンプル時刻。`s0[i]` より TNOV = 5 ns 先に開く**（Analog_top の `S2`） |
-| `s1[i]` | Digital control、HIGH = 閉 | `VTOP[i]` → `VRAMP` の switch。`s2[i]` の 2 TNOV 後に閉じ、変換中は閉じたまま（Analog_top の `S1`） |
+| `s0[i]` | macro 内部の制御、HIGH = 閉 | 入力 transmission gate `VIN` → `VTOP[i]`（Analog_top の `S0`） |
+| `s2[i]` | macro 内部の制御、HIGH = 閉 | `VBOT[i]` → `VREF` の switch。**立下がりがサンプル時刻。`s0[i]` より 5 ns 以上先に開く**（Analog_top の `S2`） |
+| `s1[i]` | macro 内部の制御、HIGH = 閉 | `VTOP[i]` → `VRAMP` の switch。`s0[i]` が開いてから 5 ns 以上後に閉じ、変換中は閉じたまま（Analog_top の `S1`） |
+| `acq` | Digital control、HIGH = track | デジタル macro から渡る唯一の制御。macro 内の sequencer（`mixed_signal/sample_seq`、ADR 0027）がこれと `cnt_clk` から 4 cell の `s2`/`s0`/`s1` を作る |
 | `VREF` | Analog 基準 | 基準極板の固定電位。comparator の判定基準でもある |
 | `VRAMP` | Analog voltage | 全 cell 共通の ramp。0 V から開始 |
 
@@ -152,7 +153,7 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 必須要求:
 
 - 4 個の cell が、異なる入力値を意図した順番で保存する。
-- `HOLD_REF[i]` → `SAMPLE[i]` の順序（目標 1–3 ns）をチップ内で生成し、シミュレーションで観測できる。
+- `s2` → `s0` → `s1` の順序は Analog_top macro 内の sequencer が `acq` から生成する（各 phase 間 5 ns 以上、全 PVT。2026-11-03、ADR 0027）。デジタル側の self-test は `acq` と ramp のタイミングをそれに照らして検査する。
 - Acquisition error、pedestal（平均と入力依存性）、hold droop、寄生ゲインの測定方法を定義する。
 - 選択されていない cell を意図せず上書きしない。
 
@@ -186,7 +187,7 @@ code範囲 = 0 ... 255。交差しない cell は 255 を返し timeout[i] = 1
 Controller の順序:
 
 ```text
-IDLE（track）→ SAMPLE（s2[k] を 1 clock ずつ）→ WAIT（6 clock）→ CONVERT → [full scale 時 DRAIN] → RETRACK → DONE
+IDLE（track）→ acq を下げる → SAMPLE（edge k で cell k が標本化）→ WAIT（6 clock）→ CONVERT → [full scale 時 DRAIN] → RETRACK → DONE
 ```
 
 - 共有 8-bit binary counter。controller は毎立上がりで 4 本のラッチ済みフラグ `q[3:0]` をサンプルし、`q[i]` が最初に LOW と見えた edge の count を cell ごとに記録する（`floor((t_qfall − TR)/TCOUNT)` に等しい。ADR 0010、以前の非同期 Gray 捕捉の記述は廃止）。Gray 符号化もクロックドメイン交差もデジタル側に無い。
@@ -197,7 +198,7 @@ IDLE（track）→ SAMPLE（s2[k] を 1 clock ずつ）→ WAIT（6 clock）→ 
 
 ### 5.5 Sampling timingとconversion timing
 
-Testbench では `SAMPLE0..3` の開始を 10、50、90、130 ns とし、40 ns 間隔は 25 MSa/s に相当する（2026-09-18 のレビューでは 50 MSa/s も議論され、Tape-out 1 では基板側で制御するパラメータのまま）。各 cell 内では基準側 switch が入力 gate より 1–3 ns 先に開く。
+4 cell は変換クロック 1 周期ずつ（TS_k = TS_0 + k × 50 ns、合計 20 MSa/s）標本化する。基板からの `start` でデジタル top が `acq` を下げ、macro 内の sequencer が `acq` の LOW を最初に見た edge から k 番目の edge で cell k の基準側 switch を開く。各 cell 内では基準側 switch が入力 gate より 5 ns 以上先に開き、ramp gate はさらに 5 ns 以上後に閉じる（Analog_top `tb_params.inc`、`sample_seq`）。ramp は TR = TS_3 + 300 ns（6 clock）で解放する。
 
 Conversion clock は独立したパラメータ。20 MHz 基準で `TCOUNT = 50 ns`、4 cell の並列 8-bit 変換は 256 count = 12.8 µs に接続・整定のオーバーヘッドを加えた時間で完了する。Tape-out 1 は短い 4 sample 記録を取得後に変換する構成であり、dead-time-free の連続サンプラではない。
 
@@ -242,7 +243,7 @@ PVT、mismatch、PEX、package効果、測定不確かさを含めるまでは�
 ### 7.2 デジタル回路
 
 - 共有 8-bit counter と Gray-coded asynchronous capture 4 系統。
-- 並列 conversion controller（sampling sequence / wait / convert / drain / retrack）と cell スイッチ用遅延線。
+- 並列 conversion controller（acquire / wait / convert / drain / retrack）。cell スイッチの順序そのものは analog macro 内で生成する（ADR 0027）。
 - 8-bit result register 4 個と cell ごとの timeout flag。
 - 32-bit 同期 serial readout。
 - Reset、test mode、timeout、status logic。

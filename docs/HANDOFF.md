@@ -159,10 +159,11 @@ spec; the v0.5 blocks listed below remain as legacy references.
 8. ~~Synchronous capture option~~ — **adopted 2026-10-09, interface fixed
    2026-10-28** (ADR 0010): the digital top now matches
    `mixed_signal/Analog_top` (`q[3:0]` from the cells' `dfxtn_2` latches,
-   `cnt_clk`, the `s0/s1/s2` sampling sequence with 5 ns / 10 ns delay
-   lines, `ramp_rst` at TS_3 + 300 ns). Open: PVT spread of the delay-line
-   TNOV (about +-40 %) — acceptable as a calibrated offset, or make it
-   trimmable; and a mixed-signal co-simulation of `tb_analog_top` with the
+   `cnt_clk`, `ramp_rst` at TS_3 + 300 ns). Since 2026-11-03 (Analog_top
+   v7, ADR 0027) the cell switch sequence is made inside the macro by
+   `mixed_signal/sample_seq` from the digital top's acquire level `acq`;
+   the digital delay lines are retired, which closes the PVT question on
+   them. Open: a mixed-signal co-simulation of `tb_analog_top` with the
    RTL (the RTL reproduces the bench's latch rule by construction).
 9. **Mixed-signal co-simulation of the new path**: bottom-plate cell crossing
    times into the parallel controller (replacing the legacy MUX co-sim).

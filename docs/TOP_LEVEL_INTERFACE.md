@@ -24,8 +24,8 @@ Revised 2026-09-18 for the parallel, bottom-plate architecture (spec 0.6).
 | `rst_n` | input | Active-low global digital reset |
 | `start` | input | Start the parallel four-cell conversion |
 | `q[3:0]` | analog-to-digital | Cell latch output (negative-edge flop on `cnt_clk` after the comparator): HIGH before the crossing, falls once after it (ADR 0010, Analog_top `Q`) |
-| `cnt_clk` | digital-to-analog | Conversion clock forwarded to the four cell latches |
-| `s0[3:0]`, `s1[3:0]`, `s2[3:0]` | digital-to-analog | Cell switches (HIGH = closed): `s2` falls at the sampling instant, `s0` 5 ns later, `s1` closes 10 ns after `s2` (Analog_top `S0/S1/S2`) |
+| `cnt_clk` | digital-to-analog | Conversion clock forwarded to the macro's sequencer and the four cell latches |
+| `acq` | digital-to-analog | Acquire level, HIGH = track (a flop on the rising edge). The macro's sequencer opens cell k's S2 at the k-th rising edge after the edge that first sees `acq` low, then S0 and S1 (ADR 0027, Analog_top `ACQ`) |
 | `shift_en` | input | Shift one result bit on rising `clk` |
 | `serial_data` | output | LSB-first 32-bit result stream `{cell3, cell2, cell1, cell0}` |
 | `data_ready` | output | Result word loaded and available |
@@ -34,9 +34,13 @@ Revised 2026-09-18 for the parallel, bottom-plate architecture (spec 0.6).
 | `conversion_timeout[3:0]` | output/test | Cell never crossed (its code reads 255) |
 | `ramp_rst` | digital-to-analog | HIGH = ramp held at `VR_LO`; falls at TR = TS_3 + 300 ns on a rising clock edge (Analog_top `RAMP_RST`) |
 
-The digital macro exposes 31 scalar signal pins; the 18 analog-side ones
-(`q`, `cnt_clk`, `s0/s1/s2`, `ramp_rst`) connect to the Analog_top macro,
-not to pads; test multiplexing is still required.
+The digital macro exposes 20 scalar signal pins; the 7 analog-side ones
+(`q`, `cnt_clk`, `acq`, `ramp_rst`) connect to the Analog_top macro, not to
+pads; test multiplexing is still required.
+
+Until 2026-11-03 the digital top drove the twelve cell switch controls
+`s0/s1/s2[3:0]` with its own delay lines (5 ns / 10 ns); Analog_top v7
+makes them inside the macro from `acq` and `cnt_clk`.
 
 Until 2026-10-28 the capture was asynchronous (`compare_high[3:0]` as local
 capture clocks) with `acquire`/`ramp_connect`/`ramp_reset` mode outputs;
