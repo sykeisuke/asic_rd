@@ -8,8 +8,7 @@ module tb_asic_digital_top;
     reg [3:0] dout = 4'b1111;      // comparators, armed high
     reg [3:0] q = 4'b1111;         // Analog_top latches (negative edge)
     reg shift_en = 1'b0;
-    wire [3:0] s0, s1, s2;
-    wire ramp_rst, cnt_clk;
+    wire acq, ramp_rst, cnt_clk;
     wire serial_data, data_ready, conversion_busy, conversion_done;
     wire [3:0] conversion_timeout;
     reg [31:0] shifted_data;
@@ -17,7 +16,7 @@ module tb_asic_digital_top;
 
     asic_digital_top dut (
         .clk(clk), .rst_n(rst_n), .start(start), .q(q), .shift_en(shift_en),
-        .s0(s0), .s1(s1), .s2(s2), .ramp_rst(ramp_rst), .cnt_clk(cnt_clk),
+        .acq(acq), .ramp_rst(ramp_rst), .cnt_clk(cnt_clk),
         .serial_data(serial_data), .data_ready(data_ready),
         .conversion_busy(conversion_busy), .conversion_done(conversion_done),
         .conversion_timeout(conversion_timeout)
@@ -74,10 +73,10 @@ module tb_asic_digital_top;
         if (data_ready)
             $fatal(1, "data_ready did not clear after 32 shifts");
         #30;
-        if (s2 !== 4'b1111 || s0 !== 4'b1111 || s1 !== 4'b0000 || !ramp_rst)
-            $fatal(1, "cells not back to track: s2=%b s0=%b s1=%b ramp_rst=%b", s2, s0, s1, ramp_rst);
+        if (!acq || !ramp_rst)
+            $fatal(1, "cells not back to track: acq=%b ramp_rst=%b", acq, ramp_rst);
 
-        $display("PASS: sample-to-serial digital flow codes=16,20,27,200 (8-bit x4, 32-bit frame, Analog_top interface)");
+        $display("PASS: sample-to-serial digital flow codes=16,20,27,200 (8-bit x4, 32-bit frame, Analog_top v7 interface)");
         $finish;
     end
 

@@ -2,16 +2,19 @@
 `default_nettype none
 
 // Parallel Wilkinson controller for the Analog_top macro (mixed_signal/
-// Analog_top, PIN_LIST.md / tb_params.inc), synchronous capture (ADR 0010).
+// Analog_top v7, PIN_LIST.md / tb_params.inc), synchronous capture (ADR
+// 0010) with the sampling sequencer inside the macro (ADR 0027).
 //
-// Interface to the analog macro (all switches HIGH = closed):
-//   s2[i]  bottom plate to vref. Its FALLING edge is cell i's sampling
-//          instant TS_i. Cells are sampled one clock apart (TSPACE = TCOUNT).
-//   s0[i]  input gate; opens TNOV after s2 (delay line, 5 ns nominal).
-//   s1[i]  ramp gate; closes 2 TNOV after s2 (delay line, 10 ns nominal)
-//          and stays closed through the conversion.
-//   ramp_rst  HIGH = ramp held at VR_LO. Falls at TR = TS3 + TR_CYCLES clocks
-//          (300 ns = 6 clocks), on a rising clock edge; the count starts there.
+// Interface to the analog macro:
+//   acq    the acquire level, HIGH = track. A flop on the rising clock edge.
+//          The macro's sequencer (mixed_signal/sample_seq) opens cell k's S2
+//          at the k-th rising edge after the edge that first sees acq low
+//          (TS_k = TS_0 + k TCOUNT, the sampling instant), then S0 and S1
+//          with its own delay line. When acq returns high the cells
+//          re-enter track (S1 opens first, then S0 / S2 close).
+//   ramp_rst  HIGH = ramp held at VR_LO. Falls at TR = TS_3 + TR_CYCLES
+//          clocks (300 ns = 6 clocks), on a rising clock edge; the count
+//          starts there.
 //   q[i]   the cell's latch (negative-edge flop on cnt_clk): HIGH before the
 //          crossing, falls once at the first FALLING clock edge after the
 //          comparator decides. code_i = floor((t_qfall_i - TR) / TCOUNT),
@@ -19,19 +22,18 @@
 //          q[i] low (CAPTURE_LATENCY = 0).
 //
 // Sequence from `start` (one clock per step):
-//   IDLE     s2=s0=1, s1=0, ramp_rst=1            tracking
-//   SAMPLE   s2[k] <= 0 at cycle k (k = 0..3); s0/s1 follow by delay line
+//   IDLE     acq=1, ramp_rst=1                     tracking
+//   (start)  acq <= 0 on this edge; the next edge, E0, is TS_0
+//   SAMPLE   edges E0..E3: cell k samples at E_k (sequencer, nothing to drive)
 //   WAIT     TR_CYCLES clocks after the last sample (S1 charge drains, R6)
 //   CONVERT  ramp_rst <= 0, counter 0,1,2,...; q flags sampled every edge
 //   DRAIN    counter at full scale: one more cycle for a q from the last count
-//   RETRACK  ramp_rst <= 1 and s1 off (s1_en <= 0); next cycle s2=s0=1, done
+//   RETRACK  ramp_rst <= 1; next edge acq <= 1 (cells re-track), done
 module parallel_wilkinson_controller #(
     parameter WIDTH = 8,
     parameter CELLS = 4,
     parameter TR_CYCLES = 6,
-    parameter S0_STAGES = 12,
-    parameter S1_STAGES = 25,
-    // 1: q is HIGH before the crossing and falls after it (Analog_top v5,
+    // 1: q is HIGH before the crossing and falls after it (Analog_top,
     // comparator inn = bottom plate). 0: the opposite polarity, should the
     // comparator inputs be swapped.
     parameter Q_FALLS_AT_CROSSING = 1
@@ -40,9 +42,7 @@ module parallel_wilkinson_controller #(
     input  wire                   rst_n,
     input  wire                   start,
     input  wire [CELLS-1:0]       q,
-    output reg  [CELLS-1:0]       s2,
-    output wire [CELLS-1:0]       s0,
-    output wire [CELLS-1:0]       s1,
+    output reg                    acq,
     output reg                    ramp_rst,
     output wire [CELLS*WIDTH-1:0] codes,
     output reg  [CELLS-1:0]       timeout,
@@ -59,24 +59,10 @@ module parallel_wilkinson_controller #(
     reg [2:0]       state;
     reg [7:0]       wait_count;
     reg [$clog2(CELLS+1)-1:0] cell_idx;
-    reg             s1_en;
     reg [WIDTH-1:0] binary_count;
     reg [CELLS*WIDTH-1:0] code_r;
     reg [CELLS-1:0]       captured;
     assign codes = code_r;
-
-    // Switch order inside a cell, from s2 through fixed delay lines.
-    wire [CELLS-1:0] s2_d1;
-    wire [CELLS-1:0] s2_d2;
-    genvar g;
-    generate
-        for (g = 0; g < CELLS; g = g + 1) begin : sw
-            delay_line #(.STAGES(S0_STAGES)) u_d0 (.a(s2[g]), .y(s2_d1[g]));
-            delay_line #(.STAGES(S1_STAGES)) u_d1 (.a(s2[g]), .y(s2_d2[g]));
-        end
-    endgenerate
-    assign s0 = s2_d1;                          // opens TNOV after s2
-    assign s1 = {CELLS{s1_en}} & ~s2_d2;        // closes 2 TNOV after s2, off at retrack
 
     wire [CELLS-1:0] crossed = (Q_FALLS_AT_CROSSING != 0) ? ~q : q;
     wire all_captured = &captured;
@@ -87,8 +73,7 @@ module parallel_wilkinson_controller #(
             state        <= IDLE;
             wait_count   <= 8'd0;
             cell_idx     <= 0;
-            s2           <= {CELLS{1'b1}};
-            s1_en        <= 1'b0;
+            acq          <= 1'b1;
             ramp_rst     <= 1'b1;
             binary_count <= {WIDTH{1'b0}};
             code_r       <= {(CELLS*WIDTH){1'b0}};
@@ -101,8 +86,7 @@ module parallel_wilkinson_controller #(
 
             case (state)
                 IDLE: begin
-                    s2       <= {CELLS{1'b1}};
-                    s1_en    <= 1'b0;
+                    acq      <= 1'b1;
                     ramp_rst <= 1'b1;
                     busy     <= 1'b0;
                     if (start) begin
@@ -110,15 +94,14 @@ module parallel_wilkinson_controller #(
                         captured <= {CELLS{1'b0}};
                         timeout  <= {CELLS{1'b0}};
                         cell_idx <= 0;
-                        s1_en    <= 1'b1;        // s1 may close once s2 has fallen
+                        acq      <= 1'b0;        // the next edge is TS_0
                         busy     <= 1'b1;
                         state    <= SAMPLE;
                     end
                 end
 
                 SAMPLE: begin
-                    // TS_k: this rising edge opens S2 of cell k.
-                    s2[cell_idx] <= 1'b0;
+                    // TS_k: the sequencer opens S2 of cell k on this edge.
                     if (cell_idx == CELLS - 1) begin
                         wait_count <= TR_CYCLES - 1;
                         state      <= WAIT;
@@ -147,7 +130,6 @@ module parallel_wilkinson_controller #(
                     end
                     if (all_captured) begin
                         ramp_rst <= 1'b1;
-                        s1_en    <= 1'b0;
                         state    <= RETRACK;
                     end else if (&binary_count) begin
                         ramp_rst <= 1'b1;
@@ -168,13 +150,14 @@ module parallel_wilkinson_controller #(
                             timeout[i] <= 1'b1;
                         end
                     end
-                    s1_en <= 1'b0;
                     state <= RETRACK;
                 end
 
                 RETRACK: begin
-                    // s1 opened on the previous edge; now close s2 (s0 follows).
-                    s2    <= {CELLS{1'b1}};
+                    // The ramp was reset on the previous edge; the cells
+                    // re-enter track from here (the sequencer orders S1,
+                    // then S0 / S2).
+                    acq   <= 1'b1;
                     busy  <= 1'b0;
                     done  <= 1'b1;
                     state <= IDLE;

@@ -15,13 +15,12 @@
 //                                      no comparator on this chip)
 //
 //   bidir[0]  serial_data    bidir[4..7]  conversion_timeout[3..0]
-//   bidir[1]  data_ready     bidir[8]     s0[0]  (cell 0 input gate)
-//   bidir[2]  conversion_busy bidir[9]    s2[0]  (cell 0 bottom-plate switch)
-//   bidir[3]  conversion_done bidir[10]   s1[0]  (cell 0 ramp gate)
-//                            bidir[11]    ramp_rst
-//                            bidir[12]    comparator output (wsa_cmp.dout)
-//                            bidir[13]    q[0] (stand-in latch), bidir[14] wsa_inv_gf.Y
-//                            bidir[14..] unused: output and input off, pull-down
+//   bidir[1]  data_ready     bidir[8]     acq (acquire level, HIGH = track)
+//   bidir[2]  conversion_busy bidir[9]    ramp_rst
+//   bidir[3]  conversion_done bidir[10]   comparator output (wsa_cmp.dout)
+//                            bidir[11]    q[0] (stand-in latch)
+//                            bidir[12]    wsa_inv_gf.Y
+//                            bidir[13..] unused: output and input off, pull-down
 //
 //   analog[0] wsa_cmp.vin    (held voltage in standalone mode)
 //   analog[1] wsa_cmp.vramp  (external ramp)
@@ -29,8 +28,10 @@
 //   analog[3] wsa_inv.A      analog[4] wsa_inv.Y      analog[5] spare
 //
 // Digital top: the 8-bit parallel architecture of spec 0.6 (2026-09-18):
-// four capture channels compare_high[3:0], no analog MUX, acquire /
-// ramp_connect / ramp_reset mode outputs, 32-bit frame.
+// four cells, no analog MUX, synchronous capture of the cells' latched
+// flags q[3:0] (ADR 0010), the acquire level acq and ramp_rst for the
+// Analog_top macro, whose own sequencer makes the cell switch controls
+// (ADR 0027), 32-bit frame.
 //
 // Comparator polarity (simulations/gf180_comparator): dout is high while
 // vin > vramp and falls at the crossing, which is the edge the capture
@@ -67,7 +68,7 @@ module chip_core #(
     inout  wire [NUM_ANALOG_PADS-1:0] analog  // Analog
 );
 
-    localparam NUM_OUT = 15;
+    localparam NUM_OUT = 13;
 
     // Pad control. The first NUM_OUT bidirectional pads are outputs; the
     // rest are switched off and pulled down so they do not float.
@@ -154,11 +155,11 @@ module chip_core #(
         .Y     (inv_gf_y)
     );
 
-    // Digital top, as is (Analog_top interface). The sampling-sequence
-    // outputs s0/s1/s2 and ramp_rst have no consumer on this chip (wsa_cmp
-    // is a bare comparator); they go to pads so the sequence is observable.
+    // Digital top, as is (Analog_top v7 interface). acq and ramp_rst have
+    // no consumer on this chip (wsa_cmp is a bare comparator); they go to
+    // pads so the timeline is observable.
 
-    wire [3:0] s0, s1, s2;
+    wire       acq;
     wire       ramp_rst;
     wire       cnt_clk;
     wire       serial_data;
@@ -173,9 +174,7 @@ module chip_core #(
         .start              (start),
         .q                  (q),
         .shift_en           (shift_en),
-        .s0                 (s0),
-        .s1                 (s1),
-        .s2                 (s2),
+        .acq                (acq),
         .ramp_rst           (ramp_rst),
         .cnt_clk            (cnt_clk),
         .serial_data        (serial_data),
@@ -194,9 +193,7 @@ module chip_core #(
         q0_n,
         cmp_dout,
         ramp_rst,
-        s1[0],
-        s2[0],
-        s0[0],
+        acq,
         conversion_timeout,
         conversion_done,
         conversion_busy,

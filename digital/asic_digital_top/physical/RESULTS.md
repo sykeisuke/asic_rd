@@ -1,30 +1,29 @@
 # Digital RTL-to-GDS results
 
-Date: 2026-10-28 (digital top for the Analog_top interface: sampling
-sequencer with delay lines, synchronous `q` capture; **3.3 V library
-`gf180mcu_as_sc_mcu7t3v3`**. The 2026-09-25 asynchronous-capture run was
-292 x 310 um with 1508 standard cells; the 2026-08-11 reference run the 6-bit
-sequential top at 5 V: 798 cells, 50297.5 um^2 die)
+Date: 2026-11-03 (digital top for the Analog_top v7 interface: `acq`
+instead of the switch sequence, no delay lines, synchronous `q` capture;
+**3.3 V library `gf180mcu_as_sc_mcu7t3v3`**, PDK `792ef670`. The
+2026-10-28 run with the delay lines was 274 x 292 um with 1324 standard
+cells; the 2026-09-25 asynchronous-capture run 292 x 310 um with 1508; the
+2026-08-11 reference run the 6-bit sequential top at 5 V: 798 cells,
+50297.5 um^2 die)
 
 Tool environment: LibreLane in the pinned IIC-OSIC-TOOLS 2026.07 container
-(OpenROAD, Magic, KLayout, Netgen), PDK commit `792ef670` (baseline since
-2026-11-01; re-verified clean on it: 0 routing/Magic/KLayout DRC, 0 LVS,
-0 timing/antenna violations) with the 3.3 V standard cells fetched by
-`make pdk`. The figures below are from the `f6eeac7d` run; the committed
-views are refreshed with the next design change.
+(OpenROAD, Magic, KLayout, Netgen), PDK commit `792ef670` with the 3.3 V
+standard cells fetched by `make pdk`.
 
 | Metric | Result |
 | --- | ---: |
-| Die size | 274.11 um x 292.03 um |
-| Die area | 80048 um^2 |
-| Core utilization | 36.4 % |
-| Routed standard cells | 1324 (3808 instances incl. fill/tap; 148 delay-line stages) |
-| Sequential cells | 112 |
-| Routed wire length | 22833 um |
-| Routed vias | 4057 |
-| Estimated total power (20 MHz) | 1.99 mW |
-| Worst setup slack (all corners) | 29.47 ns |
-| Worst hold slack (all corners) | 0.373 ns |
+| Die size | 239.44 um x 257.36 um |
+| Die area | 61622 um^2 |
+| Core utilization | 37.0 % |
+| Routed standard cells | 954 (2832 instances incl. fill/tap) |
+| Sequential cells | 108 |
+| Routed wire length | 19517 um |
+| Routed vias | 3347 |
+| Estimated total power (20 MHz) | 1.46 mW |
+| Worst setup slack (all corners) | 43.25 ns |
+| Worst hold slack (all corners) | 0.364 ns |
 
 Signoff-oriented checks:
 
@@ -41,6 +40,7 @@ Signoff-oriented checks:
 
 Single clock: `q[3:0]` are synchronous data inputs (latched on the falling
 edge inside the analog cells, ADR 0010); `cnt_clk` is the clock forwarded to
-the macro. The cell switch timing (5 ns / 10 ns) comes from kept delay-line
-cells, not from STA. IR-drop numbers are provisional
+the macro, `acq` a registered output from which the macro's own sequencer
+makes the cell switch timing (ADR 0027), so nothing in this block is
+PVT-dependent beyond STA. IR-drop numbers are provisional
 because package source locations are not yet known.
