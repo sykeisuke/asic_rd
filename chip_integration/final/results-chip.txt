@@ -1,0 +1,106 @@
+inputs_manifest_ok = 1
+librelane_exit = 0
+flow_error_lines = 0
+design__lint_error__count = 0
+design__lint_timing_construct__count = 0
+design__lint_warning__count = 2
+design__inferred_latch__count = 0
+design__instance__count = 190698
+design__instance__area = 9.021E+6
+design__instance_unmapped__count = 0
+synthesis__check_error__count = 0
+power__internal__total = 0.014975892379879951
+power__switching__total = 0.0016573035391047597
+power__leakage__total = 1.175144461740274E-7
+power__total = 0.01663331314921379
+design__max_slew_violation__count = 15
+design__max_fanout_violation__count = 1
+design__max_cap_violation__count = 106
+clock__skew__worst_hold = 0.0
+clock__skew__worst_setup = 0.0
+timing__hold__ws = 0.5485890785803667
+timing__setup__ws = 19.261492501720014
+timing__hold__tns = 0.0
+timing__setup__tns = 0.0
+timing__hold__wns = 0
+timing__setup__wns = 0.0
+timing__hold_vio__count = 0
+timing__hold_r2r_vio__count = 0
+timing__setup_vio__count = 0
+timing__setup_r2r_vio__count = 0
+design__die__bbox = 0.0 0.0 3932.0 2531.0
+design__core__bbox = 442.4 442.96 3489.92 2085.44
+design__io = 59
+design__die__area = 9.95189E+6
+design__core__area = 5.00549E+6
+design__instance__count__stdcell = 33134
+design__instance__area__stdcell = 150163
+design__instance__count__macros = 7
+design__instance__area__macros = 244041
+design__instance__count__padcells = 760
+design__instance__area__padcells = 3.9614E+6
+design__instance__count__cover = 0
+design__instance__area__cover = 0
+design__instance__utilization = 0.0787542
+design__instance__utilization__stdcell = 0.0315372
+design__rows = 419
+design__sites = 2193676
+flow__warnings__count = 1
+flow__errors__count = 0
+flow__warnings__type_count = 1
+design__power_grid_violation__count = 0
+timing__drv__floating__nets = 0
+timing__drv__floating__pins = 0
+design__instance__displacement__total = 0
+design__instance__displacement__mean = 0
+design__instance__displacement__max = 0
+route__wirelength__estimated = 122098
+design__violations = 0
+design__instance__count__setup_buffer = 0
+design__instance__count__hold_buffer = 0
+global_route__vias = 1493
+global_route__wirelength = 121606
+antenna__violating__nets = 0
+antenna__violating__pins = 0
+route__antenna_violation__count = 0
+antenna_diodes_count = 0
+route__net = 499
+route__net__special = 63
+route__drc_errors = 0
+route__wirelength = 114613
+route__vias = 1220
+route__vias__singlecut = 1220
+route__vias__multicut = 0
+design__disconnected_pin__count = 0
+design__critical_disconnected_pin__count = 0
+route__wirelength__max = 1877.91
+timing__unannotated_net__count = 3178
+timing__unannotated_net_filtered__count = 0
+design__xor_difference__count = 0
+klayout__antenna_error__count = 0
+klayout__density_error__count = 0
+klayout__drc_error__count = 0
+magic__illegal_overlap__count = 0
+design__lvs_device_difference__count = 0
+design__lvs_net_difference__count = 0
+design__lvs_property_fail__count = 0
+design__lvs_error__count = 0
+design__lvs_unmatched_device__count = 0
+design__lvs_unmatched_net__count = 0
+design__lvs_unmatched_pin__count = 0
+Metrics: /foss/designs/chip_integration/librelane/runs/chip_top/final/metrics.csv
+ws_analog_routes = 4
+ws_avdd_rail_breaks = 2
+ws_supply_straps = 4
+REPORT: drawn: analog route analog_PAD[3] (vin): straight at y 1341.60
+REPORT: drawn: analog route _322_ (ext_ramp): pad y 1448.22 -> jog x 476.0 -> pin y 1361.12
+REPORT: drawn: analog route i_chip_core.amon (amon): pad y 1589.22 -> jog x 480.0 -> pin y 1375.65
+REPORT: drawn: analog route i_chip_core.cmp_out (cmp_out): pad y 1730.22 -> jog x 484.0 -> pin y 1390.18
+REPORT: drawn: dvss strap Metal4 x 500.74-510.74 up to VSS Metal5 at y 1513.110, 3 Via4 blocks
+REPORT: drawn: dvdd strap Metal4 x 511.74-521.74 up to VDD Metal5 at y 1507.110, 3 Via4 blocks
+REPORT: drawn: avdd strap from pad x 478.0-488.0 (Metal5 at y 2055.4) down Metal4 x 695.24-705.24 onto the pin, 36 via blocks
+REPORT: drawn: avss strap from pad x 607.0-617.0 (Metal3 at y 2070.4) down Metal4 x 681.24-691.24 onto the pin, 18 via blocks
+lvs_circuits_mismatched = 0
+chip_gds_bytes = 148122204
+GDS: /foss/designs/chip_integration/librelane/runs/chip_top/final/gds/chip_top.gds
+REPORT: librelane last step started: Misc.ReportManufacturability

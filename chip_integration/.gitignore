@@ -1,0 +1,3 @@
+# build output of the flow (inputs/, renders/, final/ are kept)
+work/
+librelane/runs/

@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="805" height="641" viewBox="0 0 805 641" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="white"/>
+<text x="16" y="28" font-size="19" font-weight="bold">wsa_analog_top: LEF made from the analog GDS by macros.py</text>
+<text x="16" y="50" font-size="13" fill="#555">229.20 x 127.10 um, 30 pins; grey = OBS (router keep-out)</text>
+<rect x="108.8" y="132.4" width="640.0" height="354.9" fill="#e6e6e6"/>
+<rect x="108.8" y="132.4" width="640.0" height="354.9" fill="none" stroke="black" stroke-width="2"/>
+<rect x="108.8" y="399.0" width="5.6" height="5.6" fill="#1e8e3e"/>
+<rect x="108.8" y="344.4" width="5.6" height="5.6" fill="#1e8e3e"/>
+<rect x="108.8" y="303.9" width="5.6" height="5.6" fill="#1e8e3e"/>
+<rect x="108.8" y="263.3" width="5.6" height="5.6" fill="#1e8e3e"/>
+<rect x="162.1" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="187.3" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="212.4" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="237.5" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="262.7" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="287.8" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="312.9" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="338.1" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="363.2" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="388.3" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="413.5" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="438.6" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="463.7" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="488.8" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="514.0" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="539.1" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="564.2" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="589.4" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="614.5" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="639.6" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="664.8" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="689.9" y="481.7" width="5.0" height="5.6" fill="#e8710a"/>
+<rect x="132.5" y="132.4" width="27.9" height="22.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="163.3" y="132.4" width="27.9" height="22.3" fill="#d93025" fill-opacity="0.8"/>
+<rect x="636.5" y="132.4" width="27.9" height="22.3" fill="#1a73e8" fill-opacity="0.8"/>
+<rect x="675.6" y="132.4" width="27.9" height="22.3" fill="#d93025" fill-opacity="0.8"/>
+<polyline points="108.8,266.1 100.8,266.1 86.8,266.1" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="82.8" y="270.1" text-anchor="end" font-size="11" fill="#202124">cmp_out</text>
+<polyline points="108.8,306.7 100.8,306.7 86.8,306.7" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="82.8" y="310.7" text-anchor="end" font-size="11" fill="#202124">amon</text>
+<polyline points="108.8,347.2 100.8,347.2 86.8,347.2" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="82.8" y="351.2" text-anchor="end" font-size="11" fill="#202124">ext_ramp</text>
+<polyline points="108.8,401.7 100.8,401.7 86.8,401.7" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text x="82.8" y="405.7" text-anchor="end" font-size="11" fill="#202124">vin</text>
+<polyline points="164.6,487.3 164.6,495.3 164.6,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(168.6,513.3) rotate(90)" font-size="11" fill="#202124">s0_0</text>
+<polyline points="189.8,487.3 189.8,495.3 189.8,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(193.8,513.3) rotate(90)" font-size="11" fill="#202124">s0_1</text>
+<polyline points="214.9,487.3 214.9,495.3 214.9,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(218.9,513.3) rotate(90)" font-size="11" fill="#202124">s0_2</text>
+<polyline points="240.0,487.3 240.0,495.3 240.0,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(244.0,513.3) rotate(90)" font-size="11" fill="#202124">s0_3</text>
+<polyline points="265.2,487.3 265.2,495.3 265.2,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(269.2,513.3) rotate(90)" font-size="11" fill="#202124">s1_0</text>
+<polyline points="290.3,487.3 290.3,495.3 290.3,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(294.3,513.3) rotate(90)" font-size="11" fill="#202124">s1_1</text>
+<polyline points="315.4,487.3 315.4,495.3 315.4,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(319.4,513.3) rotate(90)" font-size="11" fill="#202124">s1_2</text>
+<polyline points="340.6,487.3 340.6,495.3 340.6,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(344.6,513.3) rotate(90)" font-size="11" fill="#202124">s1_3</text>
+<polyline points="365.7,487.3 365.7,495.3 365.7,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(369.7,513.3) rotate(90)" font-size="11" fill="#202124">s2_0</text>
+<polyline points="390.8,487.3 390.8,495.3 390.8,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(394.8,513.3) rotate(90)" font-size="11" fill="#202124">s2_1</text>
+<polyline points="416.0,487.3 416.0,495.3 416.0,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(420.0,513.3) rotate(90)" font-size="11" fill="#202124">s2_2</text>
+<polyline points="441.1,487.3 441.1,495.3 441.1,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(445.1,513.3) rotate(90)" font-size="11" fill="#202124">s2_3</text>
+<polyline points="466.2,487.3 466.2,495.3 466.2,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(470.2,513.3) rotate(90)" font-size="11" fill="#202124">ramp_rst</text>
+<polyline points="491.3,487.3 491.3,495.3 491.3,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(495.3,513.3) rotate(90)" font-size="11" fill="#202124">cnt_clk</text>
+<polyline points="516.5,487.3 516.5,495.3 516.5,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(520.5,513.3) rotate(90)" font-size="11" fill="#202124">q0</text>
+<polyline points="541.6,487.3 541.6,495.3 541.6,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(545.6,513.3) rotate(90)" font-size="11" fill="#202124">q1</text>
+<polyline points="566.7,487.3 566.7,495.3 566.7,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(570.7,513.3) rotate(90)" font-size="11" fill="#202124">q2</text>
+<polyline points="591.9,487.3 591.9,495.3 591.9,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(595.9,513.3) rotate(90)" font-size="11" fill="#202124">q3</text>
+<polyline points="617.0,487.3 617.0,495.3 617.0,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(621.0,513.3) rotate(90)" font-size="11" fill="#202124">ramp_sel</text>
+<polyline points="642.1,487.3 642.1,495.3 642.1,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(646.1,513.3) rotate(90)" font-size="11" fill="#202124">amon_sel0</text>
+<polyline points="667.3,487.3 667.3,495.3 667.3,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(671.3,513.3) rotate(90)" font-size="11" fill="#202124">amon_sel1</text>
+<polyline points="692.4,487.3 692.4,495.3 692.4,509.3" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(696.4,513.3) rotate(90)" font-size="11" fill="#202124">cmp_sa_en</text>
+<polyline points="146.5,132.4 146.5,124.4 146.5,110.4" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(150.5,106.4) rotate(-90)" font-size="11" fill="#202124">dvss</text>
+<polyline points="177.2,132.4 177.2,124.4 177.2,110.4" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(181.2,106.4) rotate(-90)" font-size="11" fill="#202124">dvdd</text>
+<polyline points="650.5,132.4 650.5,124.4 650.5,110.4" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(654.5,106.4) rotate(-90)" font-size="11" fill="#202124">avss</text>
+<polyline points="689.6,132.4 689.6,124.4 689.6,110.4" fill="none" stroke="#9aa0a6" stroke-width="0.8"/>
+<text transform="translate(693.6,106.4) rotate(-90)" font-size="11" fill="#202124">avdd</text>
+<rect x="16" y="594" width="13" height="13" fill="#1e8e3e"/>
+<text x="34" y="605" font-size="12">Metal3 pin</text>
+<rect x="116" y="594" width="13" height="13" fill="#e8710a"/>
+<text x="134" y="605" font-size="12">Metal2 pin</text>
+<rect x="216" y="594" width="13" height="13" fill="#1a73e8"/>
+<text x="234" y="605" font-size="12">dvss (ground)</text>
+<rect x="337" y="594" width="13" height="13" fill="#d93025"/>
+<text x="355" y="605" font-size="12">dvdd (power)</text>
+<rect x="451" y="594" width="13" height="13" fill="#1a73e8"/>
+<text x="469" y="605" font-size="12">avss (ground)</text>
+<rect x="572" y="594" width="13" height="13" fill="#d93025"/>
+<text x="590" y="605" font-size="12">avdd (power)</text>
+</svg>
