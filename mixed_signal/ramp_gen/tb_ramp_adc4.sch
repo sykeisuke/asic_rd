@@ -4,11 +4,7 @@ K {}
 V {}
 S {}
 E {}
-T {tb_ramp_adc4 -- the shared ramp generator (ramp_gen) driving four 8-bit true bottom-plate unit cells (cell_bps: S0/S1/S2, 54.52 fF MIM, cmp_bps)
-on the shared bias generator and the two FVF VDD/2 buffers. Every cell samples its own DC level vin_i at TS, connects its bottom plate to vr_cell at TCONN and converts:
-dout_i falls when the ramp passes vin_i; code_i = floor((t_dout_i - TR) / TCOUNT) against floor((vin_i - 0.5 V) / LSB), LSB = 1.5 V / 256.
-RREAL / RIDEAL select the real ramp or an ideal one (RAMP_REAL in case.spice): the difference is the ramp generator's own contribution.
-Timeline, measures, analysis: tb_ramp_adc4_ctl.inc. run.sh netlists this drawing and simulates it.} 60 -1500 0 0 0.32 0.32 {}
+T {TB_RAMP_ADC4  -  ramp_gen driving four 8-bit bottom-plate unit cells} 60 -1420 0 0 0.70 0.70 {}
 C {devices/code_shown.sym} 60 -1320 0 0 {name=MODELS only_toplevel=false value="* models (typical) and the blocks behind the primitive symbols, by path
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
@@ -53,7 +49,7 @@ C {devices/lab_pin.sym} 600 -240 0 1 {name=l17 sig_type=std_logic lab=vbl}
 C {devices/lab_pin.sym} 440 -240 0 0 {name=l18 sig_type=std_logic lab=pbias}
 C {devices/lab_pin.sym} 520 -300 0 1 {name=l19 sig_type=std_logic lab=vdd_bias}
 C {devices/lab_pin.sym} 520 -180 0 1 {name=l20 sig_type=std_logic lab=0}
-T {the ramp generator (DUT) and the real / ideal selector} 800 -900 0 0 0.40 0.40 {layer=13}
+T {ramp generator (DUT), real / ideal selector} 800 -900 0 0 0.40 0.40 {layer=13}
 C {ramp_gen.sym} 1000 -700 0 0 {name=XRG}
 C {devices/lab_pin.sym} 1120 -700 0 1 {name=l21 sig_type=std_logic lab=vramp}
 C {devices/lab_pin.sym} 880 -700 0 0 {name=l22 sig_type=std_logic lab=rst}
@@ -81,7 +77,7 @@ C {devices/lab_pin.sym} 1240 -670 0 1 {name=l38 sig_type=std_logic lab=vr_cell}
 C {devices/res.sym} 1240 -460 0 0 {name=RIDEAL value="\{RSEL_IDEAL\}" footprint=1206 device=resistor m=1}
 C {devices/lab_pin.sym} 1240 -490 0 1 {name=l39 sig_type=std_logic lab=videal}
 C {devices/lab_pin.sym} 1240 -430 0 1 {name=l40 sig_type=std_logic lab=vr_cell}
-T {switch controls (HIGH = closed, shared by the four cells) and the count clock} 800 -300 0 0 0.40 0.40 {layer=13}
+T {switch controls and count clock} 800 -300 0 0 0.40 0.40 {layer=13}
 C {devices/vsource.sym} 820 -160 0 0 {name=VS2 value="PWL(0 0 \{TPWR\} \{VDD\} \{TS\} \{VDD\} \{TS+TEDGE\} 0)" savecurrent=false}
 C {devices/lab_pin.sym} 820 -190 0 1 {name=l41 sig_type=std_logic lab=s2}
 C {devices/lab_pin.sym} 820 -130 0 1 {name=l42 sig_type=std_logic lab=0}
@@ -94,7 +90,7 @@ C {devices/lab_pin.sym} 1060 -130 0 1 {name=l46 sig_type=std_logic lab=0}
 C {devices/vsource.sym} 1180 -160 0 0 {name=VCLK value="PULSE(0 \{VDD\} \{TR\} \{TEDGE\} \{TEDGE\} \{TCOUNT/2-TEDGE\} \{TCOUNT\})" savecurrent=false}
 C {devices/lab_pin.sym} 1180 -190 0 1 {name=l47 sig_type=std_logic lab=clk}
 C {devices/lab_pin.sym} 1180 -130 0 1 {name=l48 sig_type=std_logic lab=0}
-T {four unit cells: each samples its own level vin_i and trips when the ramp passes it} 1500 -900 0 0 0.40 0.40 {layer=13}
+T {four unit cells} 1500 -900 0 0 0.40 0.40 {layer=13}
 C {../ramp_gen/ref/unit_cell_bps/cell_bps.sym} 1700 -600 0 0 {name=XC0}
 C {devices/lab_pin.sym} 1560 -720 0 0 {name=l49 sig_type=std_logic lab=vin0}
 C {devices/lab_pin.sym} 1560 -690 0 0 {name=l50 sig_type=std_logic lab=vr_cell}

@@ -7,9 +7,10 @@ read from the netlist, so the drawing cannot drift from it):
                            comparator / ramp sinks and the midref sources on
                            the right, the MIM decaps beside the core
 
-The text (title, summary box, per-device Id and gm/Id, R and C values, the
-operating-point table) is read from data/op_devices.csv / op_passives.csv
-(verify_bg.py phase opdev) and changes no instance, wire or label.
+The text is a one-line title, one layout line, the section headings, the
+device currents and the R / C values (CLAUDE.md, "Schematic drawings"); the
+numbers are read from data/op_devices.csv / op_passives.csv (verify_bg.py
+phase opdev) and change no instance, wire or label.
 
 schematic.sh netlists it headless and compares it with bias_gen.spice
 instance by instance (check-schematic.awk, terminals and every parameter).
@@ -18,6 +19,7 @@ The Sheet helper follows ../midrail_ref_bkp/midrail_ref_v2/midref_v2_sch.py.
     ./container.sh 'python3 bias_gen_sch.py'
 """
 import os
+import re
 import sys
 
 BLOCK = os.path.dirname(os.path.abspath(__file__))
@@ -107,7 +109,20 @@ class Sheet:
     def text(self, t):
         self.texts.append(t)
 
-    def write(self, path, title):
+    def write(self, path, title, order=()):
+        """order: device names in the deck's order. The instance lines are
+        written in that order (labels and ports after them), so the netlist
+        xschem writes lists the devices as the deck does: the PDK mismatch
+        model draws its random numbers per device in netlist order, and a
+        fixed-seed Monte Carlo draw of the drawing then equals the deck's
+        (tb_mc.sch, xtb.py). The drawing itself does not change."""
+        if order:
+            rank = {n: k for k, n in enumerate(order)}
+
+            def key(c):
+                m = re.search(r"\{name=([^\s}]+)", c)
+                return rank.get(m.group(1) if m else "", len(rank))
+            self.inst = sorted(self.inst, key=key)
         segs = [(a, b, n) for pts, n in self.wires for a, b in zip(pts, pts[1:])]
         pset = set(self.points) | {p for a, b, _ in segs for p in (a, b)}
         out = []
@@ -129,17 +144,17 @@ class Sheet:
 
 
 # ---------------------------------------------------------------- annotation
-# Every number written on the sheet comes from a record of this block:
+# The sheet carries a one-line title, one layout-intent line, the section
+# headings, the device currents and the R / C values (CLAUDE.md, "Schematic
+# drawings"). The numbers come from this block's record:
 #   data/op_devices.csv, data/op_passives.csv   verify_bg.py phase opdev (ngspice,
-#       typical / 27 C / res_typical / 3.3 V, every consumer diode as load,
-#       PDK-model replicas of the resistor strips and the MIM decaps)
+#       typical / 27 C / res_typical / 3.3 V, every consumer diode as load)
 # A missing record prints "not recorded" instead of a number. Text only: no
-# instance, wire or label depends on anything below.
-TXT_TITLE = 0.75          # title hsize / vsize
-TXT_BODY = 0.42           # summary box
-TXT_TAG = 0.36            # values next to devices and the tables
-TAG = "{layer=4}"         # device values: the symbol colour, distinct from the white prose
-HEAD = "{layer=8}"
+# instance, wire or label depends on anything below. ../Analog_top/analog_top_sch.py
+# copies these tags onto bias_gen_s.sch by their positions.
+TXT_TITLE = 0.7           # title hsize / vsize
+TXT_TAG = 0.36            # values next to devices, the layout line
+TAG = "{layer=4}"         # device values: the symbol colour
 
 
 def records():
@@ -172,13 +187,6 @@ def tag(s, x, y, lines, size=TXT_TAG, prop=TAG):
     s.text("T {" + "\n".join(lines) + f"}} {x} {y} 0 0 {size} {size} {prop}")
 
 
-def mos_tag(rows, dev):
-    """Two lines: Id and gm/Id of one device at the bench bias."""
-    i = num(rows, dev, "id", 1e6, "%.3f")
-    g = num(rows, dev, "gmid", 1.0, "%.1f")
-    return [f"Id {say(i, ' uA')}", f"gm/Id {say(g, ' /V')}"]
-
-
 def amp(rows, dev):
     """Id with a unit that shows it: uA, nA or pA."""
     v = num(rows, dev, "id", 1.0, "%.6g")
@@ -192,119 +200,32 @@ def amp(rows, dev):
     return "%.3f pA" % (a * 1e12)
 
 
-def mim_formula(d):
-    """C from the PDK model card's own constants (sm141064_mim.ngspice: c_cox 1.99e-3 F/m2,
-    c_capsw 2.383e-10 F/m) at the drawn W x L, in fF: the cross-check of the ngspice value."""
-    w = float(d["c_width"].rstrip("u"))
-    l = float(d["c_length"].rstrip("u"))
-    return w * l * 1.99 + 2 * (w + l) * 0.2383, w * l, 2 * (w + l)
-
-
 def annotate(s, dv):
     D, P = records()
-    rec = "verify_bg.py opdev -> data/op_devices.csv, op_passives.csv"
-    # ------------------------------------------------ title + summary box
-    s.text(f"T {{BIAS_GEN_V2  -  CONSTANT-GM BETA-MULTIPLIER BIAS GENERATOR, CURRENT OUTPUTS (8-bit ADC)}} "
-           f"40 -1700 0 0 {TXT_TITLE} {TXT_TITLE} {{}}")
-    ic = say(num(P, "i_icmp", "value", 1e6, "%.3f"), " uA")
-    ir = say(num(P, "i_iramp", "value", 1e6, "%.3f"), " uA")
-    iv = say(num(P, "i_ivref", "value", 1e6, "%.2f"), " uA")
-    isup = say(num(P, "i_vdd", "value", 1e6, "%.1f"), " uA")
-    rstr = say(num(P, "xr_string", "value", 1e-3, "%.2f"), " kOhm")
-    body = [
-        "WHAT  Reference current for the 8-bit bottom-plate ADC. An NMOS-defined beta multiplier sets one core current;",
-        "      mirrors hand it out as CURRENTS (no shared bias voltage leaves the block).",
-        f"PINS  vdd / vss: 3.3 V analog supply (AVDD); {isup} from vdd at the bench, incl. the two midref currents.",
-        f"      icmp0..3: SINK {ic} each, into each comparator's own pbias diode (1.68 x its 1.931 uA bench current).",
-        f"      iramp: SINK {ir} into the ramp's pbias diode (nominal 3.1314 uA).",
-        f"      ivref, ivbl: SOURCE {iv} each, into midref_buf ib (0.90 x its 12.36 uA bench current).",
-        f"CORE  XMN1 diode + XMN2 (K = 8 x XMN1) degenerated by R = 5 ppolyf_u strips ({rstr}), 1:1 PMOS mirror XMP1 / XMP2;",
-        "      moderate / weak inversion, so the current goes as about T / R.",
-        "CHOICES  every MOS L 0.9 um, finger W 4 um; one PMOS row over one NMOS row, even finger counts, common centroid;",
-        "      ppolyf_u for its flat TC; untrimmed: the comparator current meets comparator's requirement x (1 + 3 sigma)",
-        "      at all 135 PVT cells; startup bleeder XSB1..4 + kick XSU5, released by XSU4; 1 pF MIM decaps on pb and nb.",
-        "DECISION  ADR 0017.   REPRODUCE  ./scripts/sim.sh bias-gen  (make bias-gen)",
-        "NETLIST  bias_gen.spice, GENERATED by size_bg.py; this drawing by bias_gen_sch.py.",
-    ]
-    s.text("T {" + "\n".join(body) + f"}} 60 -1600 0 0 {TXT_BODY} {TXT_BODY} {{}}")
-    note = [
-        "VALUES ON THIS SHEET (layer-4 tags): ngspice at the block's OWN bench bias, typical / 27 C / res_typical / 3.3 V,",
-        f"every consumer diode as load ({rec}).",
-        "R and C: PDK-model replicas (R = 0.1 V / I; C from the AC current at 1 MHz).",
-        "gm/Id = gm / Id of the BSIM4 instance; Id includes m. In analog_top the loads and biases differ:",
-        "in-macro values are measured there, not here.",
-    ]
-    s.text("T {" + "\n".join(note) + f"}} 1800 -1600 0 0 0.36 0.36 {HEAD}")
-    s.text("B 4 40 -1615 2790 -1250 {fill=false dash=4}")
-    # ------------------------------------------------ values next to the devices
-    # core: in the free band between the pb gate wire (y -780) and the NMOS drains
-    tag(s, 592, -770, ["XMP1"] + mos_tag(D, "xmp1"))
-    tag(s, 792, -770, ["XMP2 (diode)"] + mos_tag(D, "xmp2"))
-    tag(s, 592, -680, ["XMN1 (diode)"] + mos_tag(D, "xmn1"))
-    tag(s, 792, -680, ["XMN2 (K = 8)"] + mos_tag(D, "xmn2"))
-    # resistor strips: value right of each, string total below
-    rs = sorted([k for k in dv if k.startswith("XR")], key=lambda k: int(k[2:]))
-    y = -560 + 30 + 60
-    for k in rs:
-        tag(s, 808, y - 22, [say(num(P, "xr1", "value", 1e-3, "%.3f"), " kOhm")])
-        y += 80
-    tag(s, 800, y - 50, [f"R = {len(rs)} x strip", f"  = {rstr}"])
+    s.text(f"T {{BIAS_GEN  -  constant-gm bias generator, current outputs}} "
+           f"40 -1260 0 0 {TXT_TITLE} {TXT_TITLE} {{}}")
+    s.text(f"T {{layout: one PMOS row over one NMOS row, even finger counts, common centroid}} "
+           f"40 -1190 0 0 {TXT_TAG} {TXT_TAG} {{}}")
+    # core: the bench current once per branch, on the PMOS row
+    tag(s, 592, -770, [amp(D, "xmp1")])
+    tag(s, 792, -770, [amp(D, "xmp2")])
+    # resistor string under XMN2
+    rs = [k for k in dv if k.startswith("XR")]
+    y = -560 + 30 + 60 + 80 * len(rs)
+    tag(s, 800, y - 50, [f"R = {len(rs)} x {say(num(P, 'xr1', 'value', 1e-3, '%.3f'), ' kOhm')}",
+                         f"  = {say(num(P, 'xr_string', 'value', 1e-3, '%.2f'), ' kOhm')}"])
     # MIM decaps
     for name, ycap in (("XCP", -720), ("XCN", -340)):
-        c = num(P, name, "value", 1e15, "%.1f")
-        f, a, per = mim_formula(dv[name])
-        tag(s, 412, ycap + 34, [f"C = {say(c, ' fF')}", f"(card: {f:.1f} fF)"])
+        tag(s, 412, ycap + 34, [f"C = {say(num(P, name, 'value', 1e15, '%.1f'), ' fF')}"])
     # outputs
     x = 1000
     for name in ["XOC0", "XOC1", "XOC2", "XOC3", "XOR"]:
-        tag(s, x + 28, -262, mos_tag(D, name.lower()))
+        tag(s, x + 28, -262, [amp(D, name.lower())])
         x += 160
     x = 1080
     for name in ["XOV", "XOB"]:
-        tag(s, x + 28, -820, mos_tag(D, name.lower()))
+        tag(s, x + 28, -820, [amp(D, name.lower())])
         x += 240
-    tag(s, 192, -400, ["bleeder " + say(num(D, "xsb1", "id", 1e9, "%.2f"), " nA"),
-                       "XSU4 / XSU5", "off at the bench"])
-    # ------------------------------------------------ device table (right)
-    X0, Y0 = 1800, -1060
-    s.text(f"T {{DEVICE OPERATING POINT AT THE BENCH BIAS}} {X0} {Y0} 0 0 0.5 0.5 {HEAD}")
-    s.text(f"T {{typical / 27 C / res_typical / 3.3 V, ngspice ({rec})}} {X0} {Y0 + 34} 0 0 0.32 0.32 {{}}")
-    groups = [("XMN1", "xmn1", "core diode"), ("XMN2", "xmn2", "core, K x XMN1, on R"),
-              ("XMP1", "xmp1", "PMOS mirror"), ("XMP2", "xmp2", "PMOS mirror diode"),
-              ("XOC0..3", "xoc0", "comparator sinks"), ("XOR", "xor", "ramp sink"),
-              ("XOV, XOB", "xov", "midref sources"), ("XSB1", "xsb1", "startup bleeder (4 in series)"),
-              ("XSU4", "xsu4", "startup release"), ("XSU5", "xsu5", "startup kick (off)")]
-    cols = [("device", 0), ("role", 120), ("Id", 440), ("gm/Id", 560), ("|Vgs|", 660), ("|Vds|", 760), ("Vdsat", 860)]
-    yt = Y0 + 80
-    for (hdr, dx) in cols:
-        col = [hdr]
-        for name, key, role in groups:
-            if hdr == "device":
-                col.append(name)
-            elif hdr == "role":
-                col.append(role)
-            elif hdr == "Id":
-                col.append(amp(D, key))
-            elif hdr == "gm/Id":
-                col.append(say(num(D, key, "gmid", 1.0, "%.2f")))
-            else:
-                c = {"|Vgs|": "vgs", "|Vds|": "vds", "Vdsat": "vdsat"}[hdr]
-                col.append(say(num(D, key, c, 1.0, "%.3f"), " V"))
-        tag(s, X0 + dx, yt, col, prop=TAG if hdr != "device" else "{}")
-    yp = yt + 22 * (len(groups) + 2)
-    s.text(f"T {{PASSIVES (PDK model, ngspice replica)}} {X0} {yp} 0 0 0.5 0.5 {HEAD}")
-    f, a, per = mim_formula(dv["XCP"])
-    w1 = dv[rs[0]]
-    lines = [
-        f"XR1..XR{len(rs)}  ppolyf_u W {w1['r_width']} L {w1['r_length']}: "
-        f"{say(num(P, 'xr1', 'value', 1e-3, '%.3f'), ' kOhm')} each, string {rstr}",
-        f"XCP (pb-vdd), XCN (nb-vss)  cap_mim_2f0 {dv['XCP']['c_width']} x {dv['XCP']['c_length']}: "
-        f"{say(num(P, 'xcp', 'value', 1e15, '%.1f'), ' fF')} each",
-        f"   card check: 1.99 fF/um2 x {a:.1f} um2 + 0.2383 fF/um x {per:.1f} um = {f:.1f} fF",
-        f"nodes: ns {say(num(P, 'v_ns', 'value', 1e3, '%.1f'), ' mV')}, nb {say(num(P, 'v_nb', 'value', 1.0, '%.3f'), ' V')}, "
-        f"pb {say(num(P, 'v_pb', 'value', 1.0, '%.3f'), ' V')}",
-    ]
-    tag(s, X0, yp + 40, lines)
 
 
 def sheet(dv):
@@ -437,7 +358,7 @@ def main():
     net = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BLOCK, "bias_gen.spice")
     sc = subckts(net)["bias_gen"]
     assert sc["ports"] == PORTS, sc["ports"]
-    sheet(sc["dev"]).write(os.path.join(BLOCK, "bias_gen.sch"), "bias_gen")
+    sheet(sc["dev"]).write(os.path.join(BLOCK, "bias_gen.sch"), "bias_gen", order=list(sc["dev"]))
     write_sym()
     print("REPORT: wrote bias_gen.sch/.sym from " + os.path.basename(net))
 

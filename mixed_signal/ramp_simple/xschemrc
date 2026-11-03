@@ -1,0 +1,5 @@
+# xschemrc for mixed_signal/ramp_simple: the PDK's rc. xschem reads ./xschemrc
+# by itself when started in this directory; phases.sh passes it with --rcfile.
+# The sheet uses the PDK device symbols only (symbols/*.sym), so nothing is
+# appended to the library path.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc

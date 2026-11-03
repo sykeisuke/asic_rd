@@ -27,8 +27,8 @@ What is computed here and not in ngspice, and how:
                      the last 1.2 us; the kick each decision leaves on vramp
   q_*                VDD/2 crossings of q_k: falls in (TR, TE+TOVR], falls
                      and rises in (TR, TSTOP], falls in the armed window
-                     (TS_k+2TNOV+TCOUNT, TR]; dout's minimum over
-                     [TS_k+2TNOV+20n, TR]
+                     (TS_k+TSEQ+TCOUNT, TR]; dout's minimum over
+                     [TS_k+TSEQ+20n, TR]
   latch_*            the first cnt_clk falling edge (mid-edge) after dout's
                      fall, the margin dout had before it, q's delay after it,
                      and whether q fell there (clock-to-q <= 20 ns, cmp_tspc
@@ -94,7 +94,7 @@ def main():
         return 1
     VDD, LSB, SLOPE, T = m["p_vdd"], m["p_lsb"], m["p_slope"], m["p_tcount"]
     T0, TS0, TR, TE, TSTOP = m["p_t0"], m["p_ts0"], m["p_tr"], m["p_te"], m["p_tstop"]
-    TOVR, TNOV, TEDGE, VR_LO = m["p_tovr"], m["p_tnov"], m["p_tedge"], m["p_vr_lo"]
+    TOVR, TSEQ, TEDGE, VR_LO = m["p_tovr"], m["p_tseq"], m["p_tedge"], m["p_vr_lo"]
     TSPACE, TSTEP = m["p_tspace"], m["p_tstep"]
     TS = [m["p_ts%d" % k] for k in range(4)]
     POS = [m["p_pos%d" % k] for k in range(4)]
@@ -122,7 +122,8 @@ def main():
         S["dout%d" % c] = sig("xdut.xc%d.dout" % c)
         S["q%d" % c] = sig("q%d" % c)
         for sw in ("s0", "s1", "s2"):
-            S["%s_%d" % (sw, c)] = sig("%s_%d" % (sw, c))
+            # v7: the controls are internal nets of the macro, made by sample_seq
+            S["%s_%d" % (sw, c)] = sig("xdut.%s_%d" % (sw, c))
     for k in ["vavdd", "vdvdd", "v.xdut.vmbg", "v.xdut.vmref", "v.xdut.vmvrlo", "v.xdut.vmramp",
               "v.xdut.vmc0", "v.xdut.vmc1", "v.xdut.vmc2", "v.xdut.vmc3"]:
         S["i_" + k.split(".")[-1]] = sig("i:" + k)
@@ -225,7 +226,7 @@ def main():
         put("q_falls_all%d" % c, falls_all)
         put("q_rises_all%d" % c, rises_all)
         # armed: nothing decides between the S1 connection and TR
-        t_arm = TS[c] + 2 * TNOV
+        t_arm = TS[c] + TSEQ
         w = win(t_arm + T, TR)
         s = (q[w] > TH).astype(int)
         put("q_falls_pre%d" % c, int(np.sum(np.diff(s) == -1)))
@@ -335,9 +336,9 @@ def main():
                    "value at TS0"))
     ev.append(("T0", T0, "", "bias, references and ramp reset settled (tb_params.inc)"))
     for c in range(4):
-        ev.append(("TS%d: S2_%d opens (sample)" % (c, c), TS[c], m.get("vbot_ts%d" % c, NAN), "bot_%d at TS" % c))
-        ev.append(("S0_%d opens" % c, TS[c] + TNOV, m.get("vtop_iso%d" % c, NAN), "top_%d before S1" % c))
-        ev.append(("S1_%d closes" % c, TS[c] + 2 * TNOV, m.get("vbot_con%d" % c, NAN), "bot_%d 20 ns after" % c))
+        ev.append(("S2_%d opens (sample)" % c, m.get("seq_t2_%d" % c, NAN), m.get("vbot_ts%d" % c, NAN), "bot_%d at TS" % c))
+        ev.append(("S0_%d opens" % c, m.get("seq_t0_%d" % c, NAN), m.get("vtop_iso%d" % c, NAN), "top_%d before S1" % c))
+        ev.append(("S1_%d closes" % c, m.get("seq_t1_%d" % c, NAN), m.get("vbot_con%d" % c, NAN), "bot_%d at TS + TSEQ + 10 ns" % c))
     ev.append(("TR: ramp_rst falls, count 0", TR, m.get("vramp_at_tr", NAN), "vramp"))
     for c in range(4):
         ev.append(("cell %d: bot crosses vbl" % c, m.get("t_bot%d" % c, NAN), m.get("vtop_bot%d" % c, NAN), "vramp (= top)"))

@@ -48,28 +48,8 @@ N 1900 -1120 1900 -1160 {}
 N 1900 -880 1900 -840 {}
 N 2140 -1030 2140 -1070 {}
 N 2140 -970 2140 -930 {}
-T {tb_delay: comparator on the unit cell's charge path (plateau level 40.5 LSB), dout into 10 fF} 60 -1619 0 0 0.7 0.7 {}
-T {S2 resets the top plate of the 54.52 fF MIM to VREF and opens at TS = 300 ns (the sample); the bottom plate goes
-from VIN to VR_LO at TCONN and ramps at the 8-bit slope (5.859 mV per 50 ns) from TR = 400 ns. The bench is tb_sel.spice.
-Measures: delay_dyn = t(dout falls through VDD/2) - t(top crosses VTRIP), VTRIP = tb_trip's result (xtb.py writes it in);
-   delay_vbl = the same from top = VBL; fall = dout 90 -> 10 %.
-Gates: block (make comparator): delay from the trip <= 12.5 ns, dout fall <= 6 ns.  This drawing (xtb.py):
-   equal to the bench within 0.1 ns (delays) and 2 % (fall).
-Recorded (runs/comparator-updt-v3-schematic/20261007T232627Z): drawing 10.61 ns / 5.32 ns, bench 10.59 / 5.32 ns;
-   with the PDK symbols' drawn S/D junction geometry 11.30 ns / 5.38 ns.  Typical 27 C, 3.3 V, ideal bias.
-Values: C_S = 54.52 fF MIM 5 x 5 um (PDK model, cap-characterization c_mim2f0_a0025; 1.99 fF/um2 x A + 0.238 fF/um x P
-   = 54.5 fF); CLOAD 10 fF = TSPC latch + wire; RLKT 1e15 ohm = DC path for the floating top plate (numerical, not a
-   device); S2 ideal switch 100 ohm on / 1e16 ohm off.  Reproduce: make comparator-schematic.} 60 -1577 0 0 0.4 0.4 {}
-L 4 40 -1634 1922 -1634 {}
-L 4 1922 -1634 1922 -1290 {}
-L 4 1922 -1290 40 -1290 {}
-L 4 40 -1290 40 -1634 {}
-T {AVDD (comparator) and the bias supply; VVBL = {VDD/2}, VVREF = {VDD/2}, VCLK = 0} 60 -1080 0 0 0.32 0.32 {layer=4}
-T {pbias: I_B = 1.93 uA design (.param IREF = 1.93077e-06 A, data/sizing.json) into one tail finger (L 0.28u, W 1u), diode-connected: tail 20 uA, pair 10 uA each, starve 9.6 uA design (intent.py); nbias leg (REFN, L 1u W 20u nf 10) unused: no-connect port} 60 -800 0 0 0.32 0.32 {layer=4}
-T {bottom plate: VIN until TCONN, then VR_LO, ramp from TR at LSB / TCOUNT} 180 -690 0 0 0.32 0.32 {layer=4}
-T {S2 control: opens at TS (the sample)} 180 -520 0 0 0.32 0.32 {layer=4}
-T {C_S 54.52 fF MIM, top = comparator side} 1440 -840 0 0 0.3 0.3 {}
-T {dout: 10 fF (TSPC latch + wire)} 2080 -900 0 0 0.32 0.32 {}
+T {TB_DELAY  -  comparator delay on the cell's charge path, dout into 10 fF, I_B = 1.93 uA} 60 -1330 0 0 0.7 0.7 {}
+T {C_S 54.52 fF} 1440 -840 0 0 0.3 0.3 {layer=4}
 C {devices/vsource.sym} 120 -1180 0 0 {name=VDD_SOURCE value="\{VDD\}" savecurrent=false}
 C {devices/lab_pin.sym} 120 -1250 0 0 {name=l1 sig_type=std_logic lab=vdd}
 C {devices/lab_pin.sym} 120 -1110 0 0 {name=l2 sig_type=std_logic lab=0}

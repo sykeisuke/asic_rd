@@ -66,11 +66,7 @@ def main():
     verdict(len(m) == need and not nan, "%d of %d operating-point measures present%s"
             % (len(m), need, (", non-numeric: " + " ".join(nan[:5])) if nan else ""))
     devs, _ = flatten(parse(os.path.join(HERE, "analog_top.spice")))
-    rs = {}
-    for ln in open(os.path.join(HERE, "..", "ramp_gen", "data", "ramp_simple_params.spice")):
-        mm = re.match(r"\.param\s+(RS_\w+)=([\d.]+)(u?)", ln)
-        if mm:
-            rs[mm.group(1).lower()] = mm.group(2) + mm.group(3)
+    rs = {}   # every size in the v6 netlist is a number (the v5 ramp's {RS_*} are gone)
 
     def size(path):
         d = devs[path]["params"]
@@ -147,12 +143,10 @@ def main():
     verdict(max(ir) - min(ir) <= 1e-3 * abs(max(ir)),
             "ramp: the five bias_gen_s R carry one current, %.5g .. %.5g uA" % (min(ir) * 1e6, max(ir) * 1e6))
     worst = 0
-    rsw = float(rs.get("rs_cw", "nan").rstrip("u")) * 1e-6     # RS_CW from ramp_simple_params.spice
     for key, path, w, l, role in MIM:
-        if key == "rp_xcr":
-            w = l = rsw
         c = m.get("op_cap_%s" % key, float("nan"))
-        fo = mim_formula(w, l)
+        # the readback includes the instance multiplier (v6: ramp_simple's XCR is one unit, m = 73)
+        fo = mim_formula(w, l) * float(devs[path]["params"].get("m", "1"))
         worst = max(worst, abs(c / fo - 1))
         rc.append(dict(kind="cap", name=path.split(".")[-1].upper() + " " + path.split(".")[0], role=role,
                        state="", value=c, v="", i="", formula=fo))
@@ -173,7 +167,7 @@ def main():
               % (r["device"], r["role"][:22], r["state"], r["id"] * 1e6, r["gm"] * 1e6, r["gm_id"], r["gds"] * 1e6,
                  r["vgs"], r["vds"], r["vth"], r["vov"] * 1e3, r["vds_vdsat"] * 1e3, r["region"], r["model"],
                  r["w_um"], r["l_um"], r["nf"], r["m"]))
-        if r["key"] in ("c0_xinp", "c0_xinn", "c0_xtail", "c0_xloadd", "c0_xrefp", "rp_xps", "rp_xrd", "bg_xmn1",
+        if r["key"] in ("c0_xinp", "c0_xinn", "c0_xtail", "c0_xloadd", "c0_xrefp", "ic_xmo", "ic_xpb", "bg_xmn1",
                         "bg_xmn2", "bg_xmp2", "bg_xoc0", "bg_xor", "bg_xov", "bg_xol", "vl_xmbn", "vl_xmk", "vl_xms", "vl_xm1", "vr_xm1", "vr_xm4", "vr_xm2", "vr_xm5"):
             print("op_%s_%s_id_ua = %.6g" % (r["key"], r["state"], r["id"] * 1e6))
             print("op_%s_%s_gm_id = %.6g" % (r["key"], r["state"], r["gm_id"]))

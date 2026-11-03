@@ -25,16 +25,11 @@ BLOCK = os.path.dirname(os.path.abspath(__file__))
 s = Sheet()
 N, P = "nfet_03v3", "pfet_03v3"
 
-s.T("ramp_gen -- shared single-slope ramp for the 8-bit true bottom-plate cells (.subckt ramp_gen, ramp_gen.spice)\n"
-    "MILLER INTEGRATOR: the slope current I_INT = C_INT x SLOPE (0.469 uA into 4.0 pF -> 117.19 mV/us) is pulled out of the\n"
-    "virtual ground vx, which the OTA holds at vrlo = 0.5 V. vramp = vx + Q/C_INT rises linearly; the cells hang on the driven\n"
-    "output. rst high: XRST shorts XCI, vramp = vx = vrlo. pbias: the ramp's OWN bias_gen (ADR 0012). Sizes: data/ramp_gen_params.spice.",
-    40, -1460, 0.32)
+s.T("RAMP_GEN  -  Miller-integrator single-slope ramp, 0.469 uA into 4.0 pF", 40, -1300, 0.7)
 s.T("slope current", 220, -1180, 0.4, 13)
 s.T("integrator + reset", 640, -1180, 0.4, 13)
 s.T("OTA stage 1", 1250, -1180, 0.4, 13)
 s.T("stage 2, compensation, output", 1700, -1180, 0.4, 13)
-s.T("feedback: vramp -> XCI / XRST -> vx", 980, -1080, 0.25, 4)
 
 for i, (kind, net) in enumerate((("opin", "vramp"), ("ipin", "rst"), ("ipin", "vrlo"), ("ipin", "pbias"),
                                  ("iopin", "vdd"), ("iopin", "vss"))):

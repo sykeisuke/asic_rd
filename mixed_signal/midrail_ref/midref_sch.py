@@ -7,9 +7,9 @@ from the netlist, so the drawing cannot drift from it):
                           drains, the two FVF shunt loops as the only crossings
   midref_div.sch / .sym   the VDD/2 divider and its tap capacitor
 
-The text (title, summary box, per-device Id and gm/Id, R and C values, the
-operating-point table) is read from data/op_devices.csv / op_passives.csv
-(verify_v3.py phase opdev) and changes no instance, wire or label.
+The text (title, section headings, per-device Id, R and C values) is read
+from data/op_devices.csv / op_passives.csv (verify_v3.py phase opdev) and
+changes no instance, wire or label.
 
 schematic.sh netlists both headless and compares them with the subcircuits of
 midref.spice instance by instance (check-schematic.awk).
@@ -105,7 +105,14 @@ class Sheet:
     def text(self, t):
         self.inst_text = getattr(self, "inst_text", []) + [t]
 
-    def write(self, path, title):
+    def write(self, path, title, order=None):
+        if order:
+            # device instances in the deck's order: the hierarchical netlist of a testbench
+            # drawing then expands the PDK's mismatch draws (.options seed) device for device
+            # as the deck does, so one draw is the same sample in both (xtb.py, tb_mc)
+            dev = {re.search(r"name=(\S+)", t).group(1): t for t in self.inst if t.startswith("C {symbols/")}
+            rest = [t for t in self.inst if not t.startswith("C {symbols/")]
+            self.inst = rest + [dev[n] for n in order if n in dev] + [t for n, t in dev.items() if n not in order]
         segs = [(a, b, n) for pts, n in self.wires for a, b in zip(pts, pts[1:])]
         pset = set(self.points) | {p for a, b, _ in segs for p in (a, b)}
         out = []
@@ -127,18 +134,17 @@ class Sheet:
 
 
 # ---------------------------------------------------------------- annotation
-# Every number written on the sheets comes from a record of this block:
+# The sheets carry a title, section headings, labels, the device currents and the
+# R / C values only (CLAUDE.md, "Schematic drawings"); descriptions and the
+# operating-point table live in README.md and data/op_devices.csv. The numbers come from
 #   data/op_devices.csv, data/op_passives.csv   verify_v3.py phase opdev (ngspice,
 #       one midref2 at typical / 27 C / 3.3 V, the ideal i_f into ib, PDK-model
 #       replicas of the divider resistors and the MIM capacitors)
 # A missing record prints "not recorded" instead of a number. Text only: no
 # instance, wire or label depends on anything below.
-TXT_TITLE = 0.75          # title hsize / vsize
-TXT_BODY = 0.42           # summary box
-TXT_TAG = 0.36            # values next to devices and the tables
+TXT_TITLE = 0.6           # title hsize / vsize
+TXT_TAG = 0.36            # values next to devices
 TAG = "{layer=4}"         # device values: the symbol colour, distinct from the white prose
-HEAD = "{layer=8}"
-REC = "verify_v3.py opdev -> data/op_devices.csv, op_passives.csv"
 
 
 def records():
@@ -171,145 +177,25 @@ def tag(s, x, y, lines, size=TXT_TAG, prop=TAG):
     s.text("T {" + "\n".join(lines) + f"}} {x} {y} 0 0 {size} {size} {prop}")
 
 
-def mos_tag(rows, dev):
-    """Two lines: Id and gm/Id (1/V) of one device at the bench bias."""
-    return [f"Id {say(num(rows, dev, 'id', 1e6, '%.2f'), ' uA')}",
-            f"gm/Id {say(num(rows, dev, 'gmid', 1.0, '%.1f'))}"]
-
-
-def mim_formula(d):
-    """C from the PDK model card's own constants (sm141064_mim.ngspice: c_cox 1.99e-3 F/m2,
-    c_capsw 2.383e-10 F/m) at the drawn W x L, in fF: the cross-check of the ngspice value."""
-    w = float(d["c_width"].rstrip("u"))
-    l = float(d["c_length"].rstrip("u"))
-    return w * l * 1.99 + 2 * (w + l) * 0.2383, w * l, 2 * (w + l)
-
-
-def note_lines():
-    return ["VALUES ON THIS SHEET (layer-4 tags): ngspice at the block's OWN bench bias,",
-            "midref (the buffer + its divider), typical / 27 C / 3.3 V, ideal ib = i_f",
-            f"({REC}).",
-            "R and C: PDK-model replicas (R = 1.65 V / I; C from the AC current at 1 MHz).",
-            "gm/Id in 1/V, of the BSIM4 instance. In analog_top ib comes from bias_gen_s",
-            "at 0.90 x i_f, so in-macro Id and gm/Id differ: measured there, not here."]
-
-
 def annotate_buf(s, dv):
     D, P = records()
-    k = int(dv["XM2"]["m"])
-    s.text(f"T {{MIDREF_BUF  -  FVF CLASS-AB VDD/2 BUFFER (VREF = VBL of the 8-bit cell, ONE output)}} 40 -1500 0 0 "
+    s.text(f"T {{MIDREF_BUF  -  FVF class-AB VDD/2 buffer (out = vref = vbl)}} 40 -1100 0 0 "
            f"{TXT_TITLE} {TXT_TITLE} {{}}")
-    ib = say(num(D, "xmbn", "id", 1e6, "%.2f"), " uA")
-    body = [
-        "WHAT  Unity-gain class-AB buffer: copies the VDD/2 tap (vin) to out with a low output impedance.",
-        "      ONE instance drives VREF and VBL of the 8-bit bottom-plate cell (one node; midref, 2026-10-13).",
-        f"PINS  vin: divider tap ({say(num(P, 'v_tap', 'value', 1.0, '%.3f'), ' V')} at the bench).   "
-        f"out: VREF = VBL ({say(num(P, 'v_out', 'value', 1.0, '%.4f'), ' V')}), MIM XCD to vss.",
-        f"      ib: bias current IN, {ib} into the NMOS diode XMBN at the bench (in analog_top: bias_gen_s ivref).",
-        f"      vdd / vss: 3.3 V analog supply (AVDD); {say(num(P, 'i_vdd', 'value', 1e6, '%.2f'), ' uA')} from vdd at the "
-        "bench (one buffer + its own divider + ib).",
-        "CORE  Flipped voltage followers M1 (PMOS) / M4 (NMOS) set p = vin + VSG1 and n = vin - VGS4; shunts M3 / M6",
-        f"      close the FVF loops; output diodes M2 / M5 (= {k} x M1 / M4) between p and n make out = vin.",
-        "      XMIB / XMIT are the follower bias sources (IB), mirrored from ib through XMBN / XMBN2 / XMBP.",
-        "CHOICES  every L 0.34-0.36 um; one finger width per flavour (PMOS 2 um, NMOS 0.5 um); whole fingers, gm/Id-sampled",
-        "      search, knee of the power x area front. The power is set by follower headroom at ff / 85 C / 3.6 V:",
-        "      at short L the shunts need about 30 uA each for their VGS (accepted by the user).",
-        "DECISION  ADR 0016 (sizing), ADR 0021 (one output).   REPRODUCE  ./scripts/sim.sh midrail-ref  (make midrail-ref)",
-        "NETLIST  midref.spice: midref_v2's devices (size_v2.py), one buffer; these drawings by midref_sch.py.",
-    ]
-    s.text("T {" + "\n".join(body) + f"}} 60 -1410 0 0 {TXT_BODY} {TXT_BODY} {{}}")
-    s.text("T {" + "\n".join(note_lines()) + f"}} 1500 -1410 0 0 0.36 0.36 {HEAD}")
-    s.text("B 4 40 -1425 2420 -1040 {fill=false dash=4}")
-    # ------------------------------------------------ values next to the devices
-    tag(s, 172, -400, ["XMBN (diode)"] + mos_tag(D, "xmbn"))
-    tag(s, 392, -112, ["XMBN2"] + mos_tag(D, "xmbn2"))
-    tag(s, 392, -722, ["XMBP (diode)"] + mos_tag(D, "xmbp"))
-    tag(s, 752, -800, ["XM1 follower"] + mos_tag(D, "xm1"))
-    tag(s, 752, -532, ["XMIB (IB)"] + mos_tag(D, "xmib"))
-    tag(s, 752, -312, ["XMIT (IB)"] + mos_tag(D, "xmit"))
-    tag(s, 752, -205, ["XM4 follower"] + mos_tag(D, "xm4"))
-    tag(s, 1300, -805, ["XM3 shunt"] + mos_tag(D, "xm3"))
-    tag(s, 1300, -705, ["XM2 out diode"] + mos_tag(D, "xm2"))
-    tag(s, 1300, -240, ["XM5 out diode"] + mos_tag(D, "xm5"))
-    tag(s, 1300, -150, ["XM6 shunt"] + mos_tag(D, "xm6"))
-    f, a, per = mim_formula(dv["XCD"])
-    tag(s, 1275, -298, [f"C = {say(num(P, 'xcd', 'value', 1e15, '%.1f'), ' fF')}  (card {f:.1f} fF)"])
-    # ------------------------------------------------ device table (right)
-    X0, Y0 = 1560, -940
-    s.text(f"T {{DEVICE OPERATING POINT AT THE BENCH BIAS}} {X0} {Y0} 0 0 0.5 0.5 {HEAD}")
-    s.text(f"T {{typical / 27 C / 3.3 V, ideal ib, ngspice ({REC})}} {X0} {Y0 + 34} 0 0 0.32 0.32 {{}}")
-    groups = [("XMBN", "bias diode (ib)"), ("XMBN2", "bias mirror"), ("XMBP", "bias PMOS diode"),
-              ("XMIB", "IB source, PMOS follower"), ("XMIT", "IB source, NMOS follower"),
-              ("XM1", "PMOS follower"), ("XM4", "NMOS follower"), ("XM3", "PMOS shunt"), ("XM6", "NMOS shunt"),
-              ("XM2", "PMOS output diode"), ("XM5", "NMOS output diode")]
-    cols = [("device", 0), ("role", 100), ("Id", 400), ("gm/Id", 510), ("|Vgs|", 600), ("|Vds|", 700), ("Vdsat", 800)]
-    yt = Y0 + 80
-    for hdr, dx in cols:
-        col = [hdr]
-        for name, role in groups:
-            key = name.lower()
-            if hdr == "device":
-                col.append(name)
-            elif hdr == "role":
-                col.append(role)
-            elif hdr == "Id":
-                col.append(say(num(D, key, "id", 1e6, "%.3f"), " uA"))
-            elif hdr == "gm/Id":
-                col.append(say(num(D, key, "gmid", 1.0, "%.2f")))
-            else:
-                c = {"|Vgs|": "vgs", "|Vds|": "vds", "Vdsat": "vdsat"}[hdr]
-                col.append(say(num(D, key, c, 1.0, "%.3f"), " V"))
-        tag(s, X0 + dx, yt, col, prop=TAG if hdr != "device" else "{}")
-    yp = yt + 22 * (len(groups) + 2)
-    s.text(f"T {{PASSIVES AND NODES (PDK model, ngspice)}} {X0} {yp} 0 0 0.5 0.5 {HEAD}")
-    lines = [
-        f"XCD (out-vss)  cap_mim_2f0 {dv['XCD']['c_width']} x {dv['XCD']['c_length']}: "
-        f"{say(num(P, 'xcd', 'value', 1e15, '%.1f'), ' fF')}",
-        f"   card check: 1.99 fF/um2 x {a:.1f} um2 + 0.2383 fF/um x {per:.1f} um = {f:.1f} fF",
-        "",
-        "divider (XRT / XRB, XCT): see midref_div.sch",
-    ]
-    vo, vt = num(P, "v_out", "value", 1.0, "%.9g"), num(P, "v_tap", "value", 1.0, "%.9g")
-    lines[2] = (f"nodes: p {say(num(P, 'v_p', 'value', 1.0, '%.3f'), ' V')}, n {say(num(P, 'v_n', 'value', 1.0, '%.3f'), ' V')}, "
-                f"out - vin {'not recorded' if vo is None or vt is None else '%.2f mV' % ((float(vo) - float(vt)) * 1e3)}")
-    tag(s, X0, yp + 40, lines)
+    for dev, x, y in (("xmbn", 172, -400), ("xmbn2", 392, -112), ("xmbp", 392, -722), ("xm1", 752, -800),
+                      ("xmib", 752, -532), ("xmit", 752, -312), ("xm4", 752, -205), ("xm3", 1300, -805),
+                      ("xm2", 1300, -705), ("xm5", 1300, -240), ("xm6", 1300, -150)):
+        tag(s, x, y, [say(num(D, dev, "id", 1e6, "%.2f"), " uA")])
+    tag(s, 1275, -298, [f"C = {say(num(P, 'xcd', 'value', 1e15, '%.1f'), ' fF')}"])
 
 
 def annotate_div(s, dv):
     D, P = records()
-    s.text(f"T {{MIDREF_DIV  -  VDD/2 DIVIDER OF THE ONE VREF = VBL BUFFER}} 40 -1200 0 0 {TXT_TITLE} {TXT_TITLE} {{}}")
-    rt = num(P, "xrt", "value", 1.0, "%.6g")
-    rb = num(P, "xrb", "value", 1.0, "%.6g")
-    idiv = None if rt is None or rb is None else "%.2f" % (3.3 / (float(rt) + float(rb)) * 1e6)
-    body = [
-        "WHAT  The VDD/2 reference: two identical ppolyf_u_3k halves, ratio set by matching, body on vss;",
-        "      MIM tap capacitor XCT. It feeds the one midref_buf (VREF = VBL).",
-        f"PINS  vin: the tap ({say(num(P, 'v_tap', 'value', 1.0, '%.3f'), ' V')} at the bench); vdd / vss: 3.3 V analog supply "
-        f"(AVDD); {say(idiv, ' uA')} through the string at 3.3 V.",
-        "CHOICES  the divider value, the tap capacitor and one shared tap were variables of midref_v2's size_v2.py search.",
-        "DECISION  ADR 0016 (sizing), ADR 0021 (one output).   REPRODUCE  ./scripts/sim.sh midrail-ref  (make midrail-ref)",
-        "NETLIST  midref.spice: midref_v2's devices (size_v2.py), one buffer; this drawing by midref_sch.py.",
-    ]
-    s.text("T {" + "\n".join(body) + f"}} 60 -1110 0 0 {TXT_BODY} {TXT_BODY} {{}}")
-    s.text("B 4 40 -1125 1500 -940 {fill=false dash=4}")
-    w = dv["XRT"]
+    s.text(f"T {{MIDREF_DIV  -  VDD/2 divider}} 40 -900 0 0 {TXT_TITLE} {TXT_TITLE} {{}}")
+    s.text(f"T {{layout: XRT / XRB identical, ratio set by matching}} 40 -840 0 0 {TXT_TAG} {TXT_TAG} {{}}")
     for name, x, y in (("XRT", 215, -598), ("XRB", 60, -205)):
         tag(s, x, y, [f"{say(num(P, name, 'value', 1e-3, '%.1f'), ' kOhm')}"])
     if "XCT" in dv:
-        f, a, per = mim_formula(dv["XCT"])
-        tag(s, 335, -282, [f"C = {say(num(P, 'xct', 'value', 1e15, '%.1f'), ' fF')}", f"(card {f:.1f} fF)"])
-    X0 = 640
-    s.text(f"T {{PASSIVES (PDK model, ngspice replica)}} {X0} -700 0 0 0.5 0.5 {HEAD}")
-    lines = [f"XRT, XRB  ppolyf_u_3k W {w['r_width']} L {w['r_length']}: "
-             f"{say(num(P, 'xrt', 'value', 1e-3, '%.2f'), ' kOhm')} / {say(num(P, 'xrb', 'value', 1e-3, '%.2f'), ' kOhm')}",
-             "   (replica, 1.65 V across, typical / res_typical / 27 C)"]
-    if "XCT" in dv:
-        f, a, per = mim_formula(dv["XCT"])
-        lines += [f"XCT (vin-vss)  cap_mim_2f0 {dv['XCT']['c_width']} x {dv['XCT']['c_length']}: "
-                  f"{say(num(P, 'xct', 'value', 1e15, '%.1f'), ' fF')}",
-                  f"   card check: 1.99 fF/um2 x {a:.2f} um2 + 0.2383 fF/um x {per:.2f} um = {f:.1f} fF"]
-    lines += ["", "VALUES: ngspice, " + REC]
-    tag(s, X0, -660, lines)
+        tag(s, 335, -282, [f"C = {say(num(P, 'xct', 'value', 1e15, '%.1f'), ' fF')}"])
 
 
 def buf_sheet(dv):
@@ -384,18 +270,12 @@ def buf_sheet(dv):
         s.lab(x, y, net, sym="lab_wire")
     s.wire("vdd", (60, VDD), (XR, VDD))
     s.wire("vss", (60, VSS), (1260, VSS))
-    k = int(dv["XM2"]["m"])
     annotate_buf(s, dv)
     s.text("T {BIAS} 60 -980 0 0 0.4 0.4 {}")
-    s.text("T {ib -> diode XMBN -> XMBN2 -> diode XMBP} 60 -950 0 0 0.25 0.25 {}")
     s.text("T {INPUT FOLLOWERS + IB} 760 -980 0 0 0.4 0.4 {}")
-    s.text("T {M1 / M4 follow vin; XMIB / XMIT = IB} 760 -950 0 0 0.25 0.25 {}")
     s.text("T {SHUNTS + OUTPUT} 1080 -980 0 0 0.4 0.4 {}")
-    s.text(f"T {{M3 / M6 shunt; M2 / M5 = {k} x M1 / M4}} 1080 -950 0 0 0.25 0.25 {{}}")
     s.text("T {IB} 790 -605 0 0 0.35 0.35 {layer=8}")
     s.text("T {IB} 790 -365 0 0 0.35 0.35 {layer=8}")
-    s.text("T {p = vin + VSG1} 1190 -735 0 0 0.25 0.25 {layer=8}")
-    s.text("T {n = vin - VGS4} 1190 -195 0 0 0.25 0.25 {layer=8}")
     s.text("L 4 715 -1000 715 20 {dash=6}")
     return s
 
@@ -464,8 +344,10 @@ def main():
     sc = subckts(net)
     for name, (ports, order, _) in SYM.items():
         assert sc[name]["ports"] == order, (name, sc[name]["ports"])
-    buf_sheet(sc["midref_buf"]["dev"]).write(os.path.join(BLOCK, "midref_buf.sch"), "midref_buf")
-    div_sheet(sc["midref_div"]["dev"]).write(os.path.join(BLOCK, "midref_div.sch"), "midref_div")
+    buf_sheet(sc["midref_buf"]["dev"]).write(os.path.join(BLOCK, "midref_buf.sch"), "midref_buf",
+                                             order=list(sc["midref_buf"]["dev"]))
+    div_sheet(sc["midref_div"]["dev"]).write(os.path.join(BLOCK, "midref_div.sch"), "midref_div",
+                                             order=list(sc["midref_div"]["dev"]))
     for name in SYM:
         write_sym(name)
     print("REPORT: wrote midref_buf.sch/.sym and midref_div.sch/.sym from " + os.path.basename(net))

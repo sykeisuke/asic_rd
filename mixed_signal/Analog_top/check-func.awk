@@ -7,6 +7,11 @@
 # gate, then REPORT: lines (recorded, not judged). Exit 1 on any FAIL.
 #
 # Gates and where each threshold comes from:
+#   sequencer   (v7, ADR 0027) the twelve controls made in the macro by
+#               ../sample_seq from cnt_clk and acq: S2_k -> S0_k and S0_k ->
+#               S1_k >= 5 ns [U], S2_k opens <= 2 ns after the clock edge TS_k,
+#               the cells TSPACE apart within 0.05 ns, S0_k open before vin
+#               steps at TS_k + TSTEP (sample_seq SPEC Q2-Q5)
 #   bias        pbias0..3 (each comparator's own diode) within TOL_BIAS = 5 mV
 #               of its final value over [T0, TS0] and between TS0 and TE: the
 #               generator is at its operating point before the first sample
@@ -21,7 +26,8 @@
 #               (../midrail_ref/README.md s.1, common to VREF and VBL)
 #   vrlo        (v4: vrlo is made on chip by vrlo_ref, ADR 0018) settled within
 #               1 mV of its TS0 value before T0 (as the bias / references), and
-#               |vrlo - 5/33 AVDD| at TR <= 2 LSB (vrlo_ref README R9: half the
+#               |vrlo - 7/55 AVDD| at TR <= 11.72 mV (vrlo_ref README R9, 2 of its
+#               5.86 mV allocation units; ADR 0025 folds it into the 6.70 mV LSB: half the
 #               overrun counts left after the in-cell offset)
 #   sample      top = vin and bot = vref at TS_k within 0.1 LSB through the
 #               real switches (check-cell.awk TOL_SAMPLE)
@@ -77,6 +83,30 @@ END {
     SPREAD_MAX = 0.25
     RES_MAX = 0.5
     TCQ_MAX = 20
+    GAP_MIN = 5e-9          # [U] S2 -> S0 and S0 -> S1 at least 5 ns apart (user, 2026-10-30)
+    AP_MAX = 2e-9           # ../sample_seq Q5: S2 opens <= 2 ns after the clock edge
+    SP_TOL = 0.05e-9        # ../sample_seq Q4: cells one period apart
+
+    # ------------------------------------------------------- sequencer
+    gmin = 1; apx = 0; spx = 0; stepmin = 1
+    for (k = 0; k < 4; k++) {
+        if (!need("sequencer", "seq_g20_" k) || !need("sequencer", "seq_g01_" k) || !need("sequencer", "seq_ap_" k) \
+            || !need("sequencer", "seq_s0_vs_step_" k)) continue
+        g20 = v("seq_g20_" k); g01 = v("seq_g01_" k); ap = v("seq_ap_" k); st = v("seq_s0_vs_step_" k)
+        if (g20 < gmin) gmin = g20; if (g01 < gmin) gmin = g01; if (ap > apx) apx = ap; if (st < stepmin) stepmin = st
+        if (g20 < GAP_MIN || g01 < GAP_MIN) note("sequencer", sprintf("cell %d gaps %.3f / %.3f ns", k, g20 * 1e9, g01 * 1e9))
+        if (ap < 0 || ap > AP_MAX) note("sequencer", sprintf("cell %d S2 opens %.3f ns after its edge", k, ap * 1e9))
+        if (st <= 0) note("sequencer", sprintf("cell %d S0 opens after vin steps", k))
+        if (k && need("sequencer", "seq_sp_" k)) {
+            d = aabs(v("seq_sp_" k) - v("p_tspace")); if (d > spx) spx = d
+            if (d > SP_TOL) note("sequencer", sprintf("cells %d-%d %.4f ns apart", k - 1, k, v("seq_sp_" k) * 1e9))
+        }
+    }
+    printf "%s: sequencer: in the macro, S2 -> S0 -> S1 gaps >= %.0f ns (min %.3f ns), S2 opens %.3f ns at most after its clock edge (<= %.0f ns), cells %.0f ns apart within %.4f ns (<= %.2f), S0 open %.2f ns before vin moves%s\n", \
+        verdict("sequencer"), GAP_MIN * 1e9, gmin * 1e9, apx * 1e9, AP_MAX * 1e9, v("p_tspace") * 1e9, spx * 1e9, SP_TOL * 1e9, stepmin * 1e9, tail("sequencer")
+    for (k = 0; k < 4; k++)
+        printf "REPORT: sequencer cell %d: S2 opens %+.3f ns after TS%d, S0 %.3f ns later, S1 %.3f ns after S0\n", \
+            k, v("seq_ap_" k) * 1e9, k, v("seq_g20_" k) * 1e9, v("seq_g01_" k) * 1e9
 
     # ------------------------------------------------------------ bias
     w = 0
@@ -106,12 +136,12 @@ END {
         verdict("references"), TOL_REF * 1e3, v("alpha_min"), w * 1e3, wn, v("vref_err_ts0") * 1e3, v("vbl_err_ts0") * 1e3, VMID_ERR * 1e3, tail("references")
 
     # ------------------------------------------------------------ vrlo
-    VRLO_ERR = 2 * LSB
+    VRLO_ERR = 2 * 1.5 / 256
     if (need("vrlo", "settle_vrlo_ns") && v("settle_vrlo_ns") * 1e-9 > v("p_t0"))
         note("vrlo", sprintf("vrlo settles to 1 mV at %.0f ns, after T0", v("settle_vrlo_ns")))
     if (need("vrlo", "vrlo_err_tr") && aabs(v("vrlo_err_tr")) > VRLO_ERR)
-        note("vrlo", sprintf("vrlo %.3f mV from 5/33 AVDD at TR", v("vrlo_err_tr") * 1e3))
-    printf "%s: vrlo: vrlo_ref settled to 1 mV at %.0f ns <= T0 %.0f ns; at TR %.5f V, %+.3f mV (%+.3f LSB) from 5/33 AVDD, |err| <= %.2f mV (2 LSB)%s\n", \
+        note("vrlo", sprintf("vrlo %.3f mV from 7/55 AVDD at TR", v("vrlo_err_tr") * 1e3))
+    printf "%s: vrlo: vrlo_ref settled to 1 mV at %.0f ns <= T0 %.0f ns; at TR %.5f V, %+.3f mV (%+.3f LSB) from 7/55 AVDD, |err| <= %.2f mV (vrlo_ref R9)%s\n", \
         verdict("vrlo"), v("settle_vrlo_ns"), v("p_t0") * 1e9, v("vrlo_at_tr"), v("vrlo_err_tr") * 1e3, v("vrlo_err_tr") / LSB, VRLO_ERR * 1e3, tail("vrlo")
 
     # ---------------------------------------------------------- sample

@@ -5,9 +5,7 @@ DVDD,1,supply,power,VDD_core,3.3 V,latch and clock supply (NOISE_BUDGET L7),dvdd
 DVSS,1,supply,ground,GND,0 V,digital ground (common on COB),dvss,same,south,core
 VIN,1,in,analog,AVDD,0.5-2.0 V,sampled input,vfe,S0[i].a,north,core
 VRLO,1,in,analog,AVDD,0.5 V,ramp start level (v4: made inside by vrlo_ref; no pin),vrlo,vrlo_ref.vrlo,none,internal
-S2,4,in,digital,AVDD,0/3.3 V HIGH=closed,bottom-plate switch; falling edge = sampling instant,s2[i],cell[i].s2,south,core
-S0,4,in,digital,AVDD,0/3.3 V HIGH=closed,input TG; opens TNOV after S2,s0[i],cell[i].s0,south,core
-S1,4,in,digital,AVDD,0/3.3 V HIGH=closed,ramp TG; closes after S0 opens,s1[i],cell[i].s1,south,core
+ACQ,1,in,digital,DVDD,0/3.3 V HIGH=track,controller acquire level; the sequencer (sample_seq) makes S2/S0/S1 of the four cells from it and CNT_CLK (v7 ADR 0027),acq,sample_seq.acq,south,core
 RAMP_RST,1,in,digital,AVDD,0/3.3 V HIGH=reset,ramp reset; falling edge starts ramp,rst,ramp_gen.rst,south,core
 CNT_CLK,1,in,digital,DVDD,0/3.3 V 20 MHz,count clock; latch samples on falling edge,clk,tspc_dff[i].clk,south,core
 Q,4,out,digital,DVDD,0/3.3 V,retimed comparator decision; falls once per conversion (Gray capture clock),q[i],tspc_dff[i].q,south,core

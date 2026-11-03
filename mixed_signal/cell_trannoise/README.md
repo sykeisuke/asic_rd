@@ -1,5 +1,65 @@
 # cell_trannoise: transient noise of one cell, as the macro builds it
 
+## v6 (2026-10-30): the cell on `ramp_simple` + `ic_source` (ADR 0026, step 5 of ADR 0025)
+
+The bench now reads the v6 macro netlist: `ramp_simple` (one MIM instance of
+73 units, 3.98 pF, + XRST 0.5 um) with an ideal 0.545176 uA into vramp (the
+I/C source's design current C_UNIT x V_REF x F_CLK; `ic_source` itself is not
+in this bench), VR_LO = 7/55 AVDD = 0.420 V, LSB 6.701613 mV (ADR 0025 grid).
+Everything else as below. The translator now multiplies a MIM's C by its `m`
+and divides its leak R by it (it ignored `m`; the ramp would have run 73x fast).
+
+**Result** (`./scripts/sim.sh cell-trannoise`, typical, 29/29 PASS):
+
+| | mid-code 16.5 | mid-code 240.5 | v5 (`ramp_simple_d`, 5.86 mV LSB) |
+| --- | --- | --- | --- |
+| total sigma | **0.0730 +- 0.0042 LSB** (3.65 ns, 576 conv.) | **0.0707 +- 0.0071 LSB** (3.54 ns, 192) | 0.0834 / 0.0782 |
+| same in volts at the input | 0.489 mV | 0.474 mV | 0.489 / 0.458 mV |
+| ramp alone (XRST only) | 0.0050 | 0.0043 | 0.013 / 0.036 (PMOS L 8 um source) |
+| comparator alone | 0.0380 | 0.0385 | 0.053 / 0.054 |
+| switches alone | 0.0536 | 0.0521 | 0.057 / 0.054 |
+| latch alone | 0.0020 | 0.0000 | 0.002 |
+| RSS of the four / total | x0.902 (tol 0.130) | x0.918 (tol 0.229) | x0.95 / x1.07 |
+| q on Clk / Clk+1 / other | 305 / 271 / 0 | 88 / 104 / 0 | 336/240, 96/96 |
+
+Against the 0.25 LSB noise share. The input-referred noise in volts is the
+v5 value; the smaller figure in LSB is the 14 % wider LSB. The ramp group
+lost the PMOS current source and keeps only the reset switch, which is off
+during the conversion. `ic_source`'s own noise is NOT in this bench: its
+record gives 0.022 LSB at code 255 with the load at the ramp's top
+(`runs/ic-source/20261030T173136Z`). Adding it in power to the c240 total
+gives 0.074 LSB. The ramp in this bench runs +1.18 % fast against the design
+slope, because one cell loads it instead of four; the figures are not
+corrected for that.
+
+Gates as before: translation vs ngspice +0.022 / +0.047 LSB; aligned
+-0.42 / -0.04 ns from Clk; numerical floor 0.012 / 0.029 x sigma; 6 GHz band
+x0.893; reltol 2e-7 vs 1e-6 x1.007 and +0.009 LSB; kick: net step on vramp
+-0.00025 LSB. No run aborted this time; the ramp, latch and switch groups
+run at reltol 1e-5 as recorded.
+
+**Checker correction (the share check).** The full run
+(`runs/cell-trannoise/20261030T203822Z`) failed one check, 28/29. At c16 the
+share of conversions on Clk+1 was 0.470 by q and 0.403 by dout after Clk.
+The difference of 0.067 was over the 3 se limit of 0.062. The prediction
+from dout assumed that the latch samples at Clk itself. Its measured
+sampling instant is 0.50-0.57 ns earlier (its setup; v5 recorded 0.4-0.5 ns).
+At c16 the noiseless decision sat 0.42 ns before Clk, inside that window.
+
+The check now predicts at the latch's instant measured at the OTHER level,
+so the boundary is not fitted to the conversions it judges:
+
+- c16: 0.476 vs 0.470 (instant from c240, -0.565 ns);
+- c240: 0.536 vs 0.542 (instant from c16, -0.500 ns).
+
+The share after Clk itself is still reported. The re-judge
+`STEPS=reduce ./scripts/sim.sh cell-trannoise` simulated nothing
+(`runs/cell-trannoise/20261031T005422Z`, 29/29).
+
+Open: typical only; ideal bias, references and ramp current; no PEX.
+
+---
+
 Date: 2026-10-14. `../cell_trannoise_bkp/cell_trannoise` is unchanged.
 
 The user asked for a fresh VACASK transient-noise run of one conversion cell
@@ -122,11 +182,19 @@ standard-cell library at `/foss/pdk_libs`; `make pdk-libs` once):
      VACASK, once per noise set: as drawn, all noisy, and each block alone.
    - Noisy multi-finger MOS are finger-expanded (NF1), because VACASK's
      flicker grows with nf and ngspice's does not.
+   - **schematic.** `tb_sch.py` draws the ngspice bench as `tb_cell_tn.sch`;
+     xschem netlists it and the netlist is checked against the deck, the
+     macro and, simulated, the hand bench ("Drawing", below).
 2. **align.** A noiseless VACASK run at the nominal mid-code gives the decision
    `td`. `ct_align.py` moves POS so that `td` lands on the nearest falling
    clock edge (`work/align.txt`).
 3. **ngspice.** ngspice runs the same bench without noise: the reference the
    translation must reproduce.
+   - **kick.** Three more noiseless ngspice runs of one record at the aligned
+     c16 level, with the comparator's internal nodes and the latch master
+     saved: as is, the clock held low after the decision, the latch's D
+     decoupled from dout. `ct_kick.py` measures the plate, dout and vramp
+     around the clock edge that follows the decision (finding 6).
 4. **sim.** VACASK runs, per level, at the aligned input:
    - `q`: noiseless, drawn nf.
    - `q1`: noiseless, finger-expanded.
@@ -182,6 +250,35 @@ exactly once.
 **Referring time to the input.** The ramp moves 1 LSB per count, so a
 decision moved by dt is dt / 50 ns LSB at the ADC input. 1 LSB = 1.5 V / 256 =
 5.859 mV.
+
+### Drawing
+
+`tb_cell_tn.sch` is the xschem view of the ngspice bench `ct_bench.py`
+writes (POS 16.5, every value a `tb_params.inc` expression in `{}`), written
+by `tb_sch.py`: the twelve ideal sources, `XR` through
+`../ramp_simple/ramp_simple.sym`, `XC` through `../Analog_top/atop_cell.sym`
+(xschem descends into `ramp_simple.sch`, `atop_cell.sch`, `sw_s0/1/2.sch`,
+`comparator_d.sch` and `../latch/latch.sch` through `xschemrc`), `CQ`, and a
+code block with the deck's cards and `write` vectors. `tb_sch.py` parses the
+deck for the terminals, subcircuit names and cards, reads the symbol pins
+from the `.sym` files against the macro's port order, and evaluates every
+drawn expression against the deck's number before writing the sheet.
+
+Step `schematic` of `ct.sh` (`STEPS=schematic ./scripts/sim.sh cell-trannoise`,
+`ct_xtb.py`) proves, record `runs/cell-trannoise/20261031T020813Z` (5/5):
+
+- the xschem netlist's top level carries exactly the deck's 15 instances
+  (names, terminals in order, `XC atop_cell`, `XR ramp_simple`);
+- the 7 subcircuits it emits (31 device lines) equal
+  `../Analog_top/analog_top.spice`'s, ports in order, devices as a set;
+- `assets/tb_cell_tn_xschem.png` / `.svg` rendered;
+- ngspice on the xschem netlist and on the hand deck, one record at POS 16.5:
+  decision 850.2474 ns after TR in both (d = +0.0000 ns), q fall 875.4277 ns
+  in both (d = -0.0000 ns), limit 1 ns.
+
+The VACASK runs do not use the drawing: they simulate the translation of
+the macro's subcircuits (`ct_netlist.py`), which this step shows to be the
+circuit the drawing netlists to.
 
 ## 4. Result
 
@@ -376,6 +473,43 @@ the error bars.
 
    These are means from the record. Per-block runs that are lost first take
    up to 2.6 h, both attempts together.
+6. **The plate's slope changes 25-50 ns after the decision; it is the
+   comparator settling, not the clock** (step `kick`, `ct_kick.py`, record
+   `runs/cell-trannoise/20261028T092739Z`). In figure (a) the noiseless
+   `bot - VREF` trace rises +0.17 mV above its pre-decision line while dout
+   falls, stays there, then loses 0.13 mV between 25 and 50 ns after Clk
+   (slope 0.034 instead of 0.045 mV/ns) and resumes. The next rising clock
+   edge sits at Clk + 25 ns, so the two looked connected. Three noiseless
+   ngspice runs of one record at the aligned c16 level, with the comparator's
+   internal nodes and the latch master saved:
+
+   | Run | plate peak, time after td | drift by +25 ns | dout glitch at the edge | vramp net step |
+   | --- | --- | --- | --- | --- |
+   | as is | +0.197 mV at td + 27 ns | -0.127 mV | 19 mV | -1.8 uV = -0.0003 LSB |
+   | clock held low after Clk (no rising edge) | +0.174 mV at td + 24 ns | -0.127 mV | 0 | -1.8 uV |
+   | latch D decoupled (ideal copy of dout, 3.6 fF on dout) | +0.174 mV at td + 24 ns | -0.127 mV | 0 | -1.8 uV |
+
+   - The drift is identical without any clock edge and without the latch,
+     and it peaks at a fixed 24 ns after the decision. Over the same 25 ns
+     the comparator's gain node `outa` falls 62 mV, the starved inverter's
+     output `outb` rises 341 mV and its source node `bst` 294 mV, while the
+     tail moves 0.6 mV: after dout has fallen, the starved stage is still
+     in its transition and `outa` keeps descending with the ramp; the plate
+     follows `outa` through the input device's gate-drain capacitance
+     (-0.127 mV / -62 mV = 0.002, the C_GD share of the plate's
+     capacitance). It is the comparator's own post-decision trajectory.
+   - The clock edge itself adds only a spike: +0.03 mV on the plate and a
+     19 mV glitch on dout in ngspice, through the latch's clocked input
+     inverter (the master node `a_853_68#` switches 100 mV at the edge; D is
+     the gate of its two transistors). The VACASK waves (0.2 ns maxstep)
+     show the same spike at 0.18 mV / 0.17 V: an engine and step-size
+     difference, reported, not resolved.
+   - What reaches the other cells through the shared ramp node is the net
+     step on `vramp` after the edge: -1.8 uV = 0.0003 LSB (gate 0.01 LSB).
+     The decision itself leaves -0.06 mV on vramp in the macro
+     (`ramp_kick` in `runs/analog-top`), which the ramp spec carries.
+   - Codes are unaffected: everything happens after the decision has been
+     taken, and the latch captured it on Clk or Clk+1 as before.
 
 ## 8. What this does not cover
 

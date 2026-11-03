@@ -3,7 +3,7 @@ G {}
 K {type=subcircuit
 format="@name @pinlist @symname"
 template="name=X1"
-description="vrlo_ref of ../vrlo_ref (ADR 0018): VR_LO shunt regulator, 28 : 5 ppolyf_u_3k divider tap = 5/33 AVDD, an OTA driving the NMOS shunt XMS on vrlo, keep-alive source, 3.44 pF decap. ib is a CURRENT input (bias_gen_s ivrlo). Local symbol of Analog_top (pin order as the block's); xschem descends into ../vrlo_ref/vrlo_ref.sch"
+description="vrlo_ref of ../vrlo_ref (ADR 0018): VR_LO shunt regulator, 48 : 7 ppolyf_u_3k divider tap = 7/55 AVDD (ADR 0025), an OTA driving the NMOS shunt XMS on vrlo, keep-alive source, 3.44 pF decap. ib is a CURRENT input (bias_gen_s ivrlo). Local symbol of Analog_top (pin order as the block's); xschem descends into ../vrlo_ref/vrlo_ref.sch"
 schematic=vrlo_ref.sch
 }
 V {}
@@ -69,7 +69,7 @@ T {vrlo} 104 -18 0 0 0.18 0.18 {}
 T {ib} -124 30 0 0 0.18 0.18 {}
 T {avdd} 6 -112 0 0 0.16 0.16 {}
 T {avss} 6 92 0 0 0.16 0.16 {}
-T {5/33 VDD} -94 -24 0 0 0.16 0.16 {layer=13}
+T {7/55 VDD} -94 -24 0 0 0.16 0.16 {layer=13}
 T {shunt} 56 6 0 0 0.16 0.16 {layer=13}
 T {@name} -96 -124 0 0 0.3 0.3 {}
 T {VR_LO  vrlo_ref} -96 -86 0 0 0.2 0.2 {layer=13}

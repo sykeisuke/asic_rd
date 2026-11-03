@@ -36,22 +36,7 @@ N 1300 -1120 1300 -1160 {}
 N 1300 -880 1300 -840 {}
 N 1540 -1030 1540 -1070 {}
 N 1540 -970 1540 -930 {}
-T {tb_mc: threshold spread of comparator, PDK mismatch (sw_stat_mismatch), the tb_mc bench} 60 -1572 0 0 0.7 0.7 {}
-T {Pass 0 is the mismatch-free trip; then N passes with mismatch on, each sweeping inn through VBL +- 70 mV.
-rndseed is set, but a run is not shown to repeat (DESIGN_RECIPE.md s.7 note); each run is an independent estimate, so the drawing's samples differ
-from the deck's: the nominal trip must match, the spread must agree statistically.
-Measures: vos_nom (mismatch off) and 200 mismatch draws of vtrip - VBL -> sigma(Vos).  Gates (xtb.py): vos_nom
-   within 0.1 mV of tb_mc.spice, sigma within 20 %.  Block: the 4/3 LSB contract is replaced by ADR 0015
-   (offset accepted as signal-independent; covered by ramp pre-roll and pedestal calibration).
-Recorded (runs/comparator-updt-v3-schematic/20261007T232627Z): vos_nom -0.341 mV; sigma 8.59 mV drawing,
-   9.38 mV bench (runs/comparator-updt-v3/20261007T001140Z) = 2.11 LSB at the ADC input (alpha 0.761).
-Reproduce: make comparator-schematic.} 60 -1530 0 0 0.4 0.4 {}
-L 4 40 -1587 1852 -1587 {}
-L 4 1852 -1587 1852 -1290 {}
-L 4 1852 -1290 40 -1290 {}
-L 4 40 -1290 40 -1587 {}
-T {AVDD (comparator) and the bias supply; VINP = 1.65, VINN = 1.65, VCLK = {VDD}} 60 -1080 0 0 0.32 0.32 {layer=4}
-T {pbias: I_B = 1.93 uA design (.param IREF = 1.93077e-06 A, data/sizing.json) into one tail finger (L 0.28u, W 1u), diode-connected: tail 20 uA, pair 10 uA each, starve 9.6 uA design (intent.py); nbias leg (REFN, L 1u W 20u nf 10) unused: no-connect port} 60 -800 0 0 0.32 0.32 {layer=4}
+T {TB_MC  -  threshold spread of comparator, PDK mismatch, I_B = 1.93 uA} 60 -1330 0 0 0.7 0.7 {}
 C {devices/vsource.sym} 120 -1180 0 0 {name=VDD_SOURCE value="\{VDD\}" savecurrent=false}
 C {devices/lab_pin.sym} 120 -1250 0 0 {name=l1 sig_type=std_logic lab=vdd}
 C {devices/lab_pin.sym} 120 -1110 0 0 {name=l2 sig_type=std_logic lab=0}

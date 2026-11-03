@@ -1,0 +1,13 @@
+# xschemrc for mixed_signal/midrail_ref: the PDK's rc, then this folder (the
+# DUT symbols midref_div.sym / midref_buf.sym that the testbench drawings
+# tb_*.sch place by bare name; xschem descends into the .sch next to each
+# .sym) and ../comparator (comparator.sym for tb_cmp.sch, netlisted from
+# comparator.sch, the comparator block's own drawing).
+# Without these lines xschem cannot find a symbol and SILENTLY drops the
+# instance from the netlist (xtb.py counts the instances for that reason).
+# xschem reads ./xschemrc by itself when started in this directory;
+# schematic.sh and xtb.py pass it explicitly with --rcfile.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc
+set MREF_DIR [file normalize [file dirname [info script]]]
+append XSCHEM_LIBRARY_PATH :$MREF_DIR
+append XSCHEM_LIBRARY_PATH :[file normalize [file join $MREF_DIR .. comparator]]

@@ -1,0 +1,43 @@
+* Resistor characterisation for the bias generator's degeneration resistor:
+* every candidate PDK resistor drawn 1 um x 20 um (20 squares), 1 V across it,
+* at 0 / 27 / 85 C. TEMPLATE: lut/build.sh replaces @RCORNER@ (res_typical,
+* res_ss, res_ff) and runs it once per corner.
+*
+* One line per temperature:  RES <corner> <temp> <ohm/sq of each type, in TYPES order>
+* TYPES: ppolyf_u ppolyf_u_1k ppolyf_u_2k ppolyf_u_3k npolyf_u nplus_u pplus_u
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @RCORNER@
+
+V0 a 0 1
+X1 a1 0 0 ppolyf_u r_width=1u r_length=20u
+X2 a2 0 0 ppolyf_u_1k r_width=1u r_length=20u
+X3 a3 0 0 ppolyf_u_2k r_width=1u r_length=20u
+X4 a4 0 0 ppolyf_u_3k r_width=1u r_length=20u
+X5 a5 0 0 npolyf_u r_width=1u r_length=20u
+X6 a6 0 0 nplus_u r_width=1u r_length=20u
+X7 a7 0 0 pplus_u r_width=1u r_length=20u
+VM1 a a1 0
+VM2 a a2 0
+VM3 a a3 0
+VM4 a a4 0
+VM5 a a5 0
+VM6 a a6 0
+VM7 a a7 0
+.control
+set num_threads=1
+foreach t 0 27 85
+  option temp = $t
+  op
+  let s1 = 0.05 / i(vm1)
+  let s2 = 0.05 / i(vm2)
+  let s3 = 0.05 / i(vm3)
+  let s4 = 0.05 / i(vm4)
+  let s5 = 0.05 / i(vm5)
+  let s6 = 0.05 / i(vm6)
+  let s7 = 0.05 / i(vm7)
+  echo "RES @RCORNER@ $t $&s1 $&s2 $&s3 $&s4 $&s5 $&s6 $&s7"
+end
+quit
+.endc
+.end

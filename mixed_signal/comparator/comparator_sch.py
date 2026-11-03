@@ -26,8 +26,6 @@ Everything (sch + netlist-back check + xschem and schemdraw renders):
 
 from __future__ import annotations
 
-import csv
-import json
 import re
 import sys
 from pathlib import Path
@@ -210,53 +208,15 @@ pin("ipin", 240, -280, "clk")
 pin("ipin", 240, -240, "nbias")
 
 # ------------------------------------------------------------------ text
-# Text only (no effect on the netlist). The operating-point figures are the
-# sizing record data/sizing.json (design f003, DESIGN_RECIPE.md s.6: gm/Id
-# from the gm/Id tables at the bench's ideal bias) and the ngspice record REC.
-SZ = json.loads((BLOCK / "data" / "sizing.json").read_text())
+# Text only (no effect on the netlist): a one-line title, the section headings,
+# two net notes, the design current next to each device (intent.py, at the
+# macro's bias) and the not-connected note (CLAUDE.md, "Schematic drawings").
+# ../Analog_top/analog_top_sch.py copies the markers onto comparator_d.sch by
+# their positions.
 sys.path.insert(0, str(BLOCK))
 import intent as I  # noqa: E402  design-intent currents (the one source)
-_IOP = BLOCK / "data" / "intent_op.json"
-IOP = json.loads(_IOP.read_text()) if _IOP.exists() else {}
 
-
-_GP = BLOCK / "data" / "gain_pvt.csv"
-_GPR = list(csv.DictReader(_GP.read_text().splitlines())) if _GP.exists() else []
-GAIN_PVT_MIN = min((float(r["gain_db"]) for r in _GPR), default=float("nan"))
-CONV_PVT_MAX = max((float(r["p_conv_uw"]) for r in _GPR if r.get("p_conv_uw")), default=float("nan"))
-REC = "runs/comparator-updt-v3/20261007T001140Z"
-
-
-def box(x, y, title, lines, tsize=0.7, size=0.4):
-    """A framed text block (title + body lines); the frame is layer-4 graphic lines."""
-    T(title, x + 20, y + 15, tsize)
-    body_y = y + 15 + int(60 * tsize)
-    T("\n".join(lines), x + 20, body_y, size)
-    w = int(max([len(title) * 28 * tsize] + [len(l) * 30 * size for l in lines])) + 60
-    h = body_y - y + int(58 * size * len(lines)) + 32
-    for x1, y1, x2, y2 in ((x, y, x + w, y), (x + w, y, x + w, y + h), (x + w, y + h, x, y + h), (x, y + h, x, y)):
-        texts.append(f"L 4 {x1} {y1} {x2} {y2} {{}}")
-
-
-box(140, -1330, "comparator -- continuous-time comparator of the 8-bit true bottom-plate unit cell", [
-    "Function: dout falls when inn (the MIM top plate) rises through inp (VBL = VDD/2) during the single-slope ramp;",
-    "   dout feeds the negative-edge TSPC latch (cmp_tspc/tspc_dff), whose q clocks the Gray-code capture.",
-    "Topology: PMOS 5T OTA (XTAIL, XINP/XINN, XLOADD/XLOADM) -> current-starved inverter (XBST, XBUF2/XBUF1) -> output inverter.",
-    "Pins (subckt order): inp inn dout clk vdd vss nbias pbias; clk and nbias are no-connects kept by the unit-cell contract.",
-    "Supply AVDD = 3.3 V.  Bias: pbias from a current into one diode-connected 1 um / %gu tail finger; XTAIL = %d and XBST = %d copies." % (
-        SZ["l_b"], SZ["nf_tail"], SZ["nf_st"]),
-    "   Currents next to the devices: design values in Analog_top, I_B = %g uA (bias_gen_s, ADR 0017), as on" % I.MACRO_I_B_UA,
-    "   comparator_d.sch and the CPAD slide.  This sheet's testbenches run at the sizing bias I_B = %.2f uA (box right)." % I.I_B_UA,
-    "Choices: every L <= 0.36 um; one finger width per flavour (PMOS 1 um, NMOS 0.5 um); buffer NMOS = XLOADM; design f003,",
-    "   the power x footprint knee at sigma(Vos) <= 2 LSB (DESIGN_RECIPE.md s.6).  ADR 0015: offset accepted as signal-independent.",
-    "Recorded, ngspice typical (%s): delay from the static trip 10.59-10.60 ns (gate 12.5 ns)," % REC,
-    "   dout fall 5.33 ns into 10 fF (gate 6 ns), noise 0.168 mV rms at the pins (gate 1.2 mV), OTA gain 44.5 V/V, pole 22.3 MHz,",
-    "   sigma(Vos) 9.38 mV = 2.11 LSB at the ADC input (alpha 0.761, 200 MC samples).  Static power: box right.",
-    "Reproduce: make comparator (benches), make comparator-schematic (this drawing, netlist-back, tb_*.sch).",
-    f"Sizes parsed from {DECK.name} by comparator_sch.py -- regenerate, do not hand-edit.",
-])
-
-# design-intent current next to each device (intent.py: sizing record, whole uA)
+T("COMPARATOR  -  continuous-time comparator, currents at I_B = %g uA" % I.MACRO_I_B_UA, 160, -1000, 0.7)
 for dev, (x, y) in I.MARKER_XY.items():
     T(I.marker(dev), x, y, 0.28, 4)
 T("(VBL, VDD/2)", 150, -660, 0.3)
@@ -264,33 +224,7 @@ T("(MIM top plate)", 705, -662, 0.3)
 T("PMOS 5T OTA", 320, -412, 0.4)
 T("starved inverter", 760, -412, 0.4)
 T("output inverter", 1000, -412, 0.4)
-T("clk, nbias: no-connect (unit-cell contract port list)", 290, -296, 0.35)
-
-box(1330, -880, "Design currents in Analog_top (I_B = %g uA)" % I.MACRO_I_B_UA, [
-    "I_B %g uA into the 1 um / %gu diode: bias_gen's comparator sink, sized %.2f x the %.2f uA" % (
-        I.MACRO_I_B_UA, SZ["l_b"], I.MACRO_I_B_UA / I.I_B_UA, I.I_B_UA),
-    "   sizing bias for the worst PVT cell, untrimmed (ADR 0017).  Branches: data/sizing.json x the same ratio.",
-    "",
-    ] + ["%-16s %-22s %s" % (n, g, I.marker(d) + e) for n, g, d, e in (
-        ("XTAIL", "%d x 1 um, L 0.28" % SZ["nf_tail"], "xtail", ""),
-        ("XINP / XINN", "%d x 1 um, L 0.32" % SZ["nf_in"], "xinp", " each"),
-        ("XLOADD / XLOADM", "1 x 0.5 um, L 0.36", "xloadd", " each"),
-        ("XBST", "%d x 1 um, L 0.28" % SZ["nf_st"], "xbst", ""),
-        ("XBUF4 / XBUF3", "1 x 1 / 1 x 0.5 um", "xbuf4", ""))] + [
-    "   * during tracking.  XBUF4 is not a sized current: its crowbar as ngspice gives it.",
-    "Static power converting (design): 3.3 V x (%g + %g) uA = %.0f uW (diode + tail)." % (
-        I.MACRO_I_B_UA, I.MACRO_UA["xtail"], 3.3 * I.CONVERTING_UA),
-    "",
-    "At the sizing bias I_B %.2f uA (this sheet's tb_*.sch): tail %s, pair %s each, starve %s." % (
-        I.I_B_UA, I.ua(I.INTENT_UA["xtail"]), I.ua(I.INTENT_UA["xinp"]), I.ua(I.INTENT_UA["xbst"])),
-    "ngspice puts the tail %+.0f %% / %+.0f %% off the design at %.2f / %g uA (L 0.28 um channel-length" % (
-        100 * (IOP["id_ua"]["xtail"] / I.INTENT_UA["xtail"] - 1) if IOP else float("nan"),
-        100 * (IOP["macro_states_ua"]["mtrip"]["xtail"] / I.MACRO_UA["xtail"] - 1) if IOP else float("nan"),
-        I.I_B_UA, I.MACRO_I_B_UA),
-    "   modulation; intent_op.py reports it).",
-    "Simulated, worst over bias_gen's 135 PVT cells (gain_pvt.py): gain >= %d dB (spec > 60 dB)," % int(GAIN_PVT_MIN),
-    "   static power converting <= %.0f uW." % CONV_PVT_MAX,
-    "No capacitor or resistor in this cell; dout load on the benches 10 fF."], tsize=0.5, size=0.35)
+T("clk, nbias: not connected", 290, -296, 0.35)
 
 # ------------------------------------------------------------------ split
 # xschem only connects wires at their end points: split every segment at

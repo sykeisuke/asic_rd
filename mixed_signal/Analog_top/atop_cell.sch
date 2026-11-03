@@ -4,30 +4,9 @@ K {}
 V {}
 S {}
 E {}
-T {top plate: S0 / S1 side
-(driven: vfe, then vramp)} 1150 -900 0 0 0.36 0.36 {layer=13}
-T {XCS  MIM 5 x 5 um
-54.52 fF = 1.99 fF/um2 x 25 um2
-+ 0.238 fF/um x 20 um fringe
-(PDK formula, typical)} 1150 -700 0 0 0.36 0.36 {layer=13}
-T {bot plate: S2 + comparator inn
-(floats from S2 opening to the
-end of conversion)} 1150 -470 0 0 0.36 0.36 {layer=13}
-T {ibias: icmp_k from bias_gen_s
-(3.25 uA sink, design) into the
-diode XREFP inside comparator_d} 1700 -790 0 0 0.36 0.36 {layer=13}
-T {std-cell flip-flop dfxtn_2 (as_sc_mcu7t3v3)
-on dvdd: q falls at the first FALLING
-clk edge after dout falls} 1940 -400 0 0 0.36 0.36 {layer=13}
-T {complements s0b / s1b / s2b:
-P 0.88 / N 0.44 um, L 0.28 um} 250 -170 0 0 0.36 0.36 {layer=13}
-T {ATOP_CELL  -  one sampling / conversion cell of analog_top (8-bit true bottom-plate single-slope ADC)} 40 -1560 0 0 0.8 0.8 {}
-T {TRACK    S0 and S2 closed: top = vfe (the input), bot = vref (VDD/2). The comparator sits at its trip point.
-SAMPLE   S2 opens at TS_k: the charge on C_S is frozen (the sampling instant, the bottom-plate edge).
-         S0 opens TNOV = 5 ns later (top isolated), S1 closes after another 5 ns: top = vramp = vrlo.
-CONVERT  vramp rises 0.5 -> 2.0 V in 12.8 us; bot follows top by alpha = C_S / (C_S + C_bot) and crosses
-         vbl when vramp = vin: dout falls (comparator delay ~6.5 ns), q falls at the next falling cnt_clk edge.
-Switches (sw_sN.sch, = ref/switches.spice): S0, S1 TG N 0.5 / P 1.0 um, S2 NMOS 0.36 um, L 0.28 um.} 40 -1480 0 0 0.42 0.42 {}
+T {C_S 54.52 fF} 1150 -640 0 0 0.36 0.36 {layer=4}
+T {3.25 uA} 1590 -735 0 0 0.36 0.36 {layer=4}
+T {ATOP_CELL  -  one sampling / conversion cell} 40 -1220 0 0 0.8 0.8 {}
 L 4 250 -1120 640 -1120 {dash=6}
 L 4 640 -1120 640 -200 {dash=6}
 L 4 640 -200 250 -200 {dash=6}

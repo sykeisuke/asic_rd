@@ -38,7 +38,7 @@
 .measure tran p_cs PARAM='CS_C'
 .measure tran p_tpwr PARAM='TPWR'
 .measure tran p_t0 PARAM='T0'
-.measure tran p_tnov PARAM='TNOV'
+.measure tran p_tseq PARAM='TSEQ'
 .measure tran p_tspace PARAM='TSPACE'
 .measure tran p_tstep PARAM='TSTEP'
 .measure tran p_tedge PARAM='TEDGE'
@@ -102,7 +102,7 @@
 .measure tran vrlo_at_te FIND v(xdut.vrlo) AT={TE}
 .measure tran vrlo_min_conv MIN v(xdut.vrlo) FROM={TS0} TO={TSTOP}
 .measure tran vrlo_max_conv MAX v(xdut.vrlo) FROM={TS0} TO={TSTOP}
-.measure tran vrlo_err_tr PARAM='vrlo_at_tr-5/33*VDD'
+.measure tran vrlo_err_tr PARAM='vrlo_at_tr-7/55*VDD'
 .measure tran vramp_vrlo_tr PARAM='vramp_at_tr-vrlo_at_tr'
 * VDD/2 error of the buffer at the first sample (VREF = VBL: one node in v5)
 .measure tran vref_err_ts0 PARAM='vref_at_ts0-VMID'
@@ -126,12 +126,13 @@
 .measure tran n_ramp_hi PARAM='(t_ramp_hi-TR)/TCOUNT'
 
 * ---------------------------------------------------------------------------
-* Per cell k. Sample: S2 opens at TS_k (the sample), S0 at TS_k+TNOV, S1
-* closes at TS_k+2TNOV, vin steps at TS_k+TSTEP. Conversion: bot rises
+* Per cell k. Sample: the sequencer opens S2 just after the clock edge TS_k
+* (the sample), S0 D later, closes S1 D after that (seq_* below), vin steps
+* at TS_k+TSTEP. Conversion: bot rises
 * through vbl, dout falls, q falls at the next cnt_clk falling edge.
-*   ped_bot   bot 2 ns after S2 opened minus bot at TS_k: S2's injection
-*   *_iso     plates just before S1 closes (S0 open, plates floating)
-*   *_con     plates 20 ns after S1 closed (top driven by vramp)
+*   ped_bot   bot 3 ns after TS_k (S2 open, S0 not yet) minus bot at TS_k: S2's injection
+*   *_iso     plates as s1_k passes 10 % VDD (S0 open, S1 not yet on, plates floating)
+*   *_con     plates at TS_k + TSEQ + 10 ns (S1 closed, top driven by vramp)
 *   err_x     (analog crossing - TR)/TCOUNT - POS_k: continuous, LSB
 *   err_d     the same from dout's fall (adds the comparator delay)
 *   bps_err   vramp (= top) at the crossing minus vin, LSB: what the plate
@@ -142,12 +143,12 @@
 .measure tran vref_ts_0 FIND v(xdut.vref) AT={TS0}
 .measure tran vtop_ts0 FIND v(xdut.xc0.top) AT={TS0}
 .measure tran vbot_ts0 FIND v(xdut.xc0.bot) AT={TS0}
-.measure tran vbot_s2_0 FIND v(xdut.xc0.bot) AT={TS0+2n}
+.measure tran vbot_s2_0 FIND v(xdut.xc0.bot) AT={TS0+3n}
 .measure tran ped_bot0 PARAM='vbot_s2_0-vbot_ts0'
-.measure tran vbot_iso0 FIND v(xdut.xc0.bot) AT={TS0+2*TNOV-0.5n}
-.measure tran vtop_iso0 FIND v(xdut.xc0.top) AT={TS0+2*TNOV-0.5n}
-.measure tran vbot_con0 FIND v(xdut.xc0.bot) AT={TS0+2*TNOV+20n}
-.measure tran vtop_con0 FIND v(xdut.xc0.top) AT={TS0+2*TNOV+20n}
+.measure tran vbot_iso0 FIND v(xdut.xc0.bot) WHEN v(xdut.s1_0)='0.1*VDD' RISE=1 TD={TS0-TSPACE/2}
+.measure tran vtop_iso0 FIND v(xdut.xc0.top) WHEN v(xdut.s1_0)='0.1*VDD' RISE=1 TD={TS0-TSPACE/2}
+.measure tran vbot_con0 FIND v(xdut.xc0.bot) AT={TS0+TSEQ+10n}
+.measure tran vtop_con0 FIND v(xdut.xc0.top) AT={TS0+TSEQ+10n}
 .measure tran vbot_tr0 FIND v(xdut.xc0.bot) AT={TR}
 .measure tran vtop_tr0 FIND v(xdut.xc0.top) AT={TR}
 .measure tran dout_tr0 FIND v(xdut.xc0.dout) AT={TR}
@@ -170,19 +171,19 @@
 .measure tran bps_err0 PARAM='(vtop_bot0-VIN0)/LSB'
 .measure tran alpha0 PARAM='(vbl_bot0-vbot_tr0)/(vtop_bot0-vtop_tr0)'
 .measure tran refd0 PARAM='vbl_bot0-vref_ts_0'
-.measure tran vbot_min0 MIN v(xdut.xc0.bot) FROM={TS0+2*TNOV+20n} TO={TSTOP}
-.measure tran vbot_max0 MAX v(xdut.xc0.bot) FROM={TS0+2*TNOV+20n} TO={TSTOP}
+.measure tran vbot_min0 MIN v(xdut.xc0.bot) FROM={TS0+TSEQ+10n} TO={TSTOP}
+.measure tran vbot_max0 MAX v(xdut.xc0.bot) FROM={TS0+TSEQ+10n} TO={TSTOP}
 
 .measure tran vin_ts1 FIND v(vin) AT={TS1}
 .measure tran vref_ts_1 FIND v(xdut.vref) AT={TS1}
 .measure tran vtop_ts1 FIND v(xdut.xc1.top) AT={TS1}
 .measure tran vbot_ts1 FIND v(xdut.xc1.bot) AT={TS1}
-.measure tran vbot_s2_1 FIND v(xdut.xc1.bot) AT={TS1+2n}
+.measure tran vbot_s2_1 FIND v(xdut.xc1.bot) AT={TS1+3n}
 .measure tran ped_bot1 PARAM='vbot_s2_1-vbot_ts1'
-.measure tran vbot_iso1 FIND v(xdut.xc1.bot) AT={TS1+2*TNOV-0.5n}
-.measure tran vtop_iso1 FIND v(xdut.xc1.top) AT={TS1+2*TNOV-0.5n}
-.measure tran vbot_con1 FIND v(xdut.xc1.bot) AT={TS1+2*TNOV+20n}
-.measure tran vtop_con1 FIND v(xdut.xc1.top) AT={TS1+2*TNOV+20n}
+.measure tran vbot_iso1 FIND v(xdut.xc1.bot) WHEN v(xdut.s1_1)='0.1*VDD' RISE=1 TD={TS1-TSPACE/2}
+.measure tran vtop_iso1 FIND v(xdut.xc1.top) WHEN v(xdut.s1_1)='0.1*VDD' RISE=1 TD={TS1-TSPACE/2}
+.measure tran vbot_con1 FIND v(xdut.xc1.bot) AT={TS1+TSEQ+10n}
+.measure tran vtop_con1 FIND v(xdut.xc1.top) AT={TS1+TSEQ+10n}
 .measure tran vbot_tr1 FIND v(xdut.xc1.bot) AT={TR}
 .measure tran vtop_tr1 FIND v(xdut.xc1.top) AT={TR}
 .measure tran dout_tr1 FIND v(xdut.xc1.dout) AT={TR}
@@ -205,19 +206,19 @@
 .measure tran bps_err1 PARAM='(vtop_bot1-VIN1)/LSB'
 .measure tran alpha1 PARAM='(vbl_bot1-vbot_tr1)/(vtop_bot1-vtop_tr1)'
 .measure tran refd1 PARAM='vbl_bot1-vref_ts_1'
-.measure tran vbot_min1 MIN v(xdut.xc1.bot) FROM={TS1+2*TNOV+20n} TO={TSTOP}
-.measure tran vbot_max1 MAX v(xdut.xc1.bot) FROM={TS1+2*TNOV+20n} TO={TSTOP}
+.measure tran vbot_min1 MIN v(xdut.xc1.bot) FROM={TS1+TSEQ+10n} TO={TSTOP}
+.measure tran vbot_max1 MAX v(xdut.xc1.bot) FROM={TS1+TSEQ+10n} TO={TSTOP}
 
 .measure tran vin_ts2 FIND v(vin) AT={TS2}
 .measure tran vref_ts_2 FIND v(xdut.vref) AT={TS2}
 .measure tran vtop_ts2 FIND v(xdut.xc2.top) AT={TS2}
 .measure tran vbot_ts2 FIND v(xdut.xc2.bot) AT={TS2}
-.measure tran vbot_s2_2 FIND v(xdut.xc2.bot) AT={TS2+2n}
+.measure tran vbot_s2_2 FIND v(xdut.xc2.bot) AT={TS2+3n}
 .measure tran ped_bot2 PARAM='vbot_s2_2-vbot_ts2'
-.measure tran vbot_iso2 FIND v(xdut.xc2.bot) AT={TS2+2*TNOV-0.5n}
-.measure tran vtop_iso2 FIND v(xdut.xc2.top) AT={TS2+2*TNOV-0.5n}
-.measure tran vbot_con2 FIND v(xdut.xc2.bot) AT={TS2+2*TNOV+20n}
-.measure tran vtop_con2 FIND v(xdut.xc2.top) AT={TS2+2*TNOV+20n}
+.measure tran vbot_iso2 FIND v(xdut.xc2.bot) WHEN v(xdut.s1_2)='0.1*VDD' RISE=1 TD={TS2-TSPACE/2}
+.measure tran vtop_iso2 FIND v(xdut.xc2.top) WHEN v(xdut.s1_2)='0.1*VDD' RISE=1 TD={TS2-TSPACE/2}
+.measure tran vbot_con2 FIND v(xdut.xc2.bot) AT={TS2+TSEQ+10n}
+.measure tran vtop_con2 FIND v(xdut.xc2.top) AT={TS2+TSEQ+10n}
 .measure tran vbot_tr2 FIND v(xdut.xc2.bot) AT={TR}
 .measure tran vtop_tr2 FIND v(xdut.xc2.top) AT={TR}
 .measure tran dout_tr2 FIND v(xdut.xc2.dout) AT={TR}
@@ -240,19 +241,19 @@
 .measure tran bps_err2 PARAM='(vtop_bot2-VIN2)/LSB'
 .measure tran alpha2 PARAM='(vbl_bot2-vbot_tr2)/(vtop_bot2-vtop_tr2)'
 .measure tran refd2 PARAM='vbl_bot2-vref_ts_2'
-.measure tran vbot_min2 MIN v(xdut.xc2.bot) FROM={TS2+2*TNOV+20n} TO={TSTOP}
-.measure tran vbot_max2 MAX v(xdut.xc2.bot) FROM={TS2+2*TNOV+20n} TO={TSTOP}
+.measure tran vbot_min2 MIN v(xdut.xc2.bot) FROM={TS2+TSEQ+10n} TO={TSTOP}
+.measure tran vbot_max2 MAX v(xdut.xc2.bot) FROM={TS2+TSEQ+10n} TO={TSTOP}
 
 .measure tran vin_ts3 FIND v(vin) AT={TS3}
 .measure tran vref_ts_3 FIND v(xdut.vref) AT={TS3}
 .measure tran vtop_ts3 FIND v(xdut.xc3.top) AT={TS3}
 .measure tran vbot_ts3 FIND v(xdut.xc3.bot) AT={TS3}
-.measure tran vbot_s2_3 FIND v(xdut.xc3.bot) AT={TS3+2n}
+.measure tran vbot_s2_3 FIND v(xdut.xc3.bot) AT={TS3+3n}
 .measure tran ped_bot3 PARAM='vbot_s2_3-vbot_ts3'
-.measure tran vbot_iso3 FIND v(xdut.xc3.bot) AT={TS3+2*TNOV-0.5n}
-.measure tran vtop_iso3 FIND v(xdut.xc3.top) AT={TS3+2*TNOV-0.5n}
-.measure tran vbot_con3 FIND v(xdut.xc3.bot) AT={TS3+2*TNOV+20n}
-.measure tran vtop_con3 FIND v(xdut.xc3.top) AT={TS3+2*TNOV+20n}
+.measure tran vbot_iso3 FIND v(xdut.xc3.bot) WHEN v(xdut.s1_3)='0.1*VDD' RISE=1 TD={TS3-TSPACE/2}
+.measure tran vtop_iso3 FIND v(xdut.xc3.top) WHEN v(xdut.s1_3)='0.1*VDD' RISE=1 TD={TS3-TSPACE/2}
+.measure tran vbot_con3 FIND v(xdut.xc3.bot) AT={TS3+TSEQ+10n}
+.measure tran vtop_con3 FIND v(xdut.xc3.top) AT={TS3+TSEQ+10n}
 .measure tran vbot_tr3 FIND v(xdut.xc3.bot) AT={TR}
 .measure tran vtop_tr3 FIND v(xdut.xc3.top) AT={TR}
 .measure tran dout_tr3 FIND v(xdut.xc3.dout) AT={TR}
@@ -275,8 +276,8 @@
 .measure tran bps_err3 PARAM='(vtop_bot3-VIN3)/LSB'
 .measure tran alpha3 PARAM='(vbl_bot3-vbot_tr3)/(vtop_bot3-vtop_tr3)'
 .measure tran refd3 PARAM='vbl_bot3-vref_ts_3'
-.measure tran vbot_min3 MIN v(xdut.xc3.bot) FROM={TS3+2*TNOV+20n} TO={TSTOP}
-.measure tran vbot_max3 MAX v(xdut.xc3.bot) FROM={TS3+2*TNOV+20n} TO={TSTOP}
+.measure tran vbot_min3 MIN v(xdut.xc3.bot) FROM={TS3+TSEQ+10n} TO={TSTOP}
+.measure tran vbot_max3 MAX v(xdut.xc3.bot) FROM={TS3+TSEQ+10n} TO={TSTOP}
 
 * ---------------------------------------------------------------------------
 * Power over the ramp [TR, TE]. The VM* ammeters split AVDD per block:
@@ -336,11 +337,50 @@
 .measure tran i_c0_post AVG i(v.xdut.vmc0) FROM={TSTOP-500n} TO={TSTOP}
 .measure tran pw_c0_post PARAM='VDD*i_c0_post'
 
+* ---------------------------------------------------------------------------
+* The sampling sequencer in the macro (sample_seq, ADR 0027): VDD/2 crossings
+* of the twelve controls. seq_ap_k: S2_k opens after the edge TS_k; seq_g20_k:
+* S2_k -> S0_k open; seq_g01_k: S0_k open -> S1_k closed (>= 5 ns each, Q2);
+* seq_s0_vs_step_k: S0_k open this long before vin steps
+* ---------------------------------------------------------------------------
+.measure tran t_acq WHEN v(acq)='VDD/2' FALL=1
+.measure tran seq_t2_0 WHEN v(xdut.s2_0)='VDD/2' FALL=1 TD={TS0-TSPACE/2}
+.measure tran seq_t0_0 WHEN v(xdut.s0_0)='VDD/2' FALL=1 TD={TS0-TSPACE/2}
+.measure tran seq_t1_0 WHEN v(xdut.s1_0)='VDD/2' RISE=1 TD={TS0-TSPACE/2}
+.measure tran seq_ap_0 PARAM='seq_t2_0-TS0'
+.measure tran seq_g20_0 PARAM='seq_t0_0-seq_t2_0'
+.measure tran seq_g01_0 PARAM='seq_t1_0-seq_t0_0'
+.measure tran seq_s0_vs_step_0 PARAM='TS0+TSTEP-seq_t0_0'
+.measure tran seq_t2_1 WHEN v(xdut.s2_1)='VDD/2' FALL=1 TD={TS1-TSPACE/2}
+.measure tran seq_t0_1 WHEN v(xdut.s0_1)='VDD/2' FALL=1 TD={TS1-TSPACE/2}
+.measure tran seq_t1_1 WHEN v(xdut.s1_1)='VDD/2' RISE=1 TD={TS1-TSPACE/2}
+.measure tran seq_ap_1 PARAM='seq_t2_1-TS1'
+.measure tran seq_g20_1 PARAM='seq_t0_1-seq_t2_1'
+.measure tran seq_g01_1 PARAM='seq_t1_1-seq_t0_1'
+.measure tran seq_s0_vs_step_1 PARAM='TS1+TSTEP-seq_t0_1'
+.measure tran seq_sp_1 PARAM='seq_t2_1-seq_t2_0'
+.measure tran seq_t2_2 WHEN v(xdut.s2_2)='VDD/2' FALL=1 TD={TS2-TSPACE/2}
+.measure tran seq_t0_2 WHEN v(xdut.s0_2)='VDD/2' FALL=1 TD={TS2-TSPACE/2}
+.measure tran seq_t1_2 WHEN v(xdut.s1_2)='VDD/2' RISE=1 TD={TS2-TSPACE/2}
+.measure tran seq_ap_2 PARAM='seq_t2_2-TS2'
+.measure tran seq_g20_2 PARAM='seq_t0_2-seq_t2_2'
+.measure tran seq_g01_2 PARAM='seq_t1_2-seq_t0_2'
+.measure tran seq_s0_vs_step_2 PARAM='TS2+TSTEP-seq_t0_2'
+.measure tran seq_sp_2 PARAM='seq_t2_2-seq_t2_1'
+.measure tran seq_t2_3 WHEN v(xdut.s2_3)='VDD/2' FALL=1 TD={TS3-TSPACE/2}
+.measure tran seq_t0_3 WHEN v(xdut.s0_3)='VDD/2' FALL=1 TD={TS3-TSPACE/2}
+.measure tran seq_t1_3 WHEN v(xdut.s1_3)='VDD/2' RISE=1 TD={TS3-TSPACE/2}
+.measure tran seq_ap_3 PARAM='seq_t2_3-TS3'
+.measure tran seq_g20_3 PARAM='seq_t0_3-seq_t2_3'
+.measure tran seq_g01_3 PARAM='seq_t1_3-seq_t0_3'
+.measure tran seq_s0_vs_step_3 PARAM='TS3+TSTEP-seq_t0_3'
+.measure tran seq_sp_3 PARAM='seq_t2_3-seq_t2_2'
+
 .control
 set num_threads=1
 set wr_singlescale
 set wr_vecnames
 run
-wrdata wave.csv v(avdd) v(dvdd) v(vin) v(ramp_rst) v(cnt_clk) v(xdut.pbias0) v(xdut.pbias1) v(xdut.pbias2) v(xdut.pbias3) v(xdut.pbias_r) v(xdut.vmid) v(xdut.vref) v(xdut.vramp) v(xdut.vrlo) v(xdut.xc0.bot) v(xdut.xc0.top) v(xdut.xc0.dout) v(q0) v(s0_0) v(s1_0) v(s2_0) v(xdut.xc1.bot) v(xdut.xc1.top) v(xdut.xc1.dout) v(q1) v(s0_1) v(s1_1) v(s2_1) v(xdut.xc2.bot) v(xdut.xc2.top) v(xdut.xc2.dout) v(q2) v(s0_2) v(s1_2) v(s2_2) v(xdut.xc3.bot) v(xdut.xc3.top) v(xdut.xc3.dout) v(q3) v(s0_3) v(s1_3) v(s2_3) i(vavdd) i(vdvdd) i(v.xdut.vmbg) i(v.xdut.vmref) i(v.xdut.vmvrlo) i(v.xdut.vmramp) i(v.xdut.vmc0) i(v.xdut.vmc1) i(v.xdut.vmc2) i(v.xdut.vmc3) @m.xdut.xbg.xoc0.m0[id] @m.xdut.xbg.xoc1.m0[id] @m.xdut.xbg.xoc2.m0[id] @m.xdut.xbg.xoc3.m0[id] @m.xdut.xbg.xor.m0[id] @m.xdut.xbg.xov.m0[id] @m.xdut.xbg.xol.m0[id] @m.xdut.xbg.xmn1.m0[id]
+wrdata wave.csv v(avdd) v(dvdd) v(vin) v(ramp_rst) v(cnt_clk) v(xdut.pbias0) v(xdut.pbias1) v(xdut.pbias2) v(xdut.pbias3) v(xdut.pbias_r) v(xdut.vmid) v(xdut.vref) v(xdut.vramp) v(xdut.vrlo) v(xdut.xc0.bot) v(xdut.xc0.top) v(xdut.xc0.dout) v(q0) v(xdut.s0_0) v(xdut.s1_0) v(xdut.s2_0) v(xdut.xc1.bot) v(xdut.xc1.top) v(xdut.xc1.dout) v(q1) v(xdut.s0_1) v(xdut.s1_1) v(xdut.s2_1) v(xdut.xc2.bot) v(xdut.xc2.top) v(xdut.xc2.dout) v(q2) v(xdut.s0_2) v(xdut.s1_2) v(xdut.s2_2) v(xdut.xc3.bot) v(xdut.xc3.top) v(xdut.xc3.dout) v(q3) v(xdut.s0_3) v(xdut.s1_3) v(xdut.s2_3) i(vavdd) i(vdvdd) i(v.xdut.vmbg) i(v.xdut.vmref) i(v.xdut.vmvrlo) i(v.xdut.vmramp) i(v.xdut.vmc0) i(v.xdut.vmc1) i(v.xdut.vmc2) i(v.xdut.vmc3) @m.xdut.xbg.xoc0.m0[id] @m.xdut.xbg.xoc1.m0[id] @m.xdut.xbg.xoc2.m0[id] @m.xdut.xbg.xoc3.m0[id] @m.xdut.xbg.xor.m0[id] @m.xdut.xbg.xov.m0[id] @m.xdut.xbg.xol.m0[id] @m.xdut.xbg.xmn1.m0[id]
 quit
 .endc

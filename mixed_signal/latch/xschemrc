@@ -1,0 +1,14 @@
+# xschemrc for mixed_signal/latch: the PDK rc, this folder (latch.sym,
+# latch.sch and the library primitive gf180mcu_as_sc_mcu7t3v3__dfxtn_2.sym),
+# then ../comparator so that tb_kick.sch places comparator.sym and xschem
+# descends into comparator.sch (the comparator's own drawing, verified
+# against its deck by that block). Without a path entry xschem cannot find
+# the symbol and SILENTLY drops the instance from the netlist (the trap
+# recorded in ../Analog_top/xschemrc); check-tb.awk counts the instances.
+#
+# xschem reads ./xschemrc by itself when started in this directory;
+# schematic.sh and xtb.py pass it explicitly with --rcfile.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc
+set LATCH_DIR [file normalize [file dirname [info script]]]
+append XSCHEM_LIBRARY_PATH :$LATCH_DIR
+append XSCHEM_LIBRARY_PATH :[file normalize [file join $LATCH_DIR .. comparator]]

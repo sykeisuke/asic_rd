@@ -1,0 +1,298 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1110" height="693" version="1.1">
+<style type="text/css">
+.l0{
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l1{
+  fill: #0099cc;
+  stroke: #0099cc;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l2{
+  fill: #aaaaaa; fill-opacity: 0.2;
+  stroke: #aaaaaa;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l3{
+  fill: #222222; fill-opacity: 0.5;
+  stroke: #222222;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l4{
+  fill: #229900;
+  stroke: #229900;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l5{
+  fill: #bb2200;
+  stroke: #bb2200;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l6{
+  fill: #0066cc; fill-opacity: 0.5;
+  stroke: #0066cc;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l7{
+  fill: #ff0000; fill-opacity: 0.5;
+  stroke: #ff0000;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l8{
+  fill: #888800; fill-opacity: 0.5;
+  stroke: #888800;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l9{
+  fill: #00aaaa; fill-opacity: 0.5;
+  stroke: #00aaaa;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l10{
+  fill: #880088;
+  stroke: #880088;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l11{
+  fill: #00ff00; fill-opacity: 0.5;
+  stroke: #00ff00;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l12{
+  fill: #0000cc; fill-opacity: 0.5;
+  stroke: #0000cc;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l13{
+  fill: #666600; fill-opacity: 0.5;
+  stroke: #666600;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l14{
+  fill: #557755; fill-opacity: 0.2;
+  stroke: #557755;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l15{
+  fill: #aa2222; fill-opacity: 0.5;
+  stroke: #aa2222;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l16{
+  fill: #7ccc40; fill-opacity: 0.5;
+  stroke: #7ccc40;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l17{
+  fill: #00ffcc; fill-opacity: 0.2;
+  stroke: #00ffcc;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l18{
+  fill: #ce0097; fill-opacity: 0.5;
+  stroke: #ce0097;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l19{
+  fill: #d2d46b; fill-opacity: 0.2;
+  stroke: #d2d46b;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l20{
+  fill: #ef6158; fill-opacity: 0.2;
+  stroke: #ef6158;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+.l21{
+  fill: #fdb200; fill-opacity: 0.2;
+  stroke: #fdb200;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  stroke-width: 0.733616;
+}
+text {font-family: Sans-Serif;}
+</style>
+<rect class="l0" x="0" y="0" width="1110" height="693"/>
+<path class="l4" d="M61.4821 95.9836L64.1992 95.9836"/>
+<path class="l4" d="M62.8407 94.625L62.8407 97.3421"/>
+<path class="l4" d="M60.1236 91.9079L60.1236 124.513"/>
+<circle class="l4" cx="60.1236" cy="108.211" r="8.15129" style="fill:none;" />
+<path class="l4" d="M191.903 95.9836L194.62 95.9836"/>
+<path class="l4" d="M193.261 94.625L193.261 97.3421"/>
+<path class="l4" d="M190.544 91.9079L190.544 124.513"/>
+<circle class="l4" cx="190.544" cy="108.211" r="8.15129" style="fill:none;" />
+<path class="l4" d="M61.4821 313.351L64.1992 313.351"/>
+<path class="l4" d="M62.8407 311.993L62.8407 314.71"/>
+<path class="l4" d="M60.1236 309.276L60.1236 341.881"/>
+<circle class="l4" cx="60.1236" cy="325.578" r="8.15129" style="fill:none;" />
+<path class="l4" d="M766.569 86.4737L853.516 86.4737"/>
+<path class="l4" d="M853.516 86.4737L853.516 151.684"/>
+<path class="l4" d="M766.569 151.684L853.516 151.684"/>
+<path class="l4" d="M766.569 86.4737L766.569 151.684"/>
+<path class="l4" d="M755.701 108.211L766.569 108.211"/>
+<path class="l4" d="M755.701 129.947L766.569 129.947"/>
+<path class="l4" d="M766.569 124.513L772.003 129.947"/>
+<path class="l4" d="M766.569 135.381L772.003 129.947"/>
+<path class="l4" d="M853.516 108.211L864.385 108.211"/>
+<path class="l4" d="M810.043 75.6053L810.043 86.4737"/>
+<path class="l4" d="M810.043 151.684L810.043 162.552"/>
+<path class="l4" d="M940.463 110.928L940.463 124.513"/>
+<path class="l4" d="M940.463 91.9079L940.463 105.493"/>
+<path class="l4" d="M935.029 105.493L945.897 105.493"/>
+<path class="l4" d="M935.029 110.928L945.897 110.928"/>
+<path class="l4" d="M941.822 95.9836L944.539 95.9836"/>
+<path class="l4" d="M943.18 94.625L943.18 97.3421"/>
+<path class="l4" d="M27.5184 396.223L65.5578 396.223"/>
+<path class="l4" d="M27.5184 396.223L27.5184 407.091"/>
+<path class="l5" d="M58.765 90.5494L61.4821 90.5494L61.4821 93.2665L58.765 93.2665L58.765 90.5494z"/>
+<path class="l5" d="M58.765 123.155L61.4821 123.155L61.4821 125.872L58.765 125.872L58.765 123.155z"/>
+<path class="l5" d="M59.4443 69.4919L60.8028 69.4919L60.8028 70.8504L59.4443 70.8504L59.4443 69.4919z"/>
+<path class="l5" d="M59.4443 145.571L60.8028 145.571L60.8028 146.929L59.4443 146.929L59.4443 145.571z"/>
+<path class="l5" d="M189.186 90.5494L191.903 90.5494L191.903 93.2665L189.186 93.2665L189.186 90.5494z"/>
+<path class="l5" d="M189.186 123.155L191.903 123.155L191.903 125.872L189.186 125.872L189.186 123.155z"/>
+<path class="l5" d="M189.865 69.4919L191.224 69.4919L191.224 70.8504L189.865 70.8504L189.865 69.4919z"/>
+<path class="l5" d="M189.865 145.571L191.224 145.571L191.224 146.929L189.865 146.929L189.865 145.571z"/>
+<path class="l5" d="M58.765 307.917L61.4821 307.917L61.4821 310.634L58.765 310.634L58.765 307.917z"/>
+<path class="l5" d="M58.765 340.522L61.4821 340.522L61.4821 343.239L58.765 343.239L58.765 340.522z"/>
+<path class="l5" d="M59.4443 286.86L60.8028 286.86L60.8028 288.218L59.4443 288.218L59.4443 286.86z"/>
+<path class="l5" d="M59.4443 362.938L60.8028 362.938L60.8028 364.297L59.4443 364.297L59.4443 362.938z"/>
+<path class="l5" d="M754.342 106.852L757.059 106.852L757.059 109.569L754.342 109.569L754.342 106.852z"/>
+<path class="l5" d="M754.342 128.589L757.059 128.589L757.059 131.306L754.342 131.306L754.342 128.589z"/>
+<path class="l5" d="M863.026 106.852L865.743 106.852L865.743 109.569L863.026 109.569L863.026 106.852z"/>
+<path class="l5" d="M808.684 74.2468L811.401 74.2468L811.401 76.9639L808.684 76.9639L808.684 74.2468z"/>
+<path class="l5" d="M808.684 161.194L811.401 161.194L811.401 163.911L808.684 163.911L808.684 161.194z"/>
+<path class="l5" d="M733.285 107.531L734.643 107.531L734.643 108.89L733.285 108.89L733.285 107.531z"/>
+<path class="l5" d="M733.285 129.268L734.643 129.268L734.643 130.627L733.285 130.627L733.285 129.268z"/>
+<path class="l5" d="M885.442 107.531L886.801 107.531L886.801 108.89L885.442 108.89L885.442 107.531z"/>
+<path class="l5" d="M809.363 53.1893L810.722 53.1893L810.722 54.5478L809.363 54.5478L809.363 53.1893z"/>
+<path class="l5" d="M809.363 183.61L810.722 183.61L810.722 184.969L809.363 184.969L809.363 183.61z"/>
+<path class="l5" d="M939.105 90.5494L941.822 90.5494L941.822 93.2665L939.105 93.2665L939.105 90.5494z"/>
+<path class="l5" d="M939.105 123.155L941.822 123.155L941.822 125.872L939.105 125.872L939.105 123.155z"/>
+<path class="l5" d="M939.784 69.4919L941.143 69.4919L941.143 70.8504L939.784 70.8504L939.784 69.4919z"/>
+<path class="l5" d="M939.784 145.571L941.143 145.571L941.143 146.929L939.784 146.929L939.784 145.571z"/>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(70.992, 103.153)" >VDVDD</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(70.992, 116.739)" >{VDD}</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(32.0479, 74.223)" >dvdd</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(50.0479, 150.302)" >0</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(201.413, 103.153)" >VCLK</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(201.413, 116.739)" >PULSE({VDD} 0 {TCOUNT/2-TCE/2} {TCE} {TCE} {TCOUNT/2-TCE} {TCOUNT})</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(172.469, 74.223)" >clk</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(180.469, 150.302)" >0</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(70.992, 320.521)" >VD</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(70.992, 334.106)" >PWL(0 {VDD} {412.5n-TDF/2} {VDD} {412.5n+TDF/2} 0 {587.5n-TDF/2} 0 {587.5n+TDF/2} {VDD} {787.5n-TDF/2} {VDD} {787.5n+TDF/2} 0 {962.5n-TDF/2} 0 {962.5n+TDF/2} {VDD})</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(50.0479, 291.591)" >d</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(50.0479, 367.67)" >0</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" transform="translate(769.83, 112.647)" >d</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" transform="translate(775.264, 134.384)" >clk (fall)</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" transform="translate(843.735, 112.647)" >q</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" transform="translate(813.303, 86.5633)" >vdd</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" transform="translate(813.303, 150.687)" >vss</text>
+<text fill="#222222"  xml:space="preserve" font-size="11.3031" transform="translate(766.569, 77.1739)" >XL</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" transform="translate(786.132, 122.429)" >latch</text>
+<text fill="#222222"  xml:space="preserve" font-size="7.06445" transform="translate(794.827, 141.796)" >dfxtn_2</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(723.888, 112.262)" >d</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(715.888, 133.999)" >clk</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(890.197, 112.262)" >q</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(781.967, 57.9205)" >dvdd</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(799.967, 188.341)" >0</text>
+<text fill="#666600"  xml:space="preserve" font-size="5.65156" transform="translate(933.746, 99.0774)" >1</text>
+<text fill="#666600"  xml:space="preserve" font-size="5.65156" transform="translate(933.746, 122.173)" >2</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(948.615, 103.153)" >CQ</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(948.615, 109.946)" >50f</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.65156" transform="translate(948.615, 116.739)" >m=1</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(930.388, 74.223)" >q</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.32508" transform="translate(930.388, 150.302)" >0</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" transform="translate(30.2355, 393.052)" >CTL</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 406.637)" >.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 416.361)" >.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 426.084)" >.include /foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 435.808)" >.param VDD=3.3</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 445.531)" >.param TCOUNT=50n</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 455.255)" >.param TCE=6.250000e-10</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 464.979)" >.param TDF=1.300000e-08</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 474.702)" >.param TSTOP=1100n</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 484.426)" >.temp 27</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 494.149)" >.csparam cs_vdd={VDD}</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 503.873)" >.options savecurrents reltol=1e-4</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 513.596)" >.tran 5p {TSTOP} 0 20p</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 523.32)" >.control</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 533.043)" >run</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 542.767)" >let half = $&amp;cs_vdd / 2</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 552.49)" >let hi90 = 0.9 * $&amp;cs_vdd</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 562.214)" >let lo10 = 0.1 * $&amp;cs_vdd</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 571.937)" >meas tran t_edge when v(clk)=$&amp;half fall=1 td=413e-9</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 581.661)" >meas tran t_q when v(q)=$&amp;half fall=1 td=100e-9</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 591.384)" >meas tran t_q90 when v(q)=$&amp;hi90 fall=1 td=100e-9</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 601.108)" >meas tran t_q10 when v(q)=$&amp;lo10 fall=1 td=100e-9</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 610.831)" >let tcq = t_q - t_edge</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 620.555)" >let q_fall = t_q10 - t_q90</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 630.278)" >set numdgt=10</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 640.002)" >echo RESULT_BEGIN</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 649.725)" >print tcq q_fall t_edge t_q</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 659.449)" >echo RESULT_END</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 669.172)" >quit</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.47735" style="font-family:Monospace;" transform="translate(35.6697, 678.896)" >.endc</text>
+<path class="l1" d="M60.1236 70.1712L60.1236 91.9079"/>
+<path class="l1" d="M60.1236 124.513L60.1236 146.25"/>
+<path class="l1" d="M190.544 70.1712L190.544 91.9079"/>
+<path class="l1" d="M190.544 124.513L190.544 146.25"/>
+<path class="l1" d="M60.1236 287.539L60.1236 309.276"/>
+<path class="l1" d="M60.1236 341.881L60.1236 363.618"/>
+<path class="l1" d="M733.964 108.211L755.701 108.211"/>
+<path class="l1" d="M733.964 129.947L755.701 129.947"/>
+<path class="l1" d="M864.385 108.211L886.121 108.211"/>
+<path class="l1" d="M810.043 53.8686L810.043 75.6053"/>
+<path class="l1" d="M810.043 162.552L810.043 184.289"/>
+<path class="l1" d="M940.463 70.1712L940.463 91.9079"/>
+<path class="l1" d="M940.463 124.513L940.463 146.25"/>
+<text fill="#222222"  xml:space="preserve" font-size="19.7805" transform="translate(27.5184, 28.3557)" >TB_DRIVE  -  latch alone, 20 MHz clock, d moves in both clock phases, q into 50 fF</text>
+<text fill="#229900"  xml:space="preserve" font-size="12.716" transform="translate(16.65, 58.8937)" >SUPPLY / CLOCK / D</text>
+<text fill="#229900"  xml:space="preserve" font-size="8.47735" transform="translate(16.65, 208.289)" >clk 10-90 % 0.5 ns</text>
+<text fill="#229900"  xml:space="preserve" font-size="8.47735" transform="translate(16.65, 235.46)" >d 10-90 % 10.4 ns</text>
+<text fill="#229900"  xml:space="preserve" font-size="12.716" transform="translate(733.964, 58.8937)" >DUT</text>
+<text fill="#229900"  xml:space="preserve" font-size="8.47735" transform="translate(962.2, 164.816)" >CQ = 50 fF</text>
+</svg>

@@ -4,24 +4,13 @@ K {}
 V {}
 S {}
 E {}
-T {MIDREF_B  -  VDD/2 BUFFER (VREF / VBL OF THE UNIT CELL)} 40 -1130 0 0 0.6 0.6 {}
-T {Two flipped voltage followers set p = vin + VSG(M1) and n = vin - VGS(M4); the 4x diodes M2 / M5 between p and n
-make out = vin, class AB. The two crossings are the FVF shunt loops (b -> M3 gate, a -> M6 gate); they do not connect.
-Netlist: ref_fvf_biased.spice (run-biased.sh compares this drawing to it instance by instance).} 40 -1070 0 0 0.3 0.3 {}
+T {MIDREF_B  -  FVF VDD/2 buffer (frozen reference copy)} 40 -1130 0 0 0.6 0.6 {}
 T {BIAS  (1 uA)} 60 -980 0 0 0.4 0.4 {}
-T {pbias slave XSLF -> diode XMBN
--> mirror XMBN2 -> diode XMBP} 60 -950 0 0 0.25 0.25 {}
 T {DIVIDER} 500 -980 0 0 0.4 0.4 {}
-T {vin = VDD/2, 2 x 1.65 Mohm} 500 -950 0 0 0.25 0.25 {}
 T {INPUT FOLLOWERS + IB} 760 -980 0 0 0.4 0.4 {}
-T {M1 / M4 follow vin; XMIB / XMIT = IB} 760 -950 0 0 0.25 0.25 {}
 T {SHUNTS + OUTPUT} 1080 -980 0 0 0.4 0.4 {}
-T {M3 / M6 shunt; M2 / M5 = 4 x M1 / M4} 1080 -950 0 0 0.25 0.25 {}
 T {IB} 790 -605 0 0 0.35 0.35 {layer=8}
 T {IB} 790 -365 0 0 0.35 0.35 {layer=8}
-T {p = vin + VSG1} 1190 -735 0 0 0.25 0.25 {layer=8}
-T {n = vin - VGS4} 1190 -195 0 0 0.25 0.25 {layer=8}
-T {out = vin} 1200 -480 0 0 0.25 0.25 {layer=8}
 L 4 475 -1000 475 20 {dash=6}
 L 4 715 -1000 715 20 {dash=6}
 N 40 -760 120 -760 {lab=pbias}

@@ -1,4 +1,4 @@
-.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep layout drc lvs gf-inverter top-placement comparator-pvt comparator-schematic latch midrail-ref bias-gen vrlo-ref ramp-gen analog-top cell-trannoise chip-floorplan vnc stop
+.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep layout drc lvs gf-inverter top-placement comparator-pvt comparator-schematic latch midrail-ref bias-gen vrlo-ref ramp-gen ramp-simple ic-source sample-seq analog-top cell-trannoise chip-floorplan vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -123,6 +123,21 @@ vrlo-ref:
 # Ramp generators ramp_gen / ramp_simple.
 ramp-gen:
 	./scripts/run-ramp-gen.sh
+
+# The ramp re-derived as unit MIMs + reset switch on the I/C current, with its
+# own spec and pre-roll (mixed_signal/ramp_simple); fed by ic-source.
+ramp-simple:
+	./scripts/run-ramp-simple.sh
+
+# The I/C (switched-capacitor) current source that sets the ramp's slope as a
+# unit-MIM ratio (mixed_signal/ic_source); feeds ramp_simple.
+ic-source:
+	./scripts/run-ic-source.sh
+
+# The on-chip sampling sequencer (mixed_signal/sample_seq): S2 / S0 / S1 of the
+# four cells from the 20 MHz clock and acquire, >= 5 ns between phases.
+sample-seq:
+	./scripts/run-sample-seq.sh
 
 # The analog macro `analog_top` (mixed_signal/Analog_top): four cells, ramp,
 # bias, VDD/2 and VR_LO references.

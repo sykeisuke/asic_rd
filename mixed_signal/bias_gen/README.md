@@ -42,6 +42,50 @@ prints these values on the sheet.
 `../comparator`, `../midrail_ref_bkp/midrail_ref_v2`, `../ramp_gen` and
 `../bias_gen_bkp/bias_gen` are read by path and never written.
 
+### Drawings (2026-10-31)
+
+`bias_gen.sch` / `.sym` (by `bias_gen_sch.py`) is the cell; six testbench
+sheets (by `tb_sch.py`) draw the benches `verify_bg.py` builds, at their
+nominal case (typical, 27 °C, 3.3 V, res_typical), with the generator placed
+as `bias_gen.sym` (xschem descends into `bias_gen.sch`) and the comparator as
+`../comparator/comparator.sym` through this folder's `xschemrc`:
+
+| Sheet | Bench (verify_bg.py) | What the drawing carries |
+| --- | --- | --- |
+| `tb_op.sch` | phase `op` (`bg.op_deck`) | every output into its consumer diode behind a 0 V ammeter (`bg.consumer_loads`), the deck's `.control` (3.0 / 3.3 / 3.6 V) |
+| `tb_startup.sch` | phase `startup`, cases `ramp100n` and `dead` | the supply ramp `PWL(0 0 {TRAMP} 3.3)`, the dead-state hold (VHC + two switches on `xg.pb` / `xg.nb`, released at TREL); both cases from one sheet by `alter` in the `.control` |
+| `tb_mc.sch` | phase `mc` (`mc_deck`) | one local-mismatch draw, `.options seed=20261008` (SEED_BASE + 1) |
+| `tb_noise.sch` | phase `noise`, the "new" deck | `noise v(lr)`, 1 Hz - 100 MHz, into `nz_new.txt` |
+| `tb_cmp.sch` | phase `cmp` (`tb_sel_dc` + `tb_sel` of the comparator, generator on icmp0) | the static-trip comparator XDC and the charge-path comparator XDUT on the same sheet, the trip then the plateau-level transient in one `.control` |
+| `tb_xtalk.sch` | phase `xtalk` (`XT_DECK`) | four comparators on pb0..3, case a as drawn, case q by `alterparam` + `reset` |
+
+Phase `midref` is deck-only: it places the frozen `ref/midrail_ref_v2` cells
+(`midref_v2`, `tb_op` / `tb_kick` of that version), which have no drawings
+in this folder, and a latest folder never draws a `_bkp` cell.
+
+Proven by the `schematic` phase (`schematic.sh` steps 5-7): `tb_sch.py check`
+finds every drawn instance in the xschem netlist on its nodes (and the
+descended `bias_gen` / `comparator` subcircuits); `xtb.py` simulates each
+netlist and the hand deck of the same case (`work/xtb_<tb>/ref*.spice`,
+re-built from `verify_bg.py`'s own functions) and compares the figures
+(`data/xtb.csv`). With identical devices (op, startup, mc, noise) the gate is
+1e-6 relative or 10 pA / 10 ps, or one unit in the deck echo's last digit:
+every figure is identical (the drawing's netlist lists the devices in the
+deck's order, so the same-seed mismatch draw is the same draw). With the
+comparator (cmp, xtalk) times are gated at 1 ns and the trip at 50 µV: the
+comparator drawing writes the S/D geometry as the PDK symbols' exact
+expressions where `size_v3.dev` rounds them to four digits, and the trip runs
+on the dynamic bench's `reltol` / `gmin` instead of the trip deck's defaults
+(delay from the trip 8.529 ns vs 8.592, trip 1.649920 vs 1.649917 V,
+crosstalk shift -0.0006 LSB on both). The one-sheet cmp bench reports a higher
+average supply power than the deck (383 vs 111 µW) because XDC stays parked at
+its trip point during the transient. Renders: `assets/tb_<tb>.png`. Record:
+`runs/bias-gen/20261031T061230Z/metrics.json` (`PHASES=schematic`, 23/23).
+
+Trap recorded: xschem drops a double quote inside a `code_shown` value and
+ends the token at the next space, so `tb_sch.py` writes `echo` lines without
+quotes and refuses any other quote in a code block.
+
 ## Topology
 
 ```text

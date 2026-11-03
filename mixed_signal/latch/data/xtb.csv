@@ -1,0 +1,15 @@
+bench,metric,variant,bench_value,xschem_value,diff
+drive,tcq,as drawn,4.880051068e-10,4.88e-10,-5.10678e-15
+drive,q_fall,as drawn,1.969956264e-10,1.97e-10,4.3736e-15
+aperture,n_fall,as drawn,1,1,0
+aperture,tcq,as drawn,4.872177327e-10,4.872e-10,-1.77327e-14
+aperture,q_fall,as drawn,1.962532288e-10,1.962e-10,-5.32288e-14
+kick,t_cross,nogeom,3.598743e-06,3.598743e-06,4.23516e-22
+kick,t_dout,nogeom,3.620619e-06,3.620619e-06,0
+kick,t_q,nogeom,3.625486e-06,3.625486e-06,0
+kick,dout_fall,nogeom,5.77e-09,5.778e-09,8e-12
+kick,t_cross,geom,3.598743e-06,3.598645e-06,-9.8e-11
+kick,t_dout,geom,3.620619e-06,3.621063e-06,4.44e-10
+kick,t_q,geom,3.625486e-06,3.625487e-06,1e-12
+kick,delay,geom,2.1876e-08,2.2418e-08,5.42e-10
+kick,dout_fall,geom,5.77e-09,5.845e-09,7.5e-11

@@ -48,21 +48,20 @@ Conventions used throughout:
 | `VIN` | A in | 0.5-2.0 V (8-bit range, LSB 5.859 mV) | `vfe` bus to the `a` side of 4 x S0 TG (NMOS 0.50/0.28 + PMOS 1.00/0.28, drawn junctions), each charging `top[i]` (54.52 fF plus parasitics) | `analog[0]` pad, then the CDM strip | Tracking: S0 R_on <= 5.59 kohm, tau 313 ps against a 650 ps budget (`switches.spice`). The board driver has to settle 4 x C_S plus the pad and the bus | core |
 | `VRLO` | A in | 0.5 V (`VR_LO`) | `vrlo`: the `ramp_gen` OTA's + input. **Gate only, no DC current** (`ramp_gen.spice`) | **open**: board pad, divider + decap, or a third buffer | Static. Its noise and offset appear as ramp offset in every code | open |
 
-## 3. Digital pins (14 in, 4 out)
+## 3. Digital pins (v7: 4 in, 4 out)
 
 ### 3.1 Inputs from the digital macro (or the debug pads)
 
 | Pin | Width | Level | Function | Load inside the macro | Timing (bench values, `unit_cell_bps/CONTRACT.md`) | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| `S2[3:0]` | 4 | 0 / AVDD, **HIGH = closed** | Bottom-plate reset switch: `vref` to `bot[i]`. **Its falling edge is the sampling instant of cell i** | 1 min inverter (N 0.44 / P 0.88, L 0.28) + gate of the S2 NMOS 0.36/0.28 | Track while high. Falls at `TS` (300 ns in the bench; 10/50/90/130 ns for the frozen 4-cell schedule). Edges 100 ps in the bench | core |
-| `S0[3:0]` | 4 | 0 / AVDD, HIGH = closed | Input TG: `vfe` to `top[i]` | 1 min inverter + S0 TG gates | Opens at `TISO` = S2 fall + `TNOV` (5 ns). `TNOV` sets the dynamic error and moves the offset by about 1 LSB, so it is kept as a separate line (TOPDOWN §1, §3.3 `S0_DBG`) | core |
-| `S1[3:0]` | 4 | 0 / AVDD, HIGH = closed | Ramp TG: `vramp` to `top[i]` | 1 min inverter + S1 TG gates | Closes at `TCONN` = TISO + 5 ns while `vramp` = `VRLO` (ramp still in reset). Stays closed through the conversion | core |
+| `ACQ` | 1 | 0 / DVDD, **HIGH = track** | (v7, ADR 0027) the controller's `acquire` level. The macro's sampling sequencer `../sample_seq` makes the twelve switch controls S2/S0/S1 of the four cells from it and `CNT_CLK`: cell i's S2 opens ~0.7 ns after the i-th rising edge after the edge that sees `ACQ` low, S0 one stage delay D >= 5 ns later, S1 closes D after that; `ACQ` high re-enters track (S1 opens first) | D input of one `dfxtp_2` (cell 0's S2 flop) + one `xor2_2` | From a flop on `CNT_CLK`'s rising edge; must be stable at the next rising edge (setup ~0.3 ns) | core |
 | `RAMP_RST` | 1 | 0 / AVDD, **HIGH = reset** | `ramp_gen` `rst`: shorts CI, so `vramp` = `vrlo` | gate of `XRST` | Falls at `TR` = 400 ns to start the ramp. 0.5 -> 2.0 V in `TRAMP` = 12.8 us plus a 20-count overrun. Recovery after reset is 578 ns (`ramp-gen` run) | core |
 | `CNT_CLK` | 1 | 0 / DVDD | Count clock to the 4 TSPC latches. **The latch samples on the FALLING edge**, and the Gray counter in the digital macro increments on the rising edge (half a count apart, NOISE_BUDGET L2) | 4 x TSPC clock gates (XN2, XP6, XN4, XP8) plus the spine | 20 MHz, `TCOUNT` = 50 ns. Edge rate up to 6 ns verified at typical (8 ns at ss/0/3.0, 4 ns at ff/85/3.6) | core |
 
-The S0, S1 and S2 inputs are 12 lines. The complements are made inside
-each cell by three minimum inverters. The pin carries one line per switch
-and never a complement (CONTRACT.md).
+Until v6 the S0, S1 and S2 controls were 12 input lines. Since v7 (ADR
+0027) they are internal nets (`s2_k`, `s0_k`, `s1_k`) driven by `sample_seq`
+on DVDD; the complements are still made inside each cell by three minimum
+inverters on AVDD.
 
 ### 3.2 Outputs to the digital macro
 

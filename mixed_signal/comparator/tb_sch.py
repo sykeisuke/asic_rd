@@ -106,17 +106,10 @@ class Sch:
         print("REPORT: wrote %s: %d symbols, %d wires" % (path.name, len(self.inst) - self.n, len(self.wires)))
 
 
-def header(s, title, lines, bottom=-1290, size=0.4, tsize=0.7):
-    """The sheet's summary box: title + body lines, framed (layer-4 graphic lines),
-    its bottom edge at y = bottom (above the source row)."""
-    h = 15 + int(60 * tsize) + int(58 * size * len(lines)) + 32
-    y0 = bottom - h
-    s.T(title, 60, y0 + 15, tsize)
-    s.T("\n".join(lines), 60, y0 + 15 + int(60 * tsize), size)
-    w = int(max([len(title) * 28 * tsize] + [len(l) * 30 * size for l in lines])) + 60
-    for x1, y1, x2, y2 in ((40, y0, 40 + w, y0), (40 + w, y0, 40 + w, bottom), (40 + w, bottom, 40, bottom),
-                           (40, bottom, 40, y0)):
-        s.texts.append("L 4 %d %d %d %d {}" % (x1, y1, x2, y2))
+def header(s, title):
+    """The sheet's one-line title (with the bias current), above the source row
+    (CLAUDE.md, "Schematic drawings": the bench's description lives in the README)."""
+    s.T("%s, I_B = %.2f uA" % (title, I.I_B_UA), 60, -1330, 0.7)
 
 
 def supplies_and_bias(s, y=-1180, extra=()):
@@ -125,47 +118,29 @@ def supplies_and_bias(s, y=-1180, extra=()):
     rows = [("VDD_SOURCE", "{VDD}", "vdd"), ("VDD_BIAS", "{VDD}", "vddb")] + list(extra)
     for i, (name, val, net) in enumerate(rows):
         s.vsrc(name, 120 + 170 * i, y, val, net)
-    s.T("AVDD (comparator) and the bias supply; " + ", ".join("%s = %s" % (n, v) for n, v, _ in extra), 60, y + 100, 0.32, 4)
     s.part("isource", 120, y + 280, 'name=IREFN value="%s"' % esc("{IREF}"), {"p": "vddb", "m": "nbias"})
     s.mos("nfet", "REFN", 320, y + 280, "1u", "20u", "10", {"G": "nbias", "D": "nbias", "S": "0", "B": "0"})
     s.part("isource", 480, y + 280, 'name=IREFP value="%s"' % esc("{IREF}"), {"p": "pbias", "m": "0"})
     s.mos("pfet", "REFP", 680, y + 280, REF_L, REF_W, REF_NF, {"G": "pbias", "D": "pbias", "S": "vddb", "B": "vddb"})
-    s.T("pbias: I_B = %.2f uA design (.param IREF = %s A, data/sizing.json) into one tail finger (L %s, W %s), diode-connected:"
-        " tail %g uA, pair %g uA each, starve %g uA design (intent.py); nbias leg (REFN, L 1u W 20u nf 10) unused: no-connect port"
-        % (I.I_B_UA, IREF, REF_L, REF_W, I.INTENT_UA["xtail"], I.INTENT_UA["xinp"], I.INTENT_UA["xbst"]), 60, y + 380, 0.32, 4)
 
 
 def tb_delay():
     s = Sch()
-    header(s, "tb_delay: comparator on the unit cell's charge path (plateau level 40.5 LSB), dout into 10 fF",
-           ["S2 resets the top plate of the 54.52 fF MIM to VREF and opens at TS = 300 ns (the sample); the bottom plate goes",
-            "from VIN to VR_LO at TCONN and ramps at the 8-bit slope (5.859 mV per 50 ns) from TR = 400 ns. The bench is tb_sel.spice.",
-            "Measures: delay_dyn = t(dout falls through VDD/2) - t(top crosses VTRIP), VTRIP = tb_trip's result (xtb.py writes it in);",
-            "   delay_vbl = the same from top = VBL; fall = dout 90 -> 10 %.",
-            "Gates: block (make comparator): delay from the trip <= 12.5 ns, dout fall <= 6 ns.  This drawing (xtb.py):",
-            "   equal to the bench within 0.1 ns (delays) and 2 % (fall).",
-            "Recorded (runs/comparator-updt-v3-schematic/20261007T232627Z): drawing 10.61 ns / 5.32 ns, bench 10.59 / 5.32 ns;",
-            "   with the PDK symbols' drawn S/D junction geometry 11.30 ns / 5.38 ns.  Typical 27 C, 3.3 V, ideal bias.",
-            "Values: C_S = 54.52 fF MIM 5 x 5 um (PDK model, cap-characterization c_mim2f0_a0025; 1.99 fF/um2 x A + 0.238 fF/um x P",
-            "   = 54.5 fF); CLOAD 10 fF = TSPC latch + wire; RLKT 1e15 ohm = DC path for the floating top plate (numerical, not a",
-            "   device); S2 ideal switch 100 ohm on / 1e16 ohm off.  Reproduce: make comparator-schematic."])
+    header(s, "TB_DELAY  -  comparator delay on the cell's charge path, dout into 10 fF")
     supplies_and_bias(s, extra=[("VVBL", "{VDD/2}", "vbl"), ("VVREF", "{VDD/2}", "vref"), ("VCLK", "0", "clk")])
-    for i, (name, val, net, note) in enumerate([
-            ("VBOT", "PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+14u} {VR_LO+14u*SLOPE})", "bot",
-             "bottom plate: VIN until TCONN, then VR_LO, ramp from TR at LSB / TCOUNT"),
-            ("VS2", "PWL(0 1 {TS} 1 {TS+TEDGE} 0)", "s2", "S2 control: opens at TS (the sample)")]):
+    for i, (name, val, net) in enumerate([
+            ("VBOT", "PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+14u} {VR_LO+14u*SLOPE})", "bot"),
+            ("VS2", "PWL(0 1 {TS} 1 {TS+TEDGE} 0)", "s2")]):
         y = -620 + 170 * i
         s.vsrc(name, 120, y, val, net)
-        s.T(note, 180, y - 70, 0.32, 4)
     s.part("switch", 1400, -1140, "name=S2 model=swideal", {"P": "vref", "M": "top", "CP": "s2", "CM": "0"})
     s.part("mim", 1400, -900, "name=XCS W=5u L=5u model=cap_mim_2f0_m4m5_noshield spiceprefix=\"\" m=1",
            {"B": "top", "G": "bot"})
-    s.T("C_S 54.52 fF MIM, top = comparator side", 1440, -840, 0.3)
+    s.T("C_S 54.52 fF", 1440, -840, 0.3, 4)
     s.part("res", 1560, -1010, "name=RLKT value=1e15 footprint=1206 device=resistor m=1", {"p": "top", "m": "0"})
     s.part("cmp", 1900, -1000, "name=XDUT", {"inp": "vbl", "inn": "top", "clk": "clk", "nbias": "nbias",
                                              "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
     s.part("capa", 2140, -1000, "name=CLOAD value=10f m=1", {"p": "dout", "m": "0"})
-    s.T("dout: 10 fF (TSPC latch + wire)", 2080, -900, 0.32)
     code = MODELS + """
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
 .model swideal sw vt=0.5 vh=0.1 ron=100 roff=1e16
@@ -208,14 +183,7 @@ quit
 
 def tb_trip():
     s = Sch()
-    header(s, "tb_trip: static trip of comparator with inp = VBL = VDD/2 (the tb_sel_dc bench)",
-           ["inn is swept 1.60 .. 1.70 V in 25 uV steps; the trip is where dout crosses VDD/2 falling.",
-            "Its difference from VBL is the static offset at the pins; tb_delay measures its delay from this level.",
-            "Measures: vtrip (V).  Gate: no specification gate (it feeds tb_delay's VTRIP); this drawing must equal",
-            "   tb_sel_dc.spice within 50 uV (xtb.py).",
-            "Recorded (runs/comparator-updt-v3-schematic/20261007T232627Z): vtrip 1.64961 V = -0.39 mV from VBL,",
-            "   drawing = bench (diff 1 uV).  Typical 27 C, 3.3 V, ideal bias; dout load CLDC 10 fF.",
-            "Reproduce: make comparator-schematic."])
+    header(s, "TB_TRIP  -  static trip of comparator, inp = VBL = VDD/2")
     supplies_and_bias(s, extra=[("VVBL", "{VDD/2}", "vbl"), ("VDC", "1.65", "vdc"), ("VCLK", "0", "clk")])
     s.part("cmp", 1300, -1000, "name=XDC", {"inp": "vbl", "inn": "vdc", "clk": "clk", "nbias": "nbias",
                                             "pbias": "pbias", "dout": "doutdc", "vdd": "vdd", "vss": "0"})
@@ -235,15 +203,7 @@ quit
 
 def tb_noise():
     s = Sch()
-    header(s, "tb_noise: input-referred noise of comparator at its decision point (the tb_nz bench)",
-           ["dout is fed back to inn through 1 TH, which parks the OTA at its own trip; CINN (1 F) AC-grounds inn.",
-            "nz_own_vin: output noise on outa from 1 kHz to 10 GHz divided by the DC gain (thermal + 1/f, own band); gate < 1.2 mV.",
-            "Measures: ota_gain_vv (|outa / inp| at 10 Hz), nz_own_vin (V rms at the pins).  Gates: block < 1.2 mV rms",
-            "   (= 0.25 LSB at the ADC input); this drawing equal to tb_nz.spice within 1 % (xtb.py).",
-            "Recorded (runs/comparator-updt-v3-schematic/20261007T232627Z): gain 44.52 V/V, noise 0.168 mV, drawing = bench",
-            "   (rel 2e-6); with drawn S/D geometry 0.163 mV.  Typical 27 C, 3.3 V, ideal bias.",
-            "Values: LFB 1 TH (DC feedback only, open at AC), CINN 1 F (AC ground of inn), CLOAD 10 fF.",
-            "Reproduce: make comparator-schematic."])
+    header(s, "TB_NOISE  -  input-referred noise of comparator at its trip")
     supplies_and_bias(s, extra=[("VINP", "DC 1.65 AC 1", "inp"), ("VCLK", "{VDD}", "clk")])
     s.part("capa", 1100, -760, "name=CINN value=1 m=1", {"p": "inn", "m": "0"})
     s.part("ind", 1100, -1060, "name=LFB value=1T m=1", {"p": "dout", "m": "inn"})
@@ -271,16 +231,7 @@ quit
 
 def tb_mc():
     s = Sch()
-    header(s, "tb_mc: threshold spread of comparator, PDK mismatch (sw_stat_mismatch), the tb_mc bench",
-           ["Pass 0 is the mismatch-free trip; then N passes with mismatch on, each sweeping inn through VBL +- 70 mV.",
-            "rndseed is set, but a run is not shown to repeat (DESIGN_RECIPE.md s.7 note); each run is an independent estimate, so the drawing's samples differ",
-            "from the deck's: the nominal trip must match, the spread must agree statistically.",
-            "Measures: vos_nom (mismatch off) and 200 mismatch draws of vtrip - VBL -> sigma(Vos).  Gates (xtb.py): vos_nom",
-            "   within 0.1 mV of tb_mc.spice, sigma within 20 %.  Block: the 4/3 LSB contract is replaced by ADR 0015",
-            "   (offset accepted as signal-independent; covered by ramp pre-roll and pedestal calibration).",
-            "Recorded (runs/comparator-updt-v3-schematic/20261007T232627Z): vos_nom -0.341 mV; sigma 8.59 mV drawing,",
-            "   9.38 mV bench (runs/comparator-updt-v3/20261007T001140Z) = 2.11 LSB at the ADC input (alpha 0.761).",
-            "Reproduce: make comparator-schematic."])
+    header(s, "TB_MC  -  threshold spread of comparator, PDK mismatch")
     supplies_and_bias(s, extra=[("VINP", "1.65", "inp"), ("VINN", "1.65", "inn"), ("VCLK", "{VDD}", "clk")])
     s.part("cmp", 1300, -1000, "name=XDUT", {"inp": "inp", "inn": "inn", "clk": "clk", "nbias": "nbias",
                                              "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})

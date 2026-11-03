@@ -1,0 +1,48 @@
+{
+ "params": {
+  "nf_pass": 16,
+  "rs_units": 8,
+  "c_g_units": 79,
+  "c_f_units": 4,
+  "c_t_units": 8,
+  "tap_ref": 5,
+  "n_div": 33,
+  "l_pass_um": 1.0,
+  "wf_pass_um": 2.0,
+  "w_sw_um": 0.3,
+  "nf_pair": 28,
+  "nf_sink": 28,
+  "nf_nb": 42,
+  "nf_load": 4
+ },
+ "predicted": {
+  "i_ref_ua": 0.545176,
+  "c_unit_ff": 54.5176,
+  "c_unit_ss_ff": 59.9693,
+  "c_unit_ff_ff": 49.065799999999996,
+  "v_ref": 0.5,
+  "r_unit_kohm": 63.278800000000004,
+  "v_deg_v": 0.2759846645504,
+  "mirror_sigma_pct": 0.3848656878074266,
+  "ota_offset_sigma_mv": 1.926903321059519,
+  "total_sigma_pct": 0.5446465404277271,
+  "i_sink_ua": 0.21666666666666665,
+  "casp_v": 1.8204609402291676,
+  "casn_v": 1.3461913307943176,
+  "pass_vsd_v": 0.4535204886159381,
+  "p_a_khz": 625.1527822172942,
+  "omega_u_khz": 140.33992631978342,
+  "c_g_pf": 4.3068903999999995,
+  "ripple_a_mv": 100.0,
+  "rout_est_gohm": 33.32261240683486,
+  "power_avdd_est_uw": 24.90067831965966,
+  "mim_units": 92,
+  "res_units": 49
+ },
+ "contract": {
+  "v_ramp_lo": 0.435546875,
+  "v_ramp_hi": 2.052734375,
+  "f_clk_mhz": 20.0,
+  "i_bias_ua": 3.25
+ }
+}

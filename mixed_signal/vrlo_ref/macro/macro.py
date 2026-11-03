@@ -45,6 +45,7 @@ IDEAL = "VVRLO vrlo 0 {VR_LO}"
 # changed; Analog_top's own files are not touched.
 PARAMS = "/foss/designs/mixed_signal/vrlo_ref/macro/ref_analog_top/tb_params.inc"
 TR_OLD, TR_NEW = ".param TR='TS3+100n'", ".param TR='TS3+300n'"
+VRLO_OLD, VRHI_OLD = ".param VR_LO=0.5\n", ".param VR_HI=2.0\n"
 bad = []
 BENCHES = os.environ.get("BENCHES", "one two").split()
 
@@ -101,6 +102,10 @@ def run(job):
     deck = one_record(kind, ib) if bench == "one" else two_record(kind, ib)
     prm = open(os.path.join(AT, "tb_params.inc")).read()
     assert TR_OLD in prm and PARAMS in deck, "tb_params.inc / its include changed"
+    # the bench's level follows the tap (ADR 0025: RATIO x AVDD, was 0.5 V), the ideal VVRLO with
+    # it; the 1.5 V span keeps the frozen macro's grid, the unit of this block's allocations
+    assert VRLO_OLD in prm and VRHI_OLD in prm, "tb_params.inc: VR_LO / VR_HI lines changed"
+    prm = prm.replace(VRLO_OLD, ".param VR_LO=%.6f\n" % (vr.RATIO * vr.VDD)).replace(VRHI_OLD, ".param VR_HI='VR_LO+1.5'\n")
     open(os.path.join(d, "tb_params_gap.inc"), "w").write(prm.replace(TR_OLD, TR_NEW))
     open(os.path.join(d, "tb.spice"), "w").write(deck.replace(PARAMS, "tb_params_gap.inc"))
     log = vr.ngspice(d, "tb.spice", timeout=3600)

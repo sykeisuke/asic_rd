@@ -1,14 +1,15 @@
 """Symbols of Analog_top's sub-blocks, drawn so that a designer reads the
 function from the shape (the macro analog_top.sym itself stays a rectangle):
 
-  ramp_simple_d.sym  a sawtooth: the ramp rising from vrlo, the reset edge
+  (ramp_simple_d.sym, a sawtooth, until v5; the v6 ramp is ../ramp_simple and
+  ../ic_source with their own symbols, ADR 0026; the function stays here unused)
   bias_gen_s.sym   a reference current source + R (constant-gm core) and one
                      current-source glyph per output, the arrow giving the
                      direction (sinks in, sources out)
   midref_div.sym     two resistors in series from vdd to vss, the mid tap with
                      its decap, VDD/2 out
   midref_buf.sym     a unity-gain follower triangle (x1), ib as the bias input
-  vrlo_ref.sym       a shunt regulator: the 28 : 5 divider tap driving a
+  vrlo_ref.sym       a shunt regulator: the 48 : 7 divider tap driving a
                      TL431-style shunt element from vrlo to avss
   latch.sym       a D flip-flop with a falling-edge clock (wedge + bubble)
   comparator_d.sym   a comparator triangle (+ / -)
@@ -146,8 +147,6 @@ def ramp_simple_d():
     s.text("V", -76, -92, 0.22, layer=8)
     s.text("t", 82, 72, 0.22, layer=8)
     s.text("vrlo", -54, 54, 0.16, layer=8)
-    s.text("dV/dt = I / C", -36, -96, 0.2, layer=13)
-    s.text("rst: reset", 20, 54, 0.14, layer=8)
     for name, x, y, d in (("vramp", 120, 0, "out"), ("rst", -120, 0, "in"), ("vrlo", -120, -60, "in"),
                           ("ibias", -120, 60, "in"), ("vdd", 0, -120, "inout"), ("vss", 0, 120, "inout")):
         s.pin(name, x, y, d)
@@ -188,7 +187,6 @@ def bias_gen_s():
     s.text("IREF", -92, -62, 0.22, layer=13)
     s.text("R", -84, 26, 0.24, layer=13)
     s.text("const-gm", -94, 92, 0.16, layer=13)
-    s.text("I ~ 1/R", -94, 110, 0.16, layer=13)
     # the mirror bus and one current-source glyph per output
     y0, dy = -80, 28
     s.line(4, y0, 4, y0 + dy * (len(BG_OUT) - 1), attr="dash=3")
@@ -271,8 +269,8 @@ def midref_buf():
 
 # ------------------------------------------------------------- vrlo_ref
 def vrlo_ref():
-    s = Sym("vrlo_ref of ../vrlo_ref (ADR 0018): VR_LO shunt regulator, 28 : 5 ppolyf_u_3k divider tap = 5/33 "
-            "AVDD, an OTA driving the NMOS shunt XMS on vrlo, keep-alive source, 3.44 pF decap. ib is a CURRENT "
+    s = Sym("vrlo_ref of ../vrlo_ref (ADR 0018): VR_LO shunt regulator, 48 : 7 ppolyf_u_3k divider tap = 7/55 "
+            "AVDD (ADR 0025), an OTA driving the NMOS shunt XMS on vrlo, keep-alive source, 3.44 pF decap. ib is a CURRENT "
             "input (bias_gen_s ivrlo). Local symbol of Analog_top (pin order as the block's); xschem "
             "descends into ../vrlo_ref/vrlo_ref.sch", "X1",
             SCH % "vrlo_ref.sch")
@@ -302,7 +300,7 @@ def vrlo_ref():
     s.pin("vrlo", 130, 0, "out"); s.pin("ib", -130, 50, "in"); s.pin("avdd", 0, -110); s.pin("avss", 0, 110)
     s.text("vrlo", 104, -18, 0.18); s.text("ib", -124, 30, 0.18)
     s.text("avdd", 6, -112, 0.16); s.text("avss", 6, 92, 0.16)
-    s.text("5/33 VDD", -94, -24, 0.16, layer=13)
+    s.text("7/55 VDD", -94, -24, 0.16, layer=13)
     s.text("shunt", 56, 6, 0.16, layer=13)
     s.text("@name", -96, -124, 0.3)
     s.text("VR_LO  vrlo_ref", -96, -86, 0.2, layer=13)
@@ -356,7 +354,7 @@ def comparator_d():
 
 
 # --------------------------------------------------------------- switches
-def switch(name, desc, template, tg, sizes):
+def switch(name, desc, template, tg):
     """Pins as sw_sch.py's: a (-100, 0), b (100, 0), ctl (-20, -60), ctlb (20, -60), vdd (-20, 60), vss (20, 60)."""
     s = Sym(desc, template)
     s.line(-100, 0, -80, 0); s.line(80, 0, 100, 0)
@@ -378,14 +376,13 @@ def switch(name, desc, template, tg, sizes):
         s.line(20, -60, 20, -46)
         s.text("n.c.", 24, -54, 0.14, layer=8)
         s.text("NMOS", -16, 14, 0.2, layer=13)
-    s.text("vdd vss: body", -40, 42, 0.13, layer=8)
     for pn, (x, y, d) in (("a", (-100, 0, "inout")), ("b", (100, 0, "inout")), ("ctl", (-20, -60, "in")),
                           ("ctlb", (20, -60, "in")), ("vdd", (-20, 60, "inout")), ("vss", (20, 60, "inout"))):
         s.pin(pn, x, y, d)
     s.text("a", -94, -16, 0.2); s.text("b", 86, -16, 0.2)
     s.text("ctl", -50, -66, 0.18); s.text("ctlb", 26, -66, 0.18)
     s.text("@name", -78, -84, 0.3)
-    s.text(f"@symname  {sizes}", -76, 62, 0.15, layer=13)
+    s.text("@symname", -76, 62, 0.15, layer=13)
     s.write(name)
 
 
@@ -428,7 +425,6 @@ def atop_cell(ports, left, right, top, bottom):
         s.text(lab, lx, ly, 0.15, layer=13)
     n0 = len(s.L)
     X, TP, BP = -14, -66, -56                             # plate column, top / bottom plate
-    s.text("TRUE BOTTOM-PLATE S/H", -84, -150, 0.17, layer=13)
     # S1: vramp -> top (with a small ramp)
     s.poly([(-84, -98), (-76, -98), (-68, -112)], layer=8)
     s.line(-66, -106, -56, -106); sw(-56, -36, -106, "S1", -50, -128)
@@ -449,8 +445,6 @@ def atop_cell(ports, left, right, top, bottom):
     s.line(X, -26, -36, -26); sw(-36, -56, -26, "S2", -54, -50)
     s.line(-56, -26, -66, -26)
     s.text("vref", -84, -34, 0.14, layer=8)
-    s.text("opens first", -86, -16, 0.13, layer=4)
-    s.text("= SAMPLE", -86, -4, 0.13, layer=4)
     # comparator: - = bottom plate, + = vbl; a step inside
     CX, CY = 30, -36
     s.line(X, -26, CX, -26)
@@ -464,16 +458,14 @@ def atop_cell(ports, left, right, top, bottom):
     s.poly([(84, CY + 6), (92, CY + 12), (84, CY + 18)]); s.circle(80, CY + 12, 4)
     s.text("D", 87, CY - 18, 0.14); s.text("Q", 110, CY - 18, 0.14)
     s.line(122, CY - 8, 128, CY - 8)
-    s.text("CMP -> DFF", 46, CY + 26, 0.13, layer=13)
     # drawn at unit scale (x -86..128, y -150..-4): fill the box
     s.L = scale_group(s.L, n0, 1.3, 0, 100)
     s.text("@name", -w + 6, -h - 34, 0.3)
-    s.text("UNIT CELL  atop_cell", -w + 50, h - 40, 0.22, layer=13)
+    s.text("atop_cell", -w + 50, h - 40, 0.22, layer=13)
     s.write("atop_cell")
 
 
 def write_all(ports=None):
-    ramp_simple_d()
     bias_gen_s()
     midref_div()
     midref_buf()

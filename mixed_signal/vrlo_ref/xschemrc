@@ -1,0 +1,15 @@
+# xschemrc for mixed_signal/vrlo_ref: the PDK's rc, then this folder (vrlo_ref.sym
+# and its vrlo_ref.sch, the primitive vrlo_ref_lb.sym / s1cell.sym of the
+# testbench sheets) and ../ramp_gen, whose OLD PMOS-mirror ramp_simple.sym /
+# .sch is the load every hand bench of this block puts on the regulator
+# (tb_*.spice include ../ramp_gen/ramp_simple.spice). ../ramp_simple (the
+# macro's ramp since Analog_top v6) is deliberately NOT on the path: its
+# symbol has the same name and would be picked up instead.
+# xschem SILENTLY drops an instance whose symbol it cannot find (the trap
+# recorded in ../Analog_top/xschemrc), so xtb.py counts the instances of every
+# netlist against its bench. xschem reads ./xschemrc by itself when started
+# here; schematic.sh and xtb.py pass it with --rcfile.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc
+set VRLO_DIR [file normalize [file dirname [info script]]]
+append XSCHEM_LIBRARY_PATH :$VRLO_DIR
+append XSCHEM_LIBRARY_PATH :[file normalize [file join $VRLO_DIR .. ramp_gen]]

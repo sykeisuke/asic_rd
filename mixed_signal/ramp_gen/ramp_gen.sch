@@ -78,15 +78,11 @@ N 2000 -700 2150 -700 {}
 N 2150 -700 2150 -430 {}
 N 2150 -700 2300 -700 {}
 N 2150 -370 2150 0 {}
-T {ramp_gen -- shared single-slope ramp for the 8-bit true bottom-plate cells (.subckt ramp_gen, ramp_gen.spice)
-MILLER INTEGRATOR: the slope current I_INT = C_INT x SLOPE (0.469 uA into 4.0 pF -> 117.19 mV/us) is pulled out of the
-virtual ground vx, which the OTA holds at vrlo = 0.5 V. vramp = vx + Q/C_INT rises linearly; the cells hang on the driven
-output. rst high: XRST shorts XCI, vramp = vx = vrlo. pbias: the ramp's OWN bias_gen (ADR 0012). Sizes: data/ramp_gen_params.spice.} 40 -1460 0 0 0.32 0.32 {}
+T {RAMP_GEN  -  Miller-integrator single-slope ramp, 0.469 uA into 4.0 pF} 40 -1300 0 0 0.70 0.70 {}
 T {slope current} 220 -1180 0 0 0.40 0.40 {layer=13}
 T {integrator + reset} 640 -1180 0 0 0.40 0.40 {layer=13}
 T {OTA stage 1} 1250 -1180 0 0 0.40 0.40 {layer=13}
 T {stage 2, compensation, output} 1700 -1180 0 0 0.40 0.40 {layer=13}
-T {feedback: vramp -> XCI / XRST -> vx} 980 -1080 0 0 0.25 0.25 {layer=4}
 C {devices/opin.sym} 40 -900 0 0 {name=p_vramp lab=vramp}
 C {devices/ipin.sym} 40 -860 0 0 {name=p_rst lab=rst}
 C {devices/ipin.sym} 40 -820 0 0 {name=p_vrlo lab=vrlo}

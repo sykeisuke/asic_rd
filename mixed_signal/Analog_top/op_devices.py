@@ -1,7 +1,6 @@
-"""The in-macro operating point of analog_top (v5): which devices, resistors and
+"""The in-macro operating point of analog_top (v6): which devices, resistors and
 MIM capacitors the `op` phase records, and at which instants. One list, read by
-op_bench.py (writes the measures), op_reduce.py (gm/Id, region, Ron, R = V/I)
-and analog_top_sch.py (the table on the analog_top sheet).
+op_bench.py (writes the measures) and op_reduce.py (gm/Id, region, Ron, R = V/I).
 
 Paths are below the bench's macro instance XDUT, as ngspice flattens them
 (lower case). Every MOS is a PDK nfet_03v3 / pfet_03v3 subcircuit whose BSIM4
@@ -37,17 +36,19 @@ MOS = [
     ("bg_xoc1", "xbg.xoc1", "bias_gen_s", "sink icmp1", "ramp"),
     ("bg_xoc2", "xbg.xoc2", "bias_gen_s", "sink icmp2", "ramp"),
     ("bg_xoc3", "xbg.xoc3", "bias_gen_s", "sink icmp3", "ramp"),
-    ("bg_xor", "xbg.xor", "bias_gen_s", "sink iramp -> ramp diode XRD", "ramp"),
+    ("bg_xor", "xbg.xor", "bias_gen_s", "sink iramp -> ic_source diode XPB", "ramp"),
     ("bg_xov", "xbg.xov", "bias_gen_s", "source ivref -> XVREF ib", "ramp"),
     ("bg_xol", "xbg.xol", "bias_gen_s", "source ivrlo -> XVRLO ib (v4)", "ramp"),
     ("bg_xsu4", "xbg.xsu4", "bias_gen_s", "startup disengage (off at the op)", "ramp"),
     ("bg_xsu5", "xbg.xsu5", "bias_gen_s", "startup kick (off at the op)", "ramp"),
     ("bg_xsb1", "xbg.xsb1", "bias_gen_s", "startup bleeder PMOS diode 1", "ramp"),
     ("bg_xsb4", "xbg.xsb4", "bias_gen_s", "startup bleeder PMOS diode 4", "ramp"),
-    # ramp_simple_d: ramp_simple + its own bias diode, flat
-    ("rp_xrd", "xramp.xrd", "ramp_simple_d", "ramp bias PMOS diode (iramp in)", "ramp"),
-    ("rp_xps", "xramp.xps", "ramp_simple_d", "ramp current source into the 4 pF MIM", "ramp"),
-    ("rp_xrst", "xramp.xrst", "ramp_simple_d", "reset switch vramp -> vrlo (on in trk)", "trk"),
+    # ic_source (v6, ADR 0026): the I/C ramp current source; ramp_simple: 73 unit MIMs + reset
+    ("ic_xpb", "xic.xpb", "ic_source", "iramp PMOS diode (bias in)", "ramp"),
+    ("ic_xm1", "xic.xm1", "ic_source", "pass mirror reference (node a side)", "ramp"),
+    ("ic_xmo", "xic.xmo", "ic_source", "pass mirror output: the ramp current", "ramp"),
+    ("ic_xmoc", "xic.xmoc", "ic_source", "output cascode into vramp", "ramp"),
+    ("rp_xrst", "xramp.xrst", "ramp_simple", "reset switch vramp -> vrlo (on in trk)", "trk"),
     # vrlo_ref XVRLO: VR_LO shunt regulator (ADR 0018); trk = the reset state,
     # the shunt sinking the keep-alive plus the ramp current through XRST
     ("vl_xmbn", "xvrlo.xmbn", "vrlo_ref XVRLO", "ib NMOS diode (ivrlo in)", "trk"),
@@ -121,17 +122,16 @@ RES = [
     ("bg_xr5", "xbg.xr5", "xdut.xbg.r4", "0", "bias_gen_s R string 5/5"),
     ("div_xrt", "xdiv.xrt", "xdut.avdd_ref", "xdut.vmid", "midref_div upper (ppolyf_u_3k 1 x 64.98 um)"),
     ("div_xrb", "xdiv.xrb", "xdut.vmid", "0", "midref_div lower (ppolyf_u_3k 1 x 64.98 um)"),
-    ("vl_xr1", "xvrlo.xr1", "xdut.avdd_vrlo", "xdut.xvrlo.r1", "vrlo_ref divider top unit 1/33 (ppolyf_u_3k 1 x 20 um)"),
-    ("vl_xr33", "xvrlo.xr33", "xdut.xvrlo.r32", "0", "vrlo_ref divider bottom unit 33/33"),
+    ("vl_xr1", "xvrlo.xr1", "xdut.avdd_vrlo", "xdut.xvrlo.r1", "vrlo_ref divider top unit 1/55 (ppolyf_u_3k 1 x 20 um)"),
+    ("vl_xr55", "xvrlo.xr55", "xdut.xvrlo.r54", "0", "vrlo_ref divider bottom unit 55/55"),
 ]
 
 # MIM capacitors: (key, path below xdut, c_width, c_length [m], role)
 # formula, PDK sm141064_mim.ngspice subckt cap_mim_2f0_m4m5_noshield, typical
 # (mim_corner_2p0ff = 1, mc_c_cox_2p0ff = 0): C = 1.99e-3 * W L + 2.383e-10 * 2 (W + L)
-RS_CW = 44.6e-6        # ramp_simple_d XCR (= ../ramp_gen/data/ramp_simple_params.spice RS_CW, read again by op_reduce.py)
 MIM = [
     ("c0_xcs", "xc0.xcs", 5e-6, 5e-6, "hold capacitor C_S, every cell (bot = terminal 1, top = terminal 2)"),
-    ("rp_xcr", "xramp.xcr", RS_CW, RS_CW, "ramp integrating capacitor (ramp_simple_d)"),
+    ("rp_xcr", "xramp.xcr", 5e-6, 5e-6, "ramp capacitor, 73 unit MIMs (ramp_simple, one instance m = 73)"),
     ("bg_xcp", "xbg.xcp", 22.3607e-6, 22.3607e-6, "bias_gen_s pb decap to vdd"),
     ("bg_xcn", "xbg.xcn", 22.3607e-6, 22.3607e-6, "bias_gen_s nb decap to vss"),
     ("div_xct", "xdiv.xct", 4.423e-6, 4.423e-6, "midref_div tap decap"),

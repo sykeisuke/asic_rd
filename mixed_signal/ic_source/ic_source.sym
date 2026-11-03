@@ -1,0 +1,49 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=XIC"
+description="The I/C current source (ic_source.spice): I = C_UNIT x V_REF x F_CLK into iout, folded-cascode OTA loop. Pins in the subcircuit order: iout ibias clk avdd avss dvdd dvss."
+}
+V {}
+S {}
+E {}
+L 4 -140 -100 140 -100 {}
+L 4 140 -100 140 100 {}
+L 4 140 100 -140 100 {}
+L 4 -140 100 -140 -100 {}
+L 7 -90 -10 -60 -10 {}
+L 7 -60 -10 -45 -25 {}
+L 7 -30 -10 -30 10 {}
+L 7 -40 10 -20 10 {}
+L 7 -40 25 -20 25 {}
+L 7 -30 25 -30 45 {}
+L 7 -90 45 -30 45 {}
+L 7 -90 -10 -90 45 {}
+A 7 50 0 25 0 360 {}
+L 7 50 -25 50 25 {}
+L 7 44 15 50 25 {}
+L 7 56 15 50 25 {}
+L 4 140 0 160 0 {}
+B 5 157.5 -2.5 162.5 2.5 {name=iout dir=out}
+L 4 -160 -40 -140 -40 {}
+B 5 -162.5 -42.5 -157.5 -37.5 {name=ibias dir=in}
+L 4 -160 40 -140 40 {}
+B 5 -162.5 37.5 -157.5 42.5 {name=clk dir=in}
+L 4 -40 -120 -40 -100 {}
+B 5 -42.5 -122.5 -37.5 -117.5 {name=avdd dir=inout}
+L 4 40 -120 40 -100 {}
+B 5 37.5 -122.5 42.5 -117.5 {name=dvdd dir=inout}
+L 4 -40 100 -40 120 {}
+B 5 -42.5 117.5 -37.5 122.5 {name=avss dir=inout}
+L 4 40 100 40 120 {}
+B 5 37.5 117.5 42.5 122.5 {name=dvss dir=inout}
+T {iout} 90 -6 0 0 0.25 0.25 {}
+T {ibias} -134 -46 0 0 0.25 0.25 {}
+T {clk} -134 34 0 0 0.25 0.25 {}
+T {avdd} -58 -96 0 0 0.2 0.2 {}
+T {dvdd} 22 -96 0 0 0.2 0.2 {}
+T {avss} -58 84 0 0 0.2 0.2 {}
+T {dvss} 22 84 0 0 0.2 0.2 {}
+T {@name} -140 -116 0 0 0.3 0.3 {}
+T {I/C source} 70 70 0 0 0.22 0.22 {layer=13}

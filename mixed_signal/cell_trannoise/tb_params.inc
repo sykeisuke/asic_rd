@@ -3,11 +3,14 @@
 * ngspice bench), ct_extract.py and ct_reduce.py (record times, the clock edges).
 * Overrides on the command line: POS, NREC, TFIRST, NCNT.
 *
-* One cell of Analog_top (atop_cell: S0/S1/S2 + their control inverters,
+* One cell of Analog_top v6 (atop_cell: S0/S1/S2 + their control inverters,
 * 54.52 fF MIM, comparator_d, latch = gf180mcu_as_sc_mcu7t3v3__dfxtn_2) on
-* ramp_simple_d, read by path from ../Analog_top/analog_top.spice. Ideal:
-* AVDD, DVDD, VREF (= the comparator's VBL input, one node as in v5), VR_LO,
-* VIN, the two bias currents, the switch controls and the count clock.
+* ramp_simple (73 unit MIMs + XRST), read by path from
+* ../Analog_top/analog_top.spice. Ideal: AVDD, DVDD, VREF (= the comparator's
+* VBL input, one node as in v5), VR_LO, VIN, the comparator's bias, the ramp
+* current (ic_source's design value; ic_source itself is not in this bench),
+* the switch controls and the count clock. The grid is ADR 0025's (as
+* ../Analog_top/tb_params.inc).
 *
 * Every control is periodic with PCONV, a WHOLE number of counts, so every
 * record sees the count clock at the same phase (the macro's: one 20 MHz
@@ -35,16 +38,19 @@
 .param NBITS=8
 .param NCODE='2**NBITS'
 .param TCOUNT=50n
-.param VR_LO=0.5
-.param VR_HI=2.0
+* LSB from ../ramp_simple/data/sizing.json (grid lsb); VR_LO = vrlo_ref's 7/55 tap
+.param LSB_GRID=6.701613m
+.param VR_LO='7/55*VDD'
+.param VR_HI='VR_LO+NCODE*LSB_GRID'
 .param LSB='(VR_HI-VR_LO)/NCODE'
 .param SLOPE='LSB/TCOUNT'
 
 * ideal bias currents (design values of the blocks; the same as ../cell_trannoise_bkp/cell_trannoise)
 *   IREF_CMP   comparator/data/sizing.json iref, into comparator_d's XREFP
-*   IREF_RAMP  bias_gen/bg.py I_RAMP_NOM, into ramp_simple_d's L 1 um diode XRD
+*   IRAMP      the ramp current C_UNIT x V_REF x F_CLK into vramp
+*              (../ramp_simple/data/sizing.json i_ramp_ua; ic_source supplies it in the macro)
 .param IREF_CMP=1.93077u
-.param IREF_RAMP=3.1314u
+.param IRAMP=0.545176u
 
 * the held level, in LSB above VR_LO (ct.sh align overrides it)
 .param POS=16.5
@@ -66,3 +72,11 @@
 
 * the latch's capture load on q (digital capture pins + wire, as Analog_top CQ)
 .param CQ=40f
+
+* diagnostics of the `kick` step (ngspice bench only; 0 = off, the default):
+*   CLKSTOP  hold the count clock low from this time on (no rising edge after
+*            the decision: the latch master never takes the new D)
+*   LATDEC   1: the latch's D is driven by an ideal copy of dout, and dout
+*            carries the latch's 3.6 fF input load instead (no kickback path)
+.param CLKSTOP=0
+.param LATDEC=0
