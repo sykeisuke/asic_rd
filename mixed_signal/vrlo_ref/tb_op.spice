@@ -5,7 +5,7 @@
 * One line per supply:
 *   OP <tag> <vdd> hrt hrk hr1 hr2 hrs hr5 err ireg vg
 * hr = |vds| - |vdsat| (BSIM4) of the tail XMT, keep-alive XMK, pair XM1/XM2,
-* shunt XMS and g-node diode XM5; err = v(vrlo) - 5/33 VDD; ireg = the
+* shunt XMS and g-node diode XM5; err = v(vrlo) - RATIO x VDD; ireg = the
 * regulator's supply current incl. its ideal bias; vg = the shunt gate.
 * TEMPLATE: CORNER MIMCORNER RESCORNER TEMP IB IRD TAG RATIO
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice

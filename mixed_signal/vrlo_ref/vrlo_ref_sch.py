@@ -1,7 +1,7 @@
 """Write the xschem drawing of vrlo_ref from vrlo_ref.spice (sizes are read from
 the netlist, so the drawing cannot drift from it):
 
-  vrlo_ref.sch / .sym   the 5/33 AVDD divider (28 + 5 ppolyf_u_3k units, drawn
+  vrlo_ref.sch / .sym   the 7/55 AVDD divider (48 + 7 ppolyf_u_3k units, drawn
                         as a snake of columns) and its tap capacitor on the
                         left; the bias mirror; the PMOS-input OTA with its
                         g-node diode XM5; the shunt XMS, the keep-alive XMK and
@@ -14,6 +14,7 @@ by instance (check-schematic.awk). The Sheet class is midrail_ref_v2's
     ./container.sh 'python3 vrlo_ref_sch.py'
 """
 import os
+import re
 import sys
 
 BLOCK = os.path.dirname(os.path.abspath(__file__))
@@ -109,7 +110,19 @@ class Sheet:
     def text(self, t):
         self.inst_text = getattr(self, "inst_text", []) + [t]
 
-    def write(self, path, title):
+    def write(self, path, title, order=()):
+        """order: the deck's device names; the drawing's device lines are written
+        in that order, so xschem netlists them as the deck lists them and a
+        mismatch draw under one seed lands on the same devices (ngspice draws
+        in netlist order; xtb.py's tb_mc comparison relies on it)."""
+        if order:
+            byname = {}
+            for ln in self.inst:
+                m = re.match(r"C \{[^}]*\} -?\d+ -?\d+ \d \d \{name=([^\s}]+)", ln)
+                if m:
+                    byname.setdefault(m.group(1), ln)
+            devs = [byname[n] for n in order if n in byname]
+            self.inst = devs + [ln for ln in self.inst if ln not in set(devs)]
         segs = [(a, b, n) for pts, n in self.wires for a, b in zip(pts, pts[1:])]
         pset = set(self.points) | {p for a, b, _ in segs for p in (a, b)}
         out = []
@@ -130,18 +143,22 @@ class Sheet:
 
 
 def divider(s, dv):
-    """28 top units in four columns of seven (down, up, down, up), the tap at the
-    top of column 3, the five bottom units down column 4 to avss."""
+    """The top units (all before the tap) in columns of H (down, up, down, up, ...),
+    the tap at the end of the last top column, the bottom units down the next
+    column to avss. The unit counts are read from the netlist."""
     VDD, VSS = -900, -40
-    X0, DXC, YT = 100, 120, -840          # column pitch; first resistor centre
-    chain = [f"XR{k}" for k in range(1, 34)]
-    cols = [chain[0:7], chain[7:14], chain[14:21], chain[21:28], chain[28:33]]
+    X0, DXC, YT, H = 100, 120, -840, 12   # column pitch; first resistor centre; units per column
+    n_div = sum(1 for k in dv if k.startswith("XR"))
+    n_top = next(k for k in range(1, n_div + 1) if dv[f"XR{k}"]["nodes"][1] == "tap")
+    chain = [f"XR{k}" for k in range(1, n_div + 1)]
+    cols = [chain[i:i + H] for i in range(0, n_top, H)] + [chain[n_top:]]
+    nc = len(cols)
     ends = {}
     for c, units in enumerate(cols):
         x = X0 + c * DXC
-        down = c % 2 == 0 or c == 4
+        down = c % 2 == 0 or c == nc - 1
         for j, name in enumerate(units):
-            y = YT + 60 * j if down else YT + 60 * (6 - j)
+            y = YT + 60 * j if down else YT + 60 * (H - 1 - j)
             p = s.res(dv[name], name, x, y, rot=2 if down else 0)
             s.body(p["B"], "avss", left=not down)
             # every node between units carries its own label (frozen node set)
@@ -151,20 +168,21 @@ def divider(s, dv):
             if j == 0:
                 ends[(c, "first")] = p["M"]
             ends[(c, "last")] = p["P"]
-    x = [X0 + c * DXC for c in range(5)]
+    x = [X0 + c * DXC for c in range(nc)]
     s.wire("avdd", ends[(0, "first")], (x[0], VDD))
-    s.wire(dv["XR7"]["nodes"][1], ends[(0, "last")], ends[(1, "first")])        # bottom jog 0 -> 1
-    s.wire(dv["XR14"]["nodes"][1], ends[(1, "last")], ends[(2, "first")])       # top jog 1 -> 2
-    s.wire(dv["XR21"]["nodes"][1], ends[(2, "last")], ends[(3, "first")])       # bottom jog 2 -> 3
-    s.wire("tap", ends[(3, "last")], ends[(4, "first")])                        # top jog 3 -> 4: the tap
-    s.wire("avss", ends[(4, "last")], (x[4], VSS))
-    # tap capacitor right of column 4, the tap carried on by label
-    ct = s.mim(dv["XCT"], "XCT", x[4] + 120, -700)
-    s.wire("tap", (x[4], ends[(4, "first")][1]), (x[4] + 120, ends[(4, "first")][1]), ct["G"])
-    s.wire("avss", ct["B"], (x[4] + 120, VSS))
-    s.lab(x[4] + 120, ends[(4, "first")][1], "tap", sym="lab_wire")
-    s.text("T {DIVIDER 28 : 5 units (tap = 5/33 AVDD)} 80 -1000 0 0 0.4 0.4 {}")
-    return x[4] + 120
+    for c in range(nc - 2):                                                     # jogs between top columns
+        s.wire(dv[cols[c][-1]]["nodes"][1], ends[(c, "last")], ends[(c + 1, "first")])
+    s.wire("tap", ends[(nc - 2, "last")], ends[(nc - 1, "first")])              # the last jog: the tap
+    s.wire("avss", ends[(nc - 1, "last")], (x[-1], VSS))
+    # tap capacitor right of the bottom column, the tap carried on by label
+    ct = s.mim(dv["XCT"], "XCT", x[-1] + 120, -700)
+    s.wire("tap", (x[-1], ends[(nc - 1, "first")][1]), (x[-1] + 120, ends[(nc - 1, "first")][1]), ct["G"])
+    s.wire("avss", ct["B"], (x[-1] + 120, VSS))
+    s.lab(x[-1] + 120, ends[(nc - 1, "first")][1], "tap", sym="lab_wire")
+    s.text("T {DIVIDER %d : %d units (tap = %d/%d AVDD)} 80 -1000 0 0 0.4 0.4 {}"
+           % (n_top, n_div - n_top, n_div - n_top, n_div))
+    s.ndiv = (n_top, n_div)
+    return x[-1] + 120
 
 
 def regulator(s, dv):
@@ -242,7 +260,6 @@ def regulator(s, dv):
     s.port("opin", C + 260, -500, "vrlo", 1)
     s.lab(C, -500, "vrlo", sym="lab_wire")
     s.text("T {BIAS} 760 -1000 0 0 0.4 0.4 {}")
-    s.text("T {ib -> XMBN -> XMBN2 -> XMBP (pb)} 760 -970 0 0 0.25 0.25 {}")
     s.text("T {OTA (PMOS input, g-node diode XM5)} 1120 -1000 0 0 0.4 0.4 {}")
     s.text("T {SHUNT + KEEP-ALIVE + DECAP} 1760 -1000 0 0 0.4 0.4 {}")
     return C + 260
@@ -257,12 +274,9 @@ def sheet(dv):
     xr = regulator(s, dv)
     s.wire("avdd", (40, VDD), (xr - 260 + 0, VDD))
     s.wire("avss", (40, VSS), (xr - 100, VSS))
-    s.text("T {VRLO_REF  -  0.5 V SHUNT REGULATOR FOR THE RAMP RESET (vrlo_ref)} 40 -1200 0 0 0.6 0.6 {}")
-    s.text("T {tap = 5/33 AVDD (28 : 5 identical ppolyf_u_3k units). The OTA compares vrlo (XM1) with the tap (XM2); "
-           "its output g (resistance ~1/gm of the diode XM5)\ndrives the shunt XMS, which mirrors XM5. vrlo up -> "
-           "XM1 off -> g up -> XMS sinks more. XMK (keep-alive) sources a fixed current from avdd, the decap XCD\n"
-           "is the loop's dominant pole. Bias: an ideal current into ib. Netlist: vrlo_ref.spice (GENERATED by "
-           "size_vrlo.py; this drawing by vrlo_ref_sch.py).} 40 -1140 0 0 0.3 0.3 {}")
+    s.text("T {VRLO_REF  -  0.5 V shunt regulator for the ramp reset} 40 -1200 0 0 0.6 0.6 {}")
+    s.text("T {layout: the %d divider units identical (%d : %d by matching)} 40 -1140 0 0 0.36 0.36 {}"
+           % (s.ndiv[1], s.ndiv[0], s.ndiv[1] - s.ndiv[0]))
     return s
 
 
@@ -291,7 +305,7 @@ def main():
     net = sys.argv[1] if len(sys.argv) > 1 else os.path.join(BLOCK, "vrlo_ref.spice")
     sc = subckts(net)["vrlo_ref"]
     assert sc["ports"] == PORTS, sc["ports"]
-    sheet(sc["dev"]).write(os.path.join(BLOCK, "vrlo_ref.sch"), "vrlo_ref")
+    sheet(sc["dev"]).write(os.path.join(BLOCK, "vrlo_ref.sch"), "vrlo_ref", order=list(sc["dev"]))
     write_sym()
     print("REPORT: wrote vrlo_ref.sch/.sym from " + os.path.basename(net))
 

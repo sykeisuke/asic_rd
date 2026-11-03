@@ -14,8 +14,8 @@ Windows (each average is the exact integral of the simulator's own time
 points over the window, divided by its length):
   startup  [0, T0]                 supplies ramp, everything settles
   track    [T0, TS0]               all four cells tracking (S0, S2 closed)
-  sample   [TS0, TS3 + 2 TNOV]     the cells leave tracking one by one
-  hold     [TS3 + 2 TNOV, TR]      every cell holding, S1 closed, ramp in reset
+  sample   [TS0, TS3 + TSEQ]     the cells leave tracking one by one
+  hold     [TS3 + TSEQ, TR]      every cell holding, S1 closed, ramp in reset
   ramp     [TR, TE]                the conversion (func's pw_* window)
   overrun  [TE, TE + TOVR]
   end      [TE + TOVR, TSTOP]
@@ -36,7 +36,7 @@ import sys
 import numpy as np
 import pandas as pd
 
-from pwr_bench import BLOCKS, BRANCHES, COLUMNS, SPLITS
+from pwr_bench import BLOCKS, BRANCHES, COLUMNS, SCALE, SPLITS
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 W = os.path.join(HERE, "work", "pwr")
@@ -59,7 +59,7 @@ def timeline():
         m = re.match(r"^(p_[a-z0-9]+)\s*=\s*([-+0-9.eE]+)", ln.strip())
         if m:
             p[m.group(1)[2:]] = float(m.group(2))
-    need = ["vdd", "t0", "ts0", "ts3", "tnov", "tr", "te", "tovr", "tstop"]
+    need = ["vdd", "t0", "ts0", "ts3", "tseq", "tr", "te", "tovr", "tstop"]
     miss = [k for k in need if k not in p]
     if miss:
         fail("timeline measures missing: " + " ".join(miss))
@@ -84,7 +84,7 @@ def main():
         if k.startswith("dout"):
             continue
         v = df[k].to_numpy()
-        cur[k] = -v if k.startswith("sup_") else v
+        cur[k] = -v if k.startswith("sup_") else v * SCALE.get(k, 1.0)
     # cumulative integrals, trapezoid on the simulator's points
     F = {k: np.concatenate([[0.0], np.cumsum(0.5 * (v[1:] + v[:-1]) * np.diff(t))]) for k, v in cur.items()}
 
@@ -105,7 +105,7 @@ def main():
         td.append(np.interp(vdd / 2, [d[i], d[i - 1]], [t[i], t[i - 1]]))
         put("pwr_td%d_ns_from_tr" % k, (td[k] - p["tr"]) * 1e9)
 
-    t_s3 = p["ts3"] + 2 * p["tnov"]
+    t_s3 = p["ts3"] + p["tseq"]
     wins = [("startup", 0.0, p["t0"]), ("track", p["t0"], p["ts0"]),
             ("sample", p["ts0"], t_s3), ("hold", t_s3, p["tr"]),
             ("ramp", p["tr"], p["te"]), ("overrun", p["te"], p["te"] + p["tovr"]),

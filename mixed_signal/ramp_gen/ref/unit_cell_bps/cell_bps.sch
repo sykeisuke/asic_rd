@@ -4,11 +4,7 @@ K {}
 V {}
 S {}
 E {}
-T {cell_bps -- the unit cell proper: .subckt unit_cell_bps of mixed_signal/Analog_top_bkp/unit_cell_bps/unit_cell_bps.spice.
-XI0N/XI0P, XI1N/XI1P, XI2N/XI2P: minimum inverters making s0b/s1b/s2b (controls are 0/VDD, HIGH = closed).
-XS0 vfe->bot, XS1 vramp->bot (TGs, sw_s0/sw_s1), XS2 vref->top (single NMOS, sw_s2) from switches.spice.
-XCS: 5 x 5 um MIM = 54.52 fF, top = comparator side. RLKT/RLKB: DC paths for the floating plates.
-XCMP: cmp_updt (inp = vbl, inn = top). Netlists back to the deck: run.sh phase schematic.} 100 -900 0 0 0.3 0.3 {}
+T {CELL_BPS  -  unit cell: S0/S1/S2, 54.52 fF MIM, cmp_bps (frozen reference copy)} 100 -900 0 0 0.6 0.6 {}
 T {control inverters} 200 -720 0 0 0.35 0.35 {layer=13}
 T {switches and hold capacitor} 900 -720 0 0 0.35 0.35 {layer=13}
 T {comparator} 1900 -720 0 0 0.35 0.35 {layer=13}

@@ -7,7 +7,7 @@
 * The ppolyf_u_3k model carries global variation only: the divider ratio's
 * own mismatch is NOT in this figure (README.md s.6).
 *
-* One line:  MC <k> <v(vrlo) - 5/33 VDD> <v(vramp) - 5/33 VDD>
+* One line:  MC <k> <v(vrlo) - RATIO x VDD> <v(vramp) - RATIO x VDD>
 * TEMPLATE: CORNER MIMCORNER RESCORNER TEMP VDD IB IRD MM SEED K RATIO
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@

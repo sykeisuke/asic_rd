@@ -45,6 +45,8 @@ if grep -q '^FAIL:' "$run_dir/console.log"; then status=1; fi
     printf '%s\n' "Netlist: $BLOCK_DIR/ramp_gen.spice"
     printf '%s\n' "Schematic: $BLOCK_DIR/ramp_gen.sch"
     printf '%s\n' "Testbench: $BLOCK_DIR/tb_ramp_adc4.sch"
+    for t in tb_ramp tb_ramp_simple tb_loop; do printf '%s\n' "Testbench: $BLOCK_DIR/$t.sch"; done
+    printf '%s\n' "xtb table: $BLOCK_DIR/data/xtb.csv"
     printf '%s\n' "Noise breakdown: $BLOCK_DIR/data/noise_breakdown.csv"
     printf '%s\n' "Levels: $BLOCK_DIR/data/adc4_levels.csv"
     for f in "$BLOCK_DIR"/assets/*.png; do [ -e "$f" ] && printf '%s\n' "Figure: $f"; done

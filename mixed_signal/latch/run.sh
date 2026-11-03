@@ -18,7 +18,9 @@
 #                                                             -> data/aperture.csv
 #   kick       comparator + latch on the cell's charge path, clock on/off;
 #              tspc_dff and 10 fF as references               -> data/kick.csv
-#   schematic  schematic.sh: latch.sch netlists back to latch.spice; render
+#   schematic  schematic.sh: latch.sch netlists back to latch.spice; tb_sch.py draws
+#              tb_drive/tb_aperture/tb_kick.sch, each netlisted, checked, rendered and
+#              simulated against its hand bench (xtb.py) -> data/xtb.csv
 #   check      check-*.awk on the tables
 set -eu
 
@@ -70,6 +72,8 @@ if grep -q '^FAIL' "$run_dir/console.log"; then status=1; fi
     printf '%s\n' "Aperture: $BLOCK_DIR/data/aperture.csv"
     printf '%s\n' "Kick: $BLOCK_DIR/data/kick.csv"
     printf '%s\n' "Figure: $BLOCK_DIR/assets/latch_xschem.png"
+    printf '%s\n' "Testbenches: $BLOCK_DIR/tb_drive.sch $BLOCK_DIR/tb_aperture.sch $BLOCK_DIR/tb_kick.sch"
+    printf '%s\n' "xtb table: $BLOCK_DIR/data/xtb.csv"
 } >"$run_dir/extra-metrics.txt"
 
 if [ "${NO_RECORD:-0}" = 1 ]; then

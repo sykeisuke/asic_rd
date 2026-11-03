@@ -1,25 +1,26 @@
 #!/usr/bin/env python3
-"""check_equiv.py -- the v5 macro netlist is the v4 one minus the second VDD/2
-buffer, apart from nothing else.
+"""check_equiv.py -- the v7 macro netlist is the v6 one with the sampling
+sequencer ../sample_seq inside, apart from nothing else.
 
-    python3 check_equiv.py <v4 analog_top.spice> <v5 analog_top.spice>
+    python3 check_equiv.py <v6 analog_top.spice> <v7 analog_top.spice>
 
-Both netlists are flattened from subckt analog_top down to the PDK primitives
-(nfet_03v3, pfet_03v3, cap_mim_2f0_m4m5_noshield, ppolyf_u, ppolyf_u_3k), the
-standard cell and the V / R elements. Every leaf device gets its hierarchical
-path, model, parameters (keys case-folded, values normalised: quotes / braces /
-spaces, engineering suffixes, m=1 default) and the net on each terminal.
+Both netlists are flattened from subckt analog_top down to the PDK primitives,
+the standard cells and the V / R elements. Every leaf device gets its
+hierarchical path, model, parameters (keys case-folded, values normalised:
+quotes / braces / spaces, engineering suffixes, m=1 default) and the net on
+each terminal.
 
-Declared v4 -> v5 differences (nothing else may differ; ADR 0021):
-  * xvbl.* (the second midref_buf, 12 devices) is gone
-  * xbg.xob (the bias_gen output that sourced ivbl into it) is gone, and with
-    it the net ivbl
-  * the nets vbl and vref are one net, named vref: every cell's vbl pin
-    (comparator inp) is on the output of xvref
+Declared v6 -> v7 differences (nothing else may differ; ADR 0027):
+  * ports: the twelve switch controls s0_k, s1_k, s2_k leave the port list
+    and become internal nets; acq (the controller's acquire level) is a new
+    port after cnt_clk
+  * devices: xseq.* (sample_seq: the standard-cell sequencer) is new; every v6
+    device keeps its path, model and every parameter
+  * xseq.* may touch only s0_k, s1_k, s2_k, acq, cnt_clk, dvdd, dvss
 Connectivity is compared WITHOUT trusting names: every net is the set of
-(device, terminal) pins on it. Each v4 net minus the removed devices' pins
-(vbl and vref united) must have exactly one v5 net with that pin set; a v4
-net left with no pins must be one of the removed devices' own nets.
+(device, terminal) pins on it. Each v6 net must have exactly one v7 net with
+the same pins once the sequencer's pins (and, for the twelve former ports,
+the port itself) are taken out.
 
 One PASS:/FAIL: line per check, REPORT: lines with details; exit 1 on FAIL.
 """
@@ -118,9 +119,11 @@ def flatten(subs, top="analog_top"):
     return devs, tp
 
 
-def pinsets(devs):
+def pinsets(devs, skip):
     ps = {}
     for k, d in devs.items():
+        if k in skip:
+            continue
         for i, n in enumerate(d["nets"]):
             ps.setdefault(n, set()).add((k, i))
     for n in list(ps):
@@ -129,92 +132,106 @@ def pinsets(devs):
     return ps
 
 
+CTRL = ["s%d_%d" % (j, k) for j in range(3) for k in range(4)]
+# the macro-level nets the sequencer may touch (v7 names)
+SEQ_NETS = set(CTRL) | {"port:acq", "port:cnt_clk", "port:dvdd", "port:dvss"}
+
+
+def own(path, n):
+    """True if net n is internal to the instance that device path sits in."""
+    return n.startswith(path.split(".")[0] + ".")
+
+
 def main():
-    v4p, v5p = sys.argv[1], sys.argv[2]
-    d4, p4 = flatten(parse(v4p))
-    d5, p5 = flatten(parse(v5p))
+    v6p, v7p = sys.argv[1], sys.argv[2]
+    d6, p6 = flatten(parse(v6p))
+    d7, p7 = flatten(parse(v7p))
     st = 0
     # ---- ports
-    if p5 != p4:
-        print("FAIL: equiv: analog_top ports: v5 %s, v4 %s" % (" ".join(p5), " ".join(p4)))
+    want = [p for p in p6 if p not in CTRL]
+    want.insert(want.index("cnt_clk") + 1, "acq")
+    if p7 != want:
+        print("FAIL: equiv: analog_top ports: v7 %s, expected %s" % (" ".join(p7), " ".join(want)))
         st = 1
     else:
-        print("PASS: equiv: analog_top ports = v4's %d, in v4's order" % len(p4))
+        print("PASS: equiv: analog_top ports = v6's %d - the 12 switch controls + acq, v6's order (%d)"
+              % (len(p6), len(p7)))
     # ---- devices
-    removed = {k for k in d4 if k.startswith("xvbl.")} | {"xbg.xob"}
-    n_xvbl = len([k for k in d4 if k.startswith("xvbl.")])
-    miss = sorted(set(d4) - removed - set(d5))
-    extra = sorted(set(d5) - set(d4))
-    still = sorted(removed & set(d5))
-    if miss or extra or still or n_xvbl != 12 or "xbg.xob" not in d4:
-        print("FAIL: equiv: devices: %d v4 devices missing in v5 [%s], %d v5 devices not in v4 [%s], %d removed devices "
-              "still present [%s]; v4 xvbl %d devices (12 expected), xbg.xob in v4 %s"
-              % (len(miss), " ".join(miss[:8]), len(extra), " ".join(extra[:8]), len(still), " ".join(still[:4]),
-                 n_xvbl, "xbg.xob" in d4))
-        st = 1
+    new = {k for k in d7 if k.startswith("xseq.")}
+    miss = sorted(set(d6) - set(d7))
+    extra = sorted(set(d7) - new - set(d6))
+    if not miss and not extra and new:
+        cells = {}
+        for k in new:
+            cells[d7[k]["model"].split("__")[-1]] = cells.get(d7[k]["model"].split("__")[-1], 0) + 1
+        print("PASS: equiv: %d leaf devices in v7 = v6's %d + sample_seq's %d standard cells (%s); every v6 "
+              "device path kept" % (len(d7), len(d6), len(new),
+                                     " ".join("%s x%d" % kv for kv in sorted(cells.items()))))
     else:
-        print("PASS: equiv: %d leaf devices in v5 = v4's %d - the 12 of xvbl (midref_buf) - xbg.xob; every other "
-              "device path equal" % (len(d5), len(d4)))
+        print("FAIL: equiv: devices: %d v6 devices missing in v7 [%s], %d v7 devices not declared [%s], "
+              "sequencer cells %d" % (len(miss), " ".join(miss[:8]), len(extra), " ".join(extra[:8]), len(new)))
+        st = 1
     # ---- models and parameters of the common devices
     bad = []
-    for k in sorted(set(d4) & set(d5)):
-        a, b = d4[k], d5[k]
+    for k in sorted(set(d6) & (set(d7) - new)):
+        a, b = d6[k], d7[k]
         if a["model"] != b["model"] or a["params"] != b["params"] or len(a["nets"]) != len(b["nets"]):
             bad.append(k)
             if len(bad) <= 6:
                 diff = {q: (a["params"].get(q), b["params"].get(q)) for q in set(a["params"]) | set(b["params"])
                         if a["params"].get(q) != b["params"].get(q)}
-                print("REPORT: equiv: %s v4 %s / v5 %s %s" % (k, a["model"], b["model"], diff))
-    nmos = sum(1 for k in d5 if d5[k]["model"].startswith(("nfet", "pfet")))
+                print("REPORT: equiv: %s v6 %s / v7 %s %s" % (k, a["model"], b["model"], diff))
+    nmos = sum(1 for k in d7 if d7[k]["model"].startswith(("nfet", "pfet")))
     if bad:
         print("FAIL: equiv: %d devices differ in model or parameters [%s]" % (len(bad), " ".join(bad[:6])))
         st = 1
     else:
-        print("PASS: equiv: every common device has v4's model and every parameter in v5 (%d MOS: L W nf m and S/D "
-              "geometry; R, C, V values)" % nmos)
-    # ---- connectivity by pin sets
-    s4, s5 = pinsets(d4), pinsets(d5)
-    exp = {}
-    for n, s in s4.items():
-        rest = {p for p in s if p[0] not in removed}
-        key = "vref" if n in ("vbl", "vref") else n
-        exp.setdefault(key, set()).update(rest)
-    gone = sorted(n for n, s in exp.items() if not s)
-    gone_bad = [n for n in gone if not all(p[0] in removed for p in s4[n])]
-    inv5 = {}
-    for n, s in s5.items():
-        inv5.setdefault(frozenset(s), []).append(n)
+        print("PASS: equiv: every v6 device has v6's model and every parameter in v7 (%d MOS outside the "
+              "standard cells: L W nf m and S/D geometry; R, C, V values)" % nmos)
+    # ---- the nets the sequencer touches
+    ext = sorted({n for k in new for n in d7[k]["nets"] if not own(k, n)})
+    if set(ext) <= SEQ_NETS and set(CTRL) <= set(ext):
+        print("PASS: equiv: sample_seq drives the 12 switch controls and touches only the declared nets: %s"
+              % " ".join(ext))
+    else:
+        print("FAIL: equiv: sample_seq nets [%s]; undeclared [%s]; controls not driven [%s]"
+              % (" ".join(ext), " ".join(sorted(set(ext) - SEQ_NETS)), " ".join(sorted(set(CTRL) - set(ext)))))
+        st = 1
+    # ---- connectivity by pin sets: the former control ports lose their port pin
+    s6, s7 = pinsets(d6, set()), pinsets(d7, new)
+    for c in CTRL:
+        if "port:" + c in s6:
+            s6["port:" + c].discard(("port", c))
+    inv7 = {}
+    for n, s in s7.items():
+        inv7.setdefault(frozenset(s), []).append(n)
     unmatched, pairs = [], {}
-    for n, s in exp.items():
-        if not s:
-            continue
-        c = inv5.get(frozenset(s), [])
+    for n, s in s6.items():
+        c = inv7.get(frozenset(s), [])
         if len(c) != 1:
             unmatched.append(n)
         else:
             pairs[n] = c[0]
-    new = [n for n in s5 if n not in pairs.values()]
-    if unmatched or new or gone_bad:
-        print("FAIL: equiv: connectivity: %d v4 nets have no v5 net with their remaining pins [%s]; %d v5 nets not in "
-              "v4 [%s]; %d emptied nets touched kept devices [%s]"
-              % (len(unmatched), " ".join(sorted(unmatched)[:8]), len(new), " ".join(new[:6]), len(gone_bad),
-                 " ".join(gone_bad[:4])))
+    left = [n for n in s7 if n not in pairs.values() and n != "port:acq"]
+    if unmatched or left:
+        print("FAIL: equiv: connectivity: %d v6 nets have no v7 net with their remaining pins [%s]; %d v7 nets not "
+              "in v6 [%s]" % (len(unmatched), " ".join(sorted(unmatched)[:8]), len(left), " ".join(left[:6])))
         st = 1
     else:
-        print("PASS: equiv: connectivity: all %d v5 nets match v4's one-to-one by their (device, terminal) pins, with "
-              "the removed devices' pins taken out and v4's vbl + vref united (%d pins: every cell's S2 and comparator "
-              "inp, xvref's output); %d v4 nets vanish with the removed devices (%s)"
-              % (len(pairs), len(exp["vref"]), len(gone), " ".join(gone[:6]) + (" ..." if len(gone) > 6 else "")))
+        print("PASS: equiv: connectivity: all %d v6 nets match v7's one-to-one by their (device, terminal) pins, "
+              "the sequencer's pins taken out" % len(pairs))
     ren = {a: b for a, b in pairs.items() if a != b}
-    if ren:
-        print("FAIL: equiv: net names: undeclared renames %s" % dict(list(ren.items())[:6]))
+    declared = {"port:" + c: c for c in CTRL}
+    if any(declared.get(a) != b for a, b in ren.items()):
+        print("FAIL: equiv: net names: undeclared renames %s"
+              % dict([(a, b) for a, b in ren.items() if declared.get(a) != b][:6]))
         st = 1
     else:
-        print("PASS: equiv: net names equal to v4's (vbl and vref are the one net vref)")
-    vb = sorted(p for p in s4.get("vbl", ()) if p[0] not in removed)
-    print("REPORT: equiv: v4's vbl pins now on vref: %s" % ", ".join("%s.%d" % p for p in vb))
-    print("equiv_n_devices = %d" % len(d5))
-    print("equiv_n_nets = %d" % len(s5))
+        print("PASS: equiv: net names equal to v6's apart from the 12 controls, now internal (%d renames, all "
+              "declared)" % len(ren))
+    print("equiv_n_devices = %d" % len(d7))
+    print("equiv_n_sample_seq_cells = %d" % len(new))
+    print("equiv_n_nets = %d" % len(pinsets(d7, set())))
     return st
 
 

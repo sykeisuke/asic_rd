@@ -11,9 +11,7 @@
 #      REPORT: lines (recorded), PASS:/FAIL: only on its self-consistency checks
 #   3b. check_intent.py: every current written on the sheets (intent.py) within
 #      5 % of this record (PASS/FAIL)
-#   4. analog_top_sch.py rewrites the sheets with the table on analog_top.sch
-#      (text only: the netlist is unchanged, schematic.sh would FAIL otherwise),
-#      render.sh renders analog_top again
+#   The record stays in the CSVs; it is not written onto the sheets.
 set -u
 cd "$(dirname -- "$0")"
 W=work/op
@@ -30,6 +28,4 @@ awk 'tolower($0) ~ /(^| )(error|fatal)|undefined parameter|cannot compute|timest
     "$W/ngspice.out" | sort -u | head -5 | sed 's/^/FAIL: op: ngspice: /'
 python3 op_reduce.py || echo "FAIL: op: op_reduce.py"
 python3 check_intent.py || true          # PASS/FAIL lines: the currents on the sheets vs this record
-python3 analog_top_sch.py > /dev/null || echo "FAIL: op: analog_top_sch.py (table)"
-SHEETS=analog_top sh render.sh
 exit 0

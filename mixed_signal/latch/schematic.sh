@@ -1,16 +1,27 @@
 #!/bin/sh
-# Prove latch.sch netlists back to latch.spice, and render it on white.
+# Prove latch.sch netlists back to latch.spice, draw and prove the testbench
+# schematics, and render everything on white.
 # Run inside the container (run.sh phase `schematic`, or ./container.sh 'sh schematic.sh').
 #
 #   1. xschem -n -s latch.sch   -> work/latch_sch.spice
 #   2. the subcircuit's port list and its one instance line (nodes and cell
 #      name) against latch.spice
-#   3. xschem under Xvfb           -> assets/latch_xschem.png / .svg
+#   3. tb_sch.py                 -> tb_drive.sch, tb_aperture.sch, tb_kick.sch (the DUT as
+#                                  latch.sym, netlisted from latch.sch; the comparator in
+#                                  tb_kick from ../comparator/comparator.sch through xschemrc)
+#   4. xschem -n -s tb_*.sch     -> work/xtb_<tb>/<tb>.spice; check-tb.awk: every instance
+#                                  of the bench present with its nodes (xschem drops an
+#                                  instance silently when it cannot find the symbol)
+#   5. xschem under Xvfb         -> assets/<sch>_xschem.png / .svg for the cell and the testbenches
+#   6. xtb.py                    -> every testbench netlist simulated and compared with the
+#                                  hand-written bench at the same case (data/xtb.csv)
 set -u
 cd /foss/designs/mixed_signal/latch
 RC=/foss/pdks/gf180mcuD/libs.tech/xschem/xschemrc
+TBRC=./xschemrc
+TBS="tb_drive tb_aperture tb_kick"
 st=0
-mkdir -p work assets
+mkdir -p work assets data
 rm -f work/latch.spice work/latch_sch.spice
 xschem --rcfile "$RC" -b -q -n -s -o work latch.sch >work/latch_xschem.txt 2>&1
 if [ -s work/latch.spice ]; then
@@ -39,10 +50,26 @@ if [ -s work/latch.spice ]; then
 else
     printf "FAIL: xschem produced no netlist for latch.sch\n"; st=1
 fi
-for sch in latch; do
+
+# 3-4. the testbench drawings and their netlists
+python3 tb_sch.py || { printf "FAIL: tb_sch.py\n"; st=1; }
+for tb in $TBS; do
+    mkdir -p "work/xtb_$tb"
+    rm -f "work/xtb_$tb/$tb.spice"
+    xschem --rcfile "$TBRC" -b -q -n -s -o "work/xtb_$tb" "$tb.sch" >"work/${tb}_xschem.txt" 2>&1
+    if [ -s "work/xtb_$tb/$tb.spice" ]; then
+        awk -v tb="$tb" -f check-tb.awk "work/xtb_$tb/$tb.spice" || st=1
+    else
+        printf "FAIL: xschem produced no netlist for %s.sch\n" "$tb"; st=1
+    fi
+done
+
+# 5. renders (the testbenches with the block's xschemrc, so comparator.sym resolves)
+for sch in latch $TBS; do
+    case $sch in latch) rc=$RC;; *) rc=$TBRC;; esac
     rm -f "assets/${sch}_xschem.png" "assets/${sch}_xschem.svg"
     timeout 120 xvfb-run -a -s "-screen 0 2400x1400x24" \
-        xschem --rcfile "$RC" --tcl "set dark_colorscheme 0" \
+        xschem --rcfile "$rc" --tcl "set dark_colorscheme 0" \
         --command "xschem zoom_full; xschem print png assets/${sch}_xschem.png 2400 1400; xschem print svg assets/${sch}_xschem.svg; xschem exit closewindow force" \
         "$sch.sch" >"work/${sch}_xschem_print.txt" 2>&1
     if [ -s "assets/${sch}_xschem.png" ] && [ -s "assets/${sch}_xschem.svg" ]; then
@@ -51,4 +78,7 @@ for sch in latch; do
         printf "FAIL: xschem headless print produced no svg/png for %s.sch\n" "$sch"; st=1
     fi
 done
+
+# 6. the testbench drawings simulated against the hand-written benches
+python3 xtb.py || st=1
 exit $st

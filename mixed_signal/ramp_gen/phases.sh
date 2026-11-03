@@ -68,7 +68,40 @@ ph_schematic() {
     else
         echo "FAIL: xschem produced no netlist for tb_ramp_adc4.sch"
     fi
-    for f in ramp_gen tb_ramp_adc4; do
+    # the ramp-alone and loop-gain benches as drawings (tb_sch.py; the loop bench's primitive
+    # ramp_gen_lb.sym names work/ramp_gen_lb.spice, written above), netlisted and checked line
+    # by line; xtb.py then simulates each netlist against its hand bench at the same case
+    python3 tb_sch.py || echo "FAIL: tb_sch.py did not write the testbench drawings"
+    rm -f work/tb_ramp.spice work/tb_ramp_simple.spice work/tb_loop.spice
+    for tb in tb_ramp tb_ramp_simple tb_loop; do
+        xschem --rcfile "$RC" -b -q -n -s -o work $tb.sch > work/xschem_$tb.txt 2>&1
+        [ -s work/$tb.spice ] || echo "FAIL: xschem produced no netlist for $tb.sch"
+    done
+    for sub in ramp_gen ramp_simple; do
+        tb=tb_ramp; [ $sub = ramp_simple ] && tb=tb_ramp_simple
+        tb_expect work/$tb.spice "$tb.sch netlists: XRG = $sub from $sub.sch, XBIAS (bias_gen by path), VDD / VRST / VRLO, CL and IKICK, the bench's analysis" \
+            "^XRG vramp rst vrlo pbias vdd 0 $sub\$" "^\.subckt $sub vramp rst vrlo pbias vdd vss\$" \
+            "^XBIAS vdd 0 pbias nbias bias_gen\$" "^VDD_SOURCE vdd 0 PWL\(0 0 \{TPWR\} \{VDD\*VDDX\}" \
+            "^VRST rst 0 PWL\(0 0 \{TPWR\} \{VDD\} \{TR-TPRE\}" "^VRLO vrlo 0 \{VR_LO-SLOPE\*TPRE\}" \
+            "^CL vramp 0 \{NCELL\*CLOAD_CELL\+1f\}" "^IKICK 0 vramp PULSE\(0 \{QKICK/1n\} \{TCONN\} 100p 100p 0.9n 1\)" \
+            "^\.include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/bias_gen.spice\$" \
+            "^\.include /foss/designs/mixed_signal/ramp_gen/data/${sub}_params.spice\$" \
+            "^\.param NCELL=4\$" "^\.param VKICK=2.0\$" "^\.tran 0.2n \{TSTOP\} 0 2n\$" "^\.measure tran vr_te FIND v\(vramp\) AT=\{TE\}\$" \
+            "^wrdata ramp.csv v\(vramp\) "
+    done
+    tb_expect work/tb_loop.spice "tb_loop.sch netlists: XRG = ramp_gen_lb (primitive, work/ramp_gen_lb.spice by path), XBIAS, VP / IP injection at vx / vxg, the MODE 0 DC path, CL, MODE 1" \
+        "^XRG vramp rst vrlo pbias vdd 0 vx vxg ramp_gen_lb\$" "^XBIAS vdd 0 pbias nbias bias_gen\$" \
+        "^VDD_SOURCE vdd 0 \{VDD\}" "^VRST rst 0 \{MODE\*VDD\}" "^VRLO vrlo 0 0.5" \
+        "^VP vxg vx DC 0 AC 1" "^IP 0 vxg DC 0 AC 0" "^LDC vramp nl \{1e9\*\(1-MODE\)\+1e-9\}" \
+        "^VOP_SRC nl vxo \{\(VOP-0.5\)\*\(1-MODE\)\}" "^RDCX vxo vx \{1\+1e15\*MODE\}" "^CL vramp 0 \{NCELL\*CLOAD_CELL\+1f\}" \
+        "^\.include /foss/designs/mixed_signal/ramp_gen/work/ramp_gen_lb.spice\$" "^\.param MODE=1\$" \
+        "^wrdata loop.csv tmag tph\$"
+    if [ -s work/tb_loop.spice ]; then
+        c=$(grep -c "^\.subckt" work/tb_loop.spice)
+        if [ "$c" = 0 ]; then echo "PASS: tb_loop.sch netlist has no inline subcircuit (ramp_gen_lb stays primitive)"
+        else echo "FAIL: tb_loop.sch netlist carries $c inline subcircuit(s); ramp_gen_lb must stay primitive"; fi
+    fi
+    for f in ramp_gen tb_ramp_adc4 tb_ramp tb_ramp_simple tb_loop; do
         rm -f assets/${f}_xschem.png
         timeout 120 xvfb-run -a xschem --rcfile "$RC" --tcl "set dark_colorscheme 0" \
             --command "xschem zoom_full; xschem print png assets/${f}_xschem.png 2400 1400; xschem exit closewindow force" \
@@ -76,6 +109,16 @@ ph_schematic() {
         if [ -s assets/${f}_xschem.png ]; then echo "PASS: xschem render assets/${f}_xschem.png"
         else echo "REPORT: xschem render of $f.sch not produced (headless print)"; fi
     done
+    python3 xtb.py || echo "FAIL: xtb.py (the xschem testbenches against their hand benches)"
+}
+# tb_expect <netlist> <what> <regex>... : PASS when every regex matches exactly one line of the netlist
+tb_expect() {
+    f=$1; what=$2; shift 2; bad=""
+    [ -s "$f" ] || { echo "FAIL: $what -- no netlist $f"; return; }
+    for re in "$@"; do
+        c=$(grep -c -E -- "$re" "$f"); [ "$c" = 1 ] || bad="$bad [$re: $c lines]"
+    done
+    if [ -z "$bad" ]; then echo "PASS: $what"; else echo "FAIL: $what --$bad"; fi
 }
 
 # ------------------------------------------------------------------ ramp

@@ -18,7 +18,7 @@
 *   TS0B = TD + TREC   record 2 repeats the timeline; TR2 its release
 *
 * One `name = value` line per measure (vr.grab). TEMPLATE: CORNER MIMCORNER
-* RESCORNER TEMP VDD IB IRD KS CEQ VTOP TREC RATIO TRUN FRCV
+* RESCORNER TEMP VDD IB IRD KS CEQ VTOP TREC T0 RATIO TRUN FRCV
 * TRUN = 1.5u, FRCV = 3.3: forced end of ramp (short). TRUN = 13.8u, FRCV = 0:
 * the real ramp runs TRAMP + TOVR from TR (the long bench, verify phase ramp).
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
@@ -31,7 +31,7 @@
 .temp @TEMP@
 
 .param TGAP=300n
-.param VDD=@VDD@ TPWR=100n T0=3u TS0='T0+300n' TSP=40n TR='TS0+3*TSP+TGAP'
+.param VDD=@VDD@ TPWR=100n T0=@T0@ TS0='T0+300n' TSP=40n TR='TS0+3*TSP+TGAP'
 .param TD='TR+@TRUN@' TREC=@TREC@ TS0B='TD+TREC' TR2='TS0B+3*TSP+TGAP' TSTOP='TR2+20n'
 .param KS=@KS@ VLO='@RATIO@*VDD' DV='1.5/256'
 .param VIN0='VLO+KS*16.5*DV' VIN1='VLO+KS*80.5*DV' VIN2='VLO+KS*160.5*DV' VIN3='VLO+KS*240.5*DV'

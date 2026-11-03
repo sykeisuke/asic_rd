@@ -19,17 +19,26 @@ DATA = os.path.join(BLOCK, "data")
 JOBS = int(os.environ.get("JOBS", "12"))
 
 VDD = 3.3
-RATIO = 5.0 / 33.0                 # D: 0.5 V at AVDD 3.3 V, 5 of 33 unit resistors
-LSB = 1.5 / 256                    # D: 8-bit over 0.5-2.0 V (ADR 0011)
+N_TOP, N_BOT = 48, 7               # D: the divider, 48 + 7 identical units, tap after unit 48
+N_DIV = N_TOP + N_BOT
+RATIO = N_BOT / N_DIV              # D: 7/55 AVDD = 0.4200 V, the ramp's pre-roll level (ADR 0025:
+                                   #    0.5 V - 78.2 mV = 0.4218 V asked; 1.8 mV low centres the
+                                   #    measured +0.9..+7 mV systematic error); was 5/33 = 0.5 V
+LSB = 1.5 / 256                    # D: the unit this block's allocations are written in (5.86 mV, the
+                                   #    grid before ADR 0025); ADR 0025 folded VERR_MAX and
+                                   #    SIGMA_MAX_LSB into the ramp's code budget in these volts
 EPS = 0.05 * LSB                   # D: 0.293 mV, ramp_gen/COMPARISON.md s.4.3: the reference's
                                    #    allocation at TR. At the macro's 90 ns from the last S1
                                    #    to TR ramp_simple's reset switch alone leaves 0.048 LSB
                                    #    (ss/85/3.0); with TGAP = 300 ns (user decision
                                    #    2026-10-10, tb_tran.spice) it leaves ~0 and the total
                                    #    residual is gated
-T0 = 3.0e-6                        # D: Analog_top tb_params.inc, settled-by time
+T0 = 10.0e-6                       # D: settled-by time. The macro now waits ~60 us for ic_source
+                                   #    (its R7, ADR 0025); 10 us checks it with margin. At the 7/55
+                                   #    tap vrlo_ref is not settled by the old 3 us at ss (1.1 mV)
 TREC = 1.0e-6                      # A: end-of-ramp reset to the next record's first S1
-VTOP = 2.1618                      # D: vramp at TE+TOVR, runs/analog-top/20261009T020546Z
+VTOP = 2.1557                      # D: vramp at the end of the ramp, 0.42 V + 259 x 6.70 mV (ramp_simple,
+                                   #    ADR 0025); was 2.1618, runs/analog-top/20261009T020546Z
 IRAMP_DIODE = 3.2512e-6            # D: bias_gen's typical ramp output (iramp_ts0_ua)
 IRS_SPAN = (0.74, 1.62)            # D: ramp current over PVT, untrimmed (ADR 0017)
 IBS_SPAN = (0.69, 1.77)            # A: the bias span midref_v2 used for its ideal bias
@@ -37,9 +46,8 @@ C_EQ = 40e-15                      # A: bottom-plate charge per cell seen from v
                                    #    C_S(1-alpha_min) 33 fF + bottom parasitics, rounded up.
                                    #    Checked end to end by macro/macro.py: the block kick
                                    #    must not be smaller than the real cells' in analog_top
-VERR_MAX = 2.0 * LSB               # A: |vrlo - 5/33 AVDD| systematic, every PVT cell: half
-                                   #    the ~4 overrun counts left after the in-cell offset
-                                   #    mean + 3 sigma (15 of 19, comparator record).
+VERR_MAX = 2.0 * LSB               # A: |vrlo - RATIO x AVDD| systematic, every PVT cell (11.7 mV);
+                                   #    carried on both sides of the ramp's code budget (ADR 0025).
                                    #    First set at 1 LSB; the 85 C mirror imbalance (1-4 mV)
                                    #    failed most designs there (README.md s.1, s.3)
 SIGMA_MAX_LSB = 1.0                # A: MC sigma(vrlo) <= 1 LSB (vs ~4 LSB in-cell comparator offset)
@@ -65,9 +73,10 @@ def netlist(s, name="vrlo_ref", header=""):
     """Numeric subcircuit `name vrlo ib avdd avss` from a sizing dict s."""
     L = []
     L.append(f".subckt {name} vrlo ib avdd avss")
-    # divider: 28 + 5 identical ppolyf_u_3k units, tap after unit 28
-    nodes = ["avdd"] + [f"r{k}" for k in range(1, 28)] + ["tap"] + [f"r{k}" for k in range(29, 33)] + ["avss"]
-    for k in range(33):
+    # divider: N_TOP + N_BOT identical ppolyf_u_3k units, tap after unit N_TOP
+    nodes = (["avdd"] + [f"r{k}" for k in range(1, N_TOP)] + ["tap"]
+             + [f"r{k}" for k in range(N_TOP + 1, N_DIV)] + ["avss"])
+    for k in range(N_DIV):
         L.append(f"XR{k + 1} {nodes[k]} {nodes[k + 1]} avss ppolyf_u_3k r_width=1u r_length={s['LRU']:g}u")
     L.append(f"XCT tap avss cap_mim_2f0_m4m5_noshield c_width={s['CTW']:g}u c_length={s['CTW']:g}u")
 
@@ -104,7 +113,7 @@ def area_um2(s):
     """Drawn-device area [P]: MOS W x L, poly W x L, MIM side^2 (no spacing)."""
     mos = (s["LB"] * (2 * WN + WP * (1 + s["NT"] + s["NK"]))
            + 2 * s["LI"] * WP * s["NI"] + s["LL"] * WN * (2 * s["N3"] + s["NS"]))
-    poly = 33 * 1.0 * s["LRU"]
+    poly = N_DIV * 1.0 * s["LRU"]
     mim = s["CDW"] ** 2 + s["CTW"] ** 2
     return mos + poly + mim, mos, poly, mim
 
@@ -150,7 +159,7 @@ def tran_subs(cell=("typical", 27, VDD), ibs=1.0, irs=1.0, ib=1e-6, ks=1, real_r
     c, t, v = cell
     return dict(CORNER=c, MIMCORNER=mimc(c), RESCORNER=resc(c), TEMP=t, VDD="%g" % v,
                 IB="%.6g" % (ib * ibs), IRD="%.6g" % (IRAMP_DIODE * irs), KS=ks, CEQ="%.4g" % C_EQ,
-                VTOP="%.4f" % VTOP, TREC="%.4g" % TREC, RATIO="%.10f" % RATIO,
+                VTOP="%.4f" % VTOP, TREC="%.4g" % TREC, T0="%.4g" % T0, RATIO="%.10f" % RATIO,
                 TRUN="13.8u" if real_ramp else "1.5u", FRCV=0 if real_ramp else 3.3)
 
 

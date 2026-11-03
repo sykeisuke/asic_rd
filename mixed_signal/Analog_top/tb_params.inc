@@ -2,19 +2,28 @@
 * the functional bench (ngspice), the xschem testbench and the VACASK noise
 * benches. One record, four cells, from a cold supply.
 *
-*   0        avdd, dvdd ramp 0 -> VDD in TPWR; every s0_k, s2_k high (track), s1_k low,
-*            ramp_rst high (vramp held at vrlo, made by vrlo_ref = 5/33 AVDD);
-*            cnt_clk free-running from TCLK0
-*   T0       bias_gen_s, the references, vrlo_ref and the ramp have settled
-*   TS_k     S2_k opens FIRST: cell k's sample (TS_k = TS0 + k TSPACE, 50 ns = 20 MSa/s, one 20 MHz clock period)
-*   TS_k+TNOV    S0_k opens (isolate)
-*   TS_k+2TNOV   S1_k closes: top_k = vramp = vrlo
+*   0        avdd, dvdd ramp 0 -> VDD in TPWR; acq high: the sequencer (../sample_seq)
+*            holds every s0_k, s2_k high (track), s1_k low,
+*            ramp_rst high (vramp held at vrlo, made by vrlo_ref = 7/55 AVDD);
+*            cnt_clk free-running from TCLK0 (it also clocks the I/C source)
+*   T0       bias_gen_s, the references, vrlo_ref and the I/C ramp source have
+*            settled: 60 us (ic_source R7 [U], 2026-10-29: its loop starts in
+*            24-28 us over PVT, MC tail to ~50 us; ADR 0025 / 0026)
+*   TACQ     acq falls, 2 ns after the clock edge TS0 - TSPACE (the controller's
+*            acquire flop); the twelve switch controls come from the sequencer
+*            inside the macro (v7, ADR 0027), not from sources:
+*   TS_k     a clock rising edge; S2_k opens first, ~0.6 ns after it (clock
+*            buffer + flop): cell k's sample (TS_k = TS0 + k TSPACE, 50 ns =
+*            20 MSa/s, one 20 MHz clock period)
+*   +D       S0_k opens (isolate), D >= 5 ns (sample_seq Q2)
+*   +2D      S1_k closes: top_k = vramp = vrlo; by TS_k + TSEQ at every PVT cell
 *   TS_k+TSTEP   vin steps to the next cell's level (after S0_k opened)
 *   TR       ramp_rst falls: ramp and count start (a cnt_clk rising edge);
 *            TR = TS3 + 300 ns: vrlo_ref's requirement R6 (ADR 0018, user decision
 *            2026-10-10; v3 used 100 ns): the S1 charge on vramp drains through
 *            ramp_simple's reset switch into vrlo before the ramp is released
-*   TE       the ideal ramp reaches VR_HI; TOVR = 20-count overrun
+*   TE       the ideal ramp reaches VR_HI (count 256); TOVR = 3 counts: the ramp
+*            ends at count 259, the controller's overflow + DRAIN (ADR 0025)
 *
 * q_k falls at the first cnt_clk FALLING edge after the comparator decides:
 *   code_k = floor((t_qfall_k - TR) / TCOUNT)
@@ -24,15 +33,19 @@
 .param NBITS=8
 .param NCODE='2**NBITS'
 .param TCOUNT=50n
-.param VR_LO=0.5
-.param VR_HI=2.0
+* the grid of ADR 0025: LSB from ../ramp_simple/data/sizing.json (grid lsb), the
+* ramp's reset level vrlo_ref's 7/55 tap; VR_HI is where count 256 would end
+.param LSB_GRID=6.701613m
+.param VR_LO='7/55*VDD'
+.param VR_HI='VR_LO+NCODE*LSB_GRID'
 .param LSB='(VR_HI-VR_LO)/NCODE'
 .param TRAMP='NCODE*TCOUNT'
 .param SLOPE='(VR_HI-VR_LO)/TRAMP'
 .param CS_C='1.99e-3*5u*5u+2.383e-10*2*(5u+5u)'
 
-* VR_LO is the NOMINAL ramp start: vrlo_ref makes 5/33 AVDD = 0.5 V at 3.3 V on
-* chip (measured as vrlo_at_tr); the levels and the ideal ramp refer to it
+* VR_LO is the NOMINAL ramp start: vrlo_ref makes 7/55 AVDD = 0.420 V at 3.3 V
+* on chip (measured as vrlo_at_tr); the levels and the ideal ramp refer to it.
+* The input window 0.5-2.0 V starts 11.7 LSB above it (the pre-roll)
 * levels: mid-codes 16/80/160/240 (LSB above VR_LO), one per cell
 .param POS0=16.5
 .param POS1=80.5
@@ -45,18 +58,21 @@
 
 * supply ramp and settling before the cells' timeline
 .param TPWR=100n
-.param T0=3u
+.param T0=60u
 .param TEDGE=100p
 .param TSPACE=50n
-.param TNOV=5n
+* S1_k is closed by TS_k + TSEQ (sample_seq Q3, <= 25 ns over PVT); the
+* measures that need the plates after the connection start TSEQ + 10 ns in
+.param TSEQ=25n
 .param TSTEP=20n
 .param TS0='T0+300n'
 .param TS1='TS0+TSPACE'
 .param TS2='TS0+2*TSPACE'
 .param TS3='TS0+3*TSPACE'
 .param TR='TS3+300n'
+.param TACQ='TS0-TSPACE+2n'
 .param TE='TR+TRAMP'
-.param TOVR='20*TCOUNT'
+.param TOVR='3*TCOUNT'
 .param VR_OVR='VR_HI+SLOPE*TOVR'
 .param TSTOP='TE+TOVR+100n'
 * the count clock runs from power-up, phased so that a rising edge falls on TR

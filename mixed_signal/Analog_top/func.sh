@@ -1,5 +1,5 @@
 #!/bin/sh
-# func.sh -- the `func` phase of run.sh: one functional record of analog_top (v5)
+# func.sh -- the `func` phase of run.sh: one functional record of analog_top (v7)
 # from a cold supply (power-up, four samples 50 ns apart, the shared ramp,
 # four trips), reduced to scalars and judged.
 #
@@ -16,8 +16,8 @@
 #      data/func_cells.csv, data/func_timeline.csv
 #   4. plot_func.py: assets/func_*.png
 #   5. check-func.awk: one PASS:/FAIL: line per gate, REPORT: lines
-#   6. compare_v4.py: the codes and the key scalars against the v4 record
-#      (data/v4_ref/), REPORT lines: v5 has one VDD/2 buffer (vbl = vref)
+#   6. compare_prev.py: the codes and the key scalars against the v6 record
+#      (data/v6_ref/), REPORT lines: v7 makes the switch controls with the sequencer
 # Every scalar is echoed to stdout as `name = value` for summarize-metrics.awk.
 set -eu
 
@@ -60,6 +60,6 @@ status=0
 python3 func_reduce.py || { echo "FAIL: func: func_reduce.py"; status=1; }
 python3 plot_func.py || echo "FAIL: func: plot_func.py"
 awk -f check-func.awk data/func_measures.txt data/func_reduce.txt || status=1
-# 6. v5 against the v4 record (reported, not gated)
-python3 compare_v4.py || echo 'FAIL: func: compare_v4.py'
+# 6. v7 against the v6 record (reported, not gated)
+python3 compare_prev.py || echo 'FAIL: func: compare_prev.py'
 exit "$status"

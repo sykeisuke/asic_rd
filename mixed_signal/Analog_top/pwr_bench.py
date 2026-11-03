@@ -28,7 +28,7 @@ BLOCKS = [
     ("bg", "i(v.xdut.vmbg)", "bias_gen_s"),
     ("ref", "i(v.xdut.vmref)", "midref_div + XVREF (vref = vbl)"),
     ("vrlo", "i(v.xdut.vmvrlo)", "vrlo_ref"),
-    ("ramp", "i(v.xdut.vmramp)", "ramp_simple_d"),
+    ("ramp", "i(v.xdut.vmramp)", "ic_source (ramp_simple has no AVDD pin)"),
     ("c0", "i(v.xdut.vmc0)", "cell 0"),
     ("c1", "i(v.xdut.vmc1)", "cell 1"),
     ("c2", "i(v.xdut.vmc2)", "cell 2"),
@@ -56,13 +56,30 @@ BRANCHES = [
     ("ref", "vref_xmbp", _m("xvref.xmbp"), "XVREF pb diode (<- XMBN2 mirror)"),
     ("ref", "vref_xmit", _m("xvref.xmit"), "XVREF PMOS source -> a -> XM4 NMOS follower -> XM5 out diode"),
     ("ref", "vref_xm3", _m("xvref.xm3"), "XVREF FVF PMOS -> p -> XM1 follower + XM2 out diode"),
-    ("vrlo", "div", _r("xvrlo.xr1"), "5/33 tap divider 33 x 63 kohm"),
+    ("vrlo", "div", _r("xvrlo.xr1"), "7/55 tap divider 55 x 63 kohm"),
     ("vrlo", "xmbp", _m("xvrlo.xmbp"), "pb diode (<- XMBN2 mirror)"),
     ("vrlo", "xmt", _m("xvrlo.xmt"), "OTA tail -> XM1/XM2 -> XM3/XM4/XM5"),
     ("vrlo", "xmk", _m("xvrlo.xmk"), "keep-alive source into vrlo -> XMS shunt"),
-    ("ramp", "xrd", _m("xramp.xrd"), "iramp diode (sunk by bias_gen XOR)"),
-    ("ramp", "xps", _m("xramp.xps"), "ramp current -> 4 pF MIM (reset: XRST -> vrlo)"),
+    # ic_source (v6): every element whose terminal sits on its AVDD. The two 8-strip
+    # degeneration chains carry their pass device's current (XM1, XMO: read there, a
+    # bracketed instance such as xrs1[7] cannot be addressed by an @ vector); the 5/33
+    # divider's current is v(avdd_ramp) / (33 R_unit) (SCALE below)
+    ("ramp", "div", "v(xdut.avdd_ramp)", "5/33 V_REF divider, 33 ppolyf_u_3k strips (v / 33 R_unit)"),
+    ("ramp", "xm1", _m("xic.xm1"), "pass mirror reference (8 strips from AVDD) -> XM1C -> node a, the switched unit"),
+    ("ramp", "xmo", _m("xic.xmo"), "pass mirror output (8 strips from AVDD) -> XMOC -> iout = the ramp current"),
+    ("ramp", "xpb", _m("xic.xpb"), "iramp diode (sunk by bias_gen XOR)"),
+    ("ramp", "xpt", _m("xic.xpt"), "OTA tail -> XIA / XIR"),
+    ("ramp", "xpnb", _m("xic.xpnb"), "fold sink bias source"),
+    ("ramp", "xpnc", _m("xic.xpnc"), "NMOS cascode bias source"),
+    ("ramp", "xpd1", _m("xic.xpd1"), "PMOS cascode bias diode chain (XPD1 + XPD2)"),
+    ("ramp", "xpl1", _m("xic.xpl1"), "folded-cascode PMOS source 1 -> XPLC1"),
+    ("ramp", "xpl2", _m("xic.xpl2"), "folded-cascode PMOS source 2 -> XPLC2 -> vg"),
+    ("ramp", "xsu1", _m("xic.xsu1"), "start-up diode chain (XSU1 + XSU2 -> vg)"),
 ]
+# a branch read as a voltage: column -> amps per volt (pwr_reduce.py multiplies)
+_RU = 20.0 * float([ln.split(",")[5] for ln in open(os.path.join(HERE, "..", "ic_source", "data", "res_char.csv"))
+                    if ln.startswith("res_typical,27,")][0])     # one 1 x 20 um ppolyf_u_3k strip, typical 27 C
+SCALE = {"br_ramp_div": 1.0 / (33 * _RU)}
 for k in range(4):
     c = "c%d" % k
     BRANCHES += [
@@ -94,7 +111,7 @@ COLUMNS = ([("sup_" + k, v) for k, v in SUPPLIES]
            + [("br_%s_%s" % (b, k), v) for b, k, v, _ in BRANCHES]
            + [("sp_%s_%s" % (b, k), v) for b, k, v, _ in SPLITS]
            + DOUT)
-TIMELINE = ["VDD", "T0", "TS0", "TS1", "TS2", "TS3", "TNOV", "TR", "TE", "TOVR",
+TIMELINE = ["VDD", "T0", "TS0", "TS1", "TS2", "TS3", "TSEQ", "TR", "TE", "TOVR",
             "TSTOP", "TCOUNT"]
 
 

@@ -36,20 +36,7 @@ N 1300 -1120 1300 -1160 {}
 N 1300 -880 1300 -840 {}
 N 1540 -1030 1540 -1070 {}
 N 1540 -970 1540 -930 {}
-T {tb_trip: static trip of comparator with inp = VBL = VDD/2 (the tb_sel_dc bench)} 60 -1526 0 0 0.7 0.7 {}
-T {inn is swept 1.60 .. 1.70 V in 25 uV steps; the trip is where dout crosses VDD/2 falling.
-Its difference from VBL is the static offset at the pins; tb_delay measures its delay from this level.
-Measures: vtrip (V).  Gate: no specification gate (it feeds tb_delay's VTRIP); this drawing must equal
-   tb_sel_dc.spice within 50 uV (xtb.py).
-Recorded (runs/comparator-updt-v3-schematic/20261007T232627Z): vtrip 1.64961 V = -0.39 mV from VBL,
-   drawing = bench (diff 1 uV).  Typical 27 C, 3.3 V, ideal bias; dout load CLDC 10 fF.
-Reproduce: make comparator-schematic.} 60 -1484 0 0 0.4 0.4 {}
-L 4 40 -1541 1648 -1541 {}
-L 4 1648 -1541 1648 -1290 {}
-L 4 1648 -1290 40 -1290 {}
-L 4 40 -1290 40 -1541 {}
-T {AVDD (comparator) and the bias supply; VVBL = {VDD/2}, VDC = 1.65, VCLK = 0} 60 -1080 0 0 0.32 0.32 {layer=4}
-T {pbias: I_B = 1.93 uA design (.param IREF = 1.93077e-06 A, data/sizing.json) into one tail finger (L 0.28u, W 1u), diode-connected: tail 20 uA, pair 10 uA each, starve 9.6 uA design (intent.py); nbias leg (REFN, L 1u W 20u nf 10) unused: no-connect port} 60 -800 0 0 0.32 0.32 {layer=4}
+T {TB_TRIP  -  static trip of comparator, inp = VBL = VDD/2, I_B = 1.93 uA} 60 -1330 0 0 0.7 0.7 {}
 C {devices/vsource.sym} 120 -1180 0 0 {name=VDD_SOURCE value="\{VDD\}" savecurrent=false}
 C {devices/lab_pin.sym} 120 -1250 0 0 {name=l1 sig_type=std_logic lab=vdd}
 C {devices/lab_pin.sym} 120 -1110 0 0 {name=l2 sig_type=std_logic lab=0}

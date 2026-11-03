@@ -4,7 +4,7 @@ Requirements and their sources: vr.py and README.md s.1.
   op     reset-state operating point at 45 PVT cells (5 corners x 0/27/85 C x
          3.0/3.3/3.6 V) and at the bias / ramp-current spans (typical):
          tail, keep-alive, pair and g-diode in saturation (|vds| - |vdsat|
-         >= 0); |vrlo - 5/33 AVDD| <= 1 LSB [A]. Shunt headroom reported.
+         >= 0); |vrlo - RATIO x AVDD| <= 2 LSB (5.86 mV units) [A]. Shunt headroom reported.
   tran   tb_tran.spice (forced end of ramp) at the same cells, KS=1 and KS=0:
          start (vramp at T0 vs settled), kick (vramp at TR, full-scale vs
          empty cells), rec (reset level 1 us after the dump vs before), rep
@@ -96,7 +96,7 @@ def phase_op(txt, ib):
     print(f"REPORT: op: shunt XMS |vds| - |vdsat| worst {A[k, 4]:+.3f} V at {where(k)} (vrlo = 0.45-0.55 V; "
           f"triode only lowers the shunt's gm)")
     k = int(np.argmax(np.abs(A[:, 6])))
-    verdict(abs(A[k, 6]) <= vr.VERR_MAX, f"op: |vrlo - 5/33 AVDD| worst {A[k, 6] * 1e3:+.2f} mV at {where(k)} "
+    verdict(abs(A[k, 6]) <= vr.VERR_MAX, f"op: |vrlo - {vr.N_BOT}/{vr.N_DIV} AVDD| worst {A[k, 6] * 1e3:+.2f} mV at {where(k)} "
             f"(bound {vr.VERR_MAX * 1e3:.2f} mV = {vr.VERR_MAX / vr.LSB:g} LSB)")
     typ = [r for r in nom if r[0] == "typical" and r[1] == 27 and r[4] == vr.VDD][0]
     print(f"op_err_typ_mv = {typ[5][6] * 1e3:.4f}")
@@ -123,7 +123,7 @@ def phase_tran(txt, ib, real=False):
     lim = dict(start=vr.EPS, kick=vr.EPS, rec=vr.EPS, rep=vr.EPS, err=vr.VERR_MAX)
     what = dict(start="start-up (vramp at T0 vs settled)", kick="S1 kick residual at TR (full-scale - empty cells)",
                 rec="reset level 1 us after the dump vs before", rep="vramp at TR, record 2 - record 1",
-                err="|vrlo - 5/33 AVDD|")
+                err=f"|vrlo - {vr.N_BOT}/{vr.N_DIV} AVDD|")
     rows = []
     for g in ("start", "kick", "rec", "rep", "err"):
         vals = [(x[2][g][1], x[0]) for x in res]
@@ -248,7 +248,7 @@ def phase_noise(txt, ib):
         if p is not None and c == "typical":
             for fq in (10, 1e3, 1e5, 1e6, 1e7):
                 print(f"psr_typ_{int(fq)}hz = {np.interp(fq, p[:, 0], p[:, 1]):.5f}")
-            print(f"REPORT: noise: AVDD -> vrlo {np.interp(10, p[:, 0], p[:, 1]):.4f} at 10 Hz (5/33 = "
+            print(f"REPORT: noise: AVDD -> vrlo {np.interp(10, p[:, 0], p[:, 1]):.4f} at 10 Hz ({vr.N_BOT}/{vr.N_DIV} = "
                   f"{vr.RATIO:.4f}: ratiometric by design), {np.interp(1e6, p[:, 0], p[:, 1]):.4f} at 1 MHz")
 
 

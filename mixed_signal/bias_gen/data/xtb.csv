@@ -1,0 +1,105 @@
+bench,figure,deck,xschem,diff,rel,tolerance,verdict
+op,ic@3V,3.117e-06,3.117e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ic1@3V,3.117e-06,3.117e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ir@3V,3.12698e-06,3.12698e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,iv@3V,1.09353e-05,1.09353e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,icore@3V,3.5042e-06,3.5042e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ibl@3V,5.54492e-11,5.54492e-11,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,isup@3V,4.43407e-05,4.43407e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,vsu@3V,5.53949e-06,5.53949e-06,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vnb@3V,0.625497,0.625497,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vpb@3V,2.21538,2.21538,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlc@3V,2.10659,2.10659,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlr@3V,2.15401,2.15401,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlv@3V,0.974819,0.974819,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmn1@3V,0.566623,0.566623,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmn2@3V,2.09849,2.09849,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmp1@3V,2.30814,2.30814,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmp2@3V,0.718261,0.718261,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc0@3V,2.04772,2.04772,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc1@3V,2.04772,2.04772,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc2@3V,2.04772,2.04772,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc3@3V,2.04772,2.04772,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xor@3V,2.09513,2.09513,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xov@3V,1.95882,1.95882,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xob@3V,1.95882,1.95882,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,ic@3.3V,3.24529e-06,3.24529e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ic1@3.3V,3.24529e-06,3.24529e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ir@3.3V,3.25653e-06,3.25653e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,iv@3.3V,1.11651e-05,1.11651e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,icore@3.3V,3.5772e-06,3.5772e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ibl@3.3V,1.94861e-10,1.94861e-10,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,isup@3.3V,4.55667e-05,4.55667e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,vsu@3.3V,1.91354e-05,1.91354e-05,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vnb@3.3V,0.626437,0.626437,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vpb@3.3V,2.51463,2.51463,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlc@3.3V,2.40202,2.40202,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlr@3.3V,2.45132,2.45132,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlv@3.3V,0.978972,0.978972,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmn1@3.3V,0.567343,0.567343,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmn2@3.3V,2.39681,2.39681,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmp1@3.3V,2.60692,2.60692,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmp2@3.3V,0.718725,0.718725,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc0@3.3V,2.34293,2.34293,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc1@3.3V,2.34293,2.34293,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc2@3.3V,2.34293,2.34293,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc3@3.3V,2.34293,2.34293,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xor@3.3V,2.39223,2.39223,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xov@3.3V,2.25438,2.25438,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xob@3.3V,2.25438,2.25438,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,ic@3.6V,3.39297e-06,3.39297e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ic1@3.6V,3.39297e-06,3.39297e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ir@3.6V,3.40663e-06,3.40663e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,iv@3.6V,1.14284e-05,1.14284e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,icore@3.6V,3.66254e-06,3.66254e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,ibl@3.6V,7.4321e-10,7.4321e-10,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,isup@3.6V,4.69809e-05,4.69809e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+op,vsu@3.6V,7.15914e-05,7.15914e-05,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vnb@3.6V,0.627513,0.627513,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vpb@3.6V,2.8137,2.8137,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlc@3.6V,2.69688,2.69688,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlr@3.6V,2.7483,2.7483,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,vlv@3.6V,0.983688,0.983688,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmn1@3.6V,0.568165,0.568165,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmn2@3.6V,2.69487,2.69487,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmp1@3.6V,2.90548,2.90548,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xmp2@3.6V,0.719303,0.719303,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc0@3.6V,2.63753,2.63753,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc1@3.6V,2.63753,2.63753,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc2@3.6V,2.63753,2.63753,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xoc3@3.6V,2.63753,2.63753,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xor@3.6V,2.68895,2.68895,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xov@3.6V,2.54931,2.54931,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+op,hr_xob@3.6V,2.54931,2.54931,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+startup,icf_ramp100n,3.5772e-06,3.5772e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+startup,icmpf_ramp100n,3.24561e-06,3.24561e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+startup,suf_ramp100n,1.92198e-05,1.92198e-05,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+startup,tup_ramp100n,-1.04118e-08,-1.04118e-08,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+startup,icf_dead,3.5772e-06,3.5772e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+startup,icmpf_dead,3.38776e-06,3.38776e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+startup,suf_dead,1.92104e-05,1.92104e-05,0,0,1e-6 rel / 1 uV abs / echo digit,PASS
+startup,tup_dead,1.958e-08,1.958e-08,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,icmp0,2.8837e-06,2.8837e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,icmp1,2.92376e-06,2.92376e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,icmp2,2.80844e-06,2.80844e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,icmp3,2.81801e-06,2.81801e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,iramp,2.97326e-06,2.97326e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,ivref,1.03633e-05,1.03633e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,ivbl,1.02354e-05,1.02354e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+mc,icore,3.30056e-06,3.30056e-06,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+noise,vn_band_v,2.28152895e-05,2.28152895e-05,0,0,1e-6 rel / 1e-11 abs / echo digit,PASS
+noise,spectrum_max_rel,0,0,0,0,1e-06 abs,PASS
+cmp,vtrip_v,1.649917,1.64992,3e-06,1.818e-06,5e-05 abs,PASS
+cmp,delay_vbl,6.851e-09,6.851e-09,0,0,1e-09 abs,PASS
+cmp,delay_dyn,8.592e-09,8.529e-09,-6.3e-11,0.007332,1e-09 abs,PASS
+cmp,fall,5.711e-09,5.717e-09,6e-12,0.001051,1e-09 abs,PASS
+cmp,ped_counts,0.09216,0.092,-0.00016,0.001736,0.02 abs,REPORT
+cmp,armed,3.3,3.3,0,0,0.001 rel,REPORT
+cmp,p_avg,0.0001110589,0.00038267064,0.0002716,2.446,0.001 rel,REPORT
+xtalk,t0_a,2.42961e-06,2.42961e-06,0,0,1e-09 abs,PASS
+xtalk,pbx_a,2.40266,2.40266,0,0,0.0001 rel,REPORT
+xtalk,pbn_a,2.40197,2.40197,0,0,0.0001 rel,REPORT
+xtalk,t0_q,2.42964e-06,2.42964e-06,0,0,1e-09 abs,PASS
+xtalk,pbx_q,2.40266,2.40266,0,0,0.0001 rel,REPORT
+xtalk,pbn_q,2.40197,2.40197,0,0,0.0001 rel,REPORT
+xtalk,shift_lsb,-0.0006,-0.0006,0,0,0.02 abs,PASS

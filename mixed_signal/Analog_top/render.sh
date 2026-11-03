@@ -1,14 +1,13 @@
 #!/bin/sh
 # render.sh -- every v5 sheet to assets/<sheet>.png and <sheet>.svg (this
 # folder), under a virtual X server. Inside the container, cwd = this block.
-# Called by schematic.sh and, after the op table is written onto
-# analog_top.sch, by op.sh.
+# Called by schematic.sh.
 #   SHEETS='analog_top atop_cell' sh render.sh     a subset
 set -u
 cd "$(dirname -- "$0")"
 mkdir -p assets work/render
 RC=xschemrc
-SHEETS=${SHEETS:-'analog_top atop_cell comparator_d ramp_simple_d bias_gen_s sw_s0 sw_s1 sw_s2 tb_analog_top symbol_gallery'}
+SHEETS=${SHEETS:-'analog_top atop_cell comparator_d bias_gen_s sw_s0 sw_s1 sw_s2 tb_analog_top symbol_gallery'}
 for n in $SHEETS; do
     src="$n.sch"
     rm -f "assets/$n.png" "$n.svg"

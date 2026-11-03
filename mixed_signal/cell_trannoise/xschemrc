@@ -1,0 +1,16 @@
+# xschemrc for mixed_signal/cell_trannoise: the PDK rc, then the sibling
+# blocks whose symbols tb_cell_tn.sch places or descends into, appended to
+# the symbol path. The drawing names atop_cell.sym (../Analog_top) and
+# ramp_simple.sym (../ramp_simple) by bare file name; atop_cell.sch places
+# sw_s0/1/2.sym, comparator_d.sym and latch.sym (Analog_top's presentation
+# symbol, descending into ../latch/latch.sch). Analog_top's folder comes
+# FIRST, as in ../Analog_top/xschemrc, so its presentation symbols shadow
+# the blocks' own. Without these lines xschem cannot find a symbol and
+# SILENTLY drops the instance from the netlist (the trap recorded in
+# ../ramp_gen/xschemrc); ct_xtb.py checks the instance set for that reason.
+# ct.sh passes this file with --rcfile.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc
+set CT_DIR [file normalize [file dirname [info script]]]
+foreach blk {Analog_top ramp_simple latch ic_source} {
+    append XSCHEM_LIBRARY_PATH :[file normalize [file join $CT_DIR .. $blk]]
+}

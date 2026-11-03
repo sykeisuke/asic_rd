@@ -14,6 +14,9 @@ sits on the falling clock edge k = "Clk"):
   capture     q fell on Clk (code k) or on Clk+1 (code k+1); any other edge is a FAIL.
               frac_clk1 = share on Clk+1; predicted from dout alone = share of td
               after Clk's midpoint, and from the Gaussian 1 - Phi((t_Clk - mean)/sigma)
+  share       the same prediction at the latch's sampling instant (its setup before
+              Clk) measured at the OTHER level, so the boundary is not fitted to the
+              conversions it judges: frac_clk1_dout_lat
   match       per conversion: dout fell before Clk's midpoint <=> q fell on Clk.
               A mismatch is possible only inside the latch's aperture (setup); the
               gate counts mismatches with |td - t_Clk| > APERTURE_NS; the best
@@ -176,7 +179,8 @@ def level(tag, pos0, pos, k):
     cand = np.linspace(tclk - 3e-9, tclk + 3e-9, 601)
     nm = np.array([np.sum((td < c) != on_clk) for c in cand])
     best = cand[nm == nm.min()]
-    put("ct_%s_match_boundary_ns" % tag, (np.mean(best) - tclk) * 1e9, "%+.4f")
+    res["boundary"] = float(np.mean(best) - tclk)
+    put("ct_%s_match_boundary_ns" % tag, res["boundary"] * 1e9, "%+.4f")
     put("ct_%s_match_boundary_mismatch" % tag, int(nm.min()), "%d")
     put("ct_%s_cq_mean_ns" % tag, np.mean(rows["cq"][g]) * 1e9)
     put("ct_%s_cq_std_ps" % tag, np.std(rows["cq"][g], ddof=1) * 1e12)
@@ -216,6 +220,17 @@ def level(tag, pos0, pos, k):
         put("ct_%s_groups_rss_over_total_tol" % tag, 3 * r_se)
     res.update(s=s, kq=kq, on_clk1=on_clk1, td=td, rows=rows, good=g)
     return res
+
+
+def share(res):
+    """dout's share after the latch's sampling instant, the instant taken from the other level."""
+    for tag, other in (("c16", "c240"), ("c240", "c16")):
+        r, o = res.get(tag, {}), res.get(other, {})
+        if "td" not in r or "boundary" not in o:
+            print("FAIL: %s: no latch instant from %s for the share check" % (tag, other))
+            continue
+        put("ct_%s_frac_clk1_lat_ns" % tag, o["boundary"] * 1e9, "%+.4f")
+        put("ct_%s_frac_clk1_dout_lat" % tag, np.mean(r["td"] > r["tclk"] + o["boundary"]))
 
 
 def band(r16):
@@ -370,11 +385,11 @@ def figures(res):
             ah.set_xlabel("decision instant $-$ $t_{Clk}$  (LSB)", fontsize=FS_S)
         ah.legend(fontsize=FS_T - 1, frameon=False, loc="upper left", bbox_to_anchor=(-0.02, 1.0))
         f1 = summary["ct_%s_frac_clk1" % tag]
-        fd = summary["ct_%s_frac_clk1_dout" % tag]
-        ah.text(0.59, 3.6, "mid-code %g, %d conv.\n$\\sigma$ = %.3f LSB = %.1f ns\non Clk+1: %.1f %%\n(dout after Clk: %.1f %%)"
+        fd = summary.get("ct_%s_frac_clk1_dout_lat" % tag, float("nan"))
+        ah.text(0.59, 3.6, "mid-code %g, %d conv.\n$\\sigma$ = %.3f LSB = %.1f ns\non Clk+1: %.1f %%\n(dout after the latch's instant: %.1f %%)"
                 % ({"c16": 16.5, "c240": 240.5}[tag], v.size, sg, sg * 50, 100 * f1, 100 * fd),
                 ha="right", va="center", fontsize=FS_T + 0.5)
-    fig.text(0.06, 0.01, "One Analog_top cell (S0/S1/S2 + inverters, 54.5 fF MIM, comparator_d, dfxtn_2 latch) on ramp_simple_d; "
+    fig.text(0.06, 0.01, "One Analog_top cell (S0/S1/S2 + inverters, 54.5 fF MIM, comparator_d, dfxtn_2 latch) on ramp_simple; "
              "VREF = VBL, VR_LO, bias currents, supplies, controls and clock ideal. VACASK transient noise, every device "
              "source (thermal + flicker), 1 kHz-%g GHz, reltol %g, %d seeds."
              % (summary.get("ct_fmax_ghz", 2), summary.get("ct_reltol", 1e-6), int(summary.get("ct_c16_seeds", 0))),
@@ -386,7 +401,7 @@ def figures(res):
 
     # per-block breakdown
     fig, ax = plt.subplots(figsize=(10.5, 4.2))
-    labels = ["ramp\n(ramp_simple_d)", "comparator\n(comparator_d)", "latch\n(dfxtn_2)", "switches\n+ inverters",
+    labels = ["ramp\n(ramp_simple)", "comparator\n(comparator_d)", "latch\n(dfxtn_2)", "switches\n+ inverters",
               "RSS of\nthe four", "all on\n(total)"]
     for j, (tag, col) in enumerate((("c16", "#0070C0"), ("c240", "#E36C09"))):
         rr = res[tag]
@@ -431,6 +446,7 @@ def main():
             print("FAIL: %s: not aligned" % tag)
             continue
         res[tag] = level(tag, pos0, *a[tag])
+    share(res)
     band(res.get("c16", {}))
     tol(res.get("c240", {}))
     put("ct_noise_share_lsb", SHARE)

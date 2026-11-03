@@ -1,0 +1,29 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=primitive
+format="@name @@VDD @@VNW @@VPW @@VSS @@Y @@A @symname"
+template="name=X1"
+}
+V {}
+S {}
+E {}
+L 4 -80 -40 80 -40 {}
+L 4 80 -40 80 40 {}
+L 4 80 40 -80 40 {}
+L 4 -80 40 -80 -40 {}
+L 4 -100 0 -80 0 {}
+B 5 -102.5 -2.5 -97.5 2.5 {name=A dir=in}
+T {A} -74 -8 0 0 0.28 0.28 {}
+L 4 80 0 100 0 {}
+B 5 97.5 -2.5 102.5 2.5 {name=Y dir=out}
+T {Y} 74 -8 0 1 0.28 0.28 {}
+L 4 -20 -40 -20 -60 {}
+B 5 -22.5 -62.5 -17.5 -57.5 {name=VDD dir=inout}
+L 4 20 -40 20 -60 {}
+B 5 17.5 -62.5 22.5 -57.5 {name=VNW dir=inout}
+L 4 -20 40 -20 60 {}
+B 5 -22.5 57.5 -17.5 62.5 {name=VSS dir=inout}
+L 4 20 40 20 60 {}
+B 5 17.5 57.5 22.5 62.5 {name=VPW dir=inout}
+T {@name} -80 -86 0 0 0.3 0.3 {}
+T {DLY} -50 6 0 0 0.3 0.3 {layer=13}

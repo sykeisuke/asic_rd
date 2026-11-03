@@ -1,5 +1,5 @@
 #!/bin/sh
-# The `schematic` phase of run.sh (v5): xschem is the SOURCE of the macro netlist.
+# The `schematic` phase of run.sh (v7): xschem is the SOURCE of the macro netlist.
 # Run inside the container, cwd = this block.
 #
 #   REGEN=1 sh schematic.sh   (re)write analog_top.spice from the drawings
@@ -9,18 +9,22 @@
 #
 #   1. sw_schematic.sh: the transistor-level switch views sw_s0/1/2.sch against
 #      ref/switches.spice (its own PASS/FAIL lines)
-#   2. analog_top_sch.py draws comparator_d, ramp_simple_d, bias_gen_s (each
-#      derived from its block's own drawing), atop_cell, analog_top (.sch/.sym);
+#   2. analog_top_sch.py draws comparator_d, bias_gen_s (each derived from its
+#      block's own drawing), atop_cell, analog_top (.sch/.sym);
 #      tb_sch.py draws tb_analog_top.sch from tb_analog_top.spice
 #   3. xschem netlists analog_top.sch hierarchically (top as a .subckt) into
 #      work/sch/gen/; with a GENERATED header that is analog_top.spice: every
 #      subcircuit down to transistors, no model or parameter card
 #   4. checks on that netlist (one PASS:/FAIL: line each):
-#      - midref_div, midref_buf, vrlo_ref, sw_s0/1/2: equal to their own decks
-#        (ports, devices, terminals, models, every parameter)
-#      - ramp_simple_d, bias_gen_s: equal to the expected subcircuit
-#        make_refs.py builds from the blocks' DECKS (ramp_simple with the
-#        {RS_*} values + XRD; bias_gen + XOL / ivrlo)
+#      - midref_div, midref_buf, vrlo_ref, ramp_simple, sw_s0/1/2: equal to
+#        their own decks (ports, devices, terminals, models, every parameter)
+#      - ic_source: equal to ../ic_source/ic_source.spice by that block's own
+#        checker (it knows the standard-cell phase generator)
+#      - sample_seq, seq_dly, seq_cell: equal to ../sample_seq/sample_seq.spice
+#        by that block's own checker (check_sch.py: ports as a set, every
+#        instance's cell and the net on every named pin)
+#      - bias_gen_s: equal to the expected subcircuit make_refs.py builds from
+#        the block's DECK (bias_gen + XOL / ivrlo)
 #      - comparator_d: equal to make_refs.py's (comparator.spice subckt cmp,
 #        ports inp inn ibias dout vdd vss, + XREFP) in L/W/nf/m; the S/D
 #        geometry the PDK MOS symbols add must be the PDK template expressions
@@ -29,9 +33,9 @@
 #        standard-cell instance (nodes, cell name)
 #      - no plate leak resistor (no 1e15, no RLK) and no parameter reference
 #        ({...}) in analog_top.spice: every size is a number
-#      - check_equiv.py: flattened to devices, the macro is v3's
-#        (data/v3_ref/analog_top.spice = ../Analog_top_bkp/Analog_top_v3/analog_top.spice)
-#        plus vrlo_ref, XOL and VMVRLO, apart from the declared flattening
+#      - check_equiv.py: flattened to devices, the macro is v6's
+#        (data/v6_ref/analog_top.spice) with the sequencer inside (xseq.*),
+#        the 12 switch controls internal and acq a port, nothing else
 #      - each subcircuit defined once, none referenced undefined, exactly the
 #        expected set, no .include / .lib / .param card
 #   5. xschem netlists tb_analog_top.sch (hierarchically): its top level equals
@@ -43,8 +47,8 @@ cd "$(dirname -- "$0")"
 mkdir -p work/sch/gen assets
 RC=xschemrc
 GEN=work/sch/analog_top.gen.spice
-V4REF=data/v4_ref/analog_top.spice
-EXPECT="analog_top atop_cell comparator_d ramp_simple_d bias_gen_s midref_div midref_buf vrlo_ref latch sw_s0 sw_s1 sw_s2"
+V6REF=data/v6_ref/analog_top.spice
+EXPECT="analog_top atop_cell comparator_d ramp_simple ic_source sample_seq seq_dly seq_cell bias_gen_s midref_div midref_buf vrlo_ref latch sw_s0 sw_s1 sw_s2"
 PDKSYM=/foss/pdks/gf180mcuD/libs.tech/xschem/symbols
 
 # --------------------------------------------------------------- 1. switches
@@ -87,11 +91,14 @@ if [ ! -s work/sch/gen/analog_top.spice ]; then
 fi
 {
     cat <<'EOF'
-* analog_top (v5, mixed_signal/Analog_top) -- the analog macro of the 8-bit
+* analog_top (v7, mixed_signal/Analog_top) -- the analog macro of the 8-bit
 * true bottom-plate single-slope ADC: four sampling/conversion cells on one
-* shared ramp (ramp_simple_d), bias_gen_s, vrlo_ref, one midref_div and ONE
-* midref_buf whose output vref is both the S2 level and every comparator's inp
-* (midrail_ref, ADR 0021). Every analog block is inside.
+* shared ramp (ramp_simple: 73 unit MIMs + reset, fed by the I/C current
+* source ic_source; ADR 0025 / 0026), bias_gen_s, vrlo_ref (7/55 AVDD), one
+* midref_div and ONE midref_buf whose output vref is both the S2 level and
+* every comparator's inp (midrail_ref, ADR 0021). Every analog block is inside,
+* and the sampling sequencer sample_seq (v7, ADR 0027): the twelve switch
+* controls are made inside from the count clock and acq.
 *
 * GENERATED from analog_top.sch by schematic.sh (xschem, hierarchical: every
 * block down to transistors, as drawn). DO NOT HAND-EDIT. Change the drawings
@@ -101,9 +108,11 @@ fi
 * the drawings netlist to.
 *
 * Subcircuits: analog_top, atop_cell, comparator_d (comparator + its pbias
-* diode, flat), ramp_simple_d (ramp_simple + its pbias diode, flat, sizes as
-* numbers), bias_gen_s (bias_gen - XOB/ivbl + XOL -> ivrlo), vrlo_ref, midref_div,
-* midref_buf, latch, sw_s0, sw_s1, sw_s2. comparator_d and sw_s0/1/2 carry
+* diode, flat), ramp_simple, ic_source, sample_seq, seq_dly, seq_cell,
+* bias_gen_s (bias_gen - XOB/ivbl + XOL -> ivrlo), vrlo_ref, midref_div,
+* midref_buf, latch, sw_s0, sw_s1, sw_s2. ic_source's phase generator and
+* sample_seq are standard cells (not defined here).
+* comparator_d and sw_s0/1/2 carry
 * drawn S/D junction geometry (the PDK MOS symbols' ad/as/pd/ps/nrd/nrs; the
 * switches' from their deck), bias_gen_s its deck's. latch is one
 * standard cell, gf180mcu_as_sc_mcu7t3v3__dfxtn_2 (not defined here).
@@ -114,7 +123,7 @@ fi
 * No model or parameter card and no parameter reference: the including deck
 * carries the PDK models (typical / res_typical / mimcap_typical) and the
 * standard-cell library gf180mcu_as_sc_mcu7t3v3.spice (make pdk-libs;
-* /foss/pdk_libs). Against v4 (../Analog_top_bkp/Analog_top_v4/analog_top.spice): check_equiv.py.
+* /foss/pdk_libs). Against v6 (data/v6_ref/analog_top.spice): check_equiv.py.
 *
 EOF
     awk 'tolower($0) !~ /^\.end[ \t]*$/' work/sch/gen/analog_top.spice
@@ -136,7 +145,7 @@ fi
 # ------------------------------------------------------------ 4. its checks
 # 4a. blocks equal to their own decks
 for pair in midref_div:../midrail_ref/midref.spice midref_buf:../midrail_ref/midref.spice \
-            vrlo_ref:../vrlo_ref/vrlo_ref.spice \
+            vrlo_ref:../vrlo_ref/vrlo_ref.spice ramp_simple:../ramp_simple/ramp_simple.spice \
             sw_s0:ref/switches.spice sw_s1:ref/switches.spice \
             sw_s2:ref/switches.spice; do
     s=${pair%%:*}; deck=${pair#*:}
@@ -146,8 +155,14 @@ for pair in midref_div:../midrail_ref/midref.spice midref_buf:../midrail_ref/mid
     awk -v label="analog_top.spice subckt $s vs $(basename "$deck")" -f check-schematic.awk \
         "work/sch/ref_$s.spice" "work/sch/cut_$s.spice"
 done
-# 4a'. the derived ramp and bias generator against make_refs.py's expectation
-for s in ramp_simple_d bias_gen_s; do
+# 4a''. the I/C source against its own deck, by its own checker (file 2 as xschem
+# writes a top-level drawing: the ports on a commented **.subckt line, no .ends)
+getsub ic_source "$GEN" | awk 'NR == 1 { sub(/^\*+/, ""); print "**" $0; next } tolower($1) !~ /^\.ends/' \
+    > work/sch/cut_ic_source.spice
+awk -v sub_=ic_source -f ../ic_source/check-schematic.awk ../ic_source/ic_source.spice work/sch/cut_ic_source.spice \
+    | sed 's/^\(PASS\|FAIL\): /\1: schematic: analog_top.spice subckt ic_source vs ic_source.spice: /'
+# 4a'. the derived bias generator against make_refs.py's expectation
+for s in bias_gen_s; do
     getsub "$s" "$GEN" > "work/sch/cut_$s.spice"
     [ -s "work/sch/ref_$s.spice" ] || echo "FAIL: schematic: make_refs.py wrote no work/sch/ref_$s.spice"
     awk -v label="analog_top.spice subckt $s vs make_refs.py (its block deck + the declared addition)" \
@@ -179,6 +194,9 @@ awk -v geo=work/sch/pdk_geo.txt \
     -v label="analog_top.spice subckt comparator_d vs make_refs.py (comparator.spice subckt cmp + XREFP)" \
     -f check-schematic.awk work/sch/ref_comparator_d.spice work/sch/cut_comparator_d.spice
 
+# 4a''. the sampling sequencer against its own deck, by that block's checker
+python3 ../sample_seq/check_sch.py ../sample_seq/sample_seq.spice "$GEN" \
+    | sed 's/^\(PASS\|FAIL\): schematic: /\1: schematic: analog_top.spice vs ..\/sample_seq\/sample_seq.spice: /'
 # 4b'. the latch: one standard-cell instance, equal to ../latch/latch.spice
 red_scff() {
     awk '{ l = $0; sub(/^\*+/, "", l); nt = split(tolower(l), t, /[ \t]+/) }
@@ -213,12 +231,12 @@ else
     echo "FAIL: schematic: analog_top.spice has $nbrace device line(s) with a {parameter} reference: $(grep -v '^\*' analog_top.spice | grep '[{}]' | head -2 | tr '\n' ' ')"
 fi
 
-# 4d. the macro is v4's minus the second VDD/2 buffer, nothing else
-if [ -s "$V4REF" ]; then
-    python3 check_equiv.py "$V4REF" "$GEN"
-    echo "REPORT: schematic: equiv: compared against the frozen v4 netlist $V4REF (Analog_top_v4 itself is archived)"
+# 4d. the macro is v6's with the sequencer inside, nothing else
+if [ -s "$V6REF" ]; then
+    python3 check_equiv.py "$V6REF" "$GEN"
+    echo "REPORT: schematic: equiv: compared against the frozen v6 netlist $V6REF (the v6 folder is archived in ../Analog_top_bkp/Analog_top_v6)"
 else
-    echo "FAIL: schematic: $V4REF absent: no v4 netlist to compare with"
+    echo "FAIL: schematic: $V6REF absent: no v6 netlist to compare with"
 fi
 
 # 4e. definitions

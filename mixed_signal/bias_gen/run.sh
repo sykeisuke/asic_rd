@@ -18,7 +18,9 @@
 #              startup, Monte Carlo, ramp-line noise, comparator delay at 135 cells,
 #              four-comparator crosstalk, midref_v2 headroom and S2 kick
 #   floorplan  floorplan.py: one PMOS row over one NMOS row, common centroid
-#   schematic  the xschem drawing netlists back to bias_gen.spice
+#   schematic  the xschem drawing netlists back to bias_gen.spice; the six testbench
+#              drawings (tb_sch.py) netlist with every instance, render, and simulate
+#              to their hand decks (xtb.py, data/xtb.csv)
 #
 # Writes runs/$TARGET/<stamp>/metrics.json (scripts/summarize-metrics.awk).
 set -eu
@@ -68,6 +70,7 @@ if grep -q '^FAIL:' "$run_dir/console.log"; then status=1; fi
     printf '%s\n' "Floorplan: $BLOCK_DIR/data/rows.txt"
     printf '%s\n' "Figure: $BLOCK_DIR/assets/floorplan.png"
     printf '%s\n' "Report: $BLOCK_DIR/README.md"
+    printf '%s\n' "xtb table: $BLOCK_DIR/data/xtb.csv"
 } >"$run_dir/extra-metrics.txt"
 
 if [ "${NO_RECORD:-0}" = 1 ]; then

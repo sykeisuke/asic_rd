@@ -1,11 +1,12 @@
 #!/bin/sh
-# analog_top v5: the analog macro of the 8-bit true bottom-plate ADC, v4 with
-# ONE VDD/2 buffer (../midrail_ref, ADR 0021): the output of XVREF is the
-# net vref, every cell's S2 level AND every comparator's inp; the second
-# buffer XVBL and its bias output XBG.XOB (bias_gen_s = bias_gen - XOB +
-# XOL) are gone. Everything else is v4's: four cells (switches S0/S1/S2,
-# 54.52 fF MIM, comparator_d, the standard-cell latch latch) on one
-# ramp_simple_d, vrlo_ref making vrlo, TR = TS3 + 300 ns (README.md).
+# analog_top v6: the analog macro of the 8-bit true bottom-plate ADC. v5 with
+# the ramp of ADR 0025 / 0026: ../ramp_simple (73 unit MIMs + reset) fed by the
+# I/C current source ../ic_source (count clock, bias_gen_s's ramp sink, DVDD),
+# vrlo_ref at 7/55 AVDD = 0.420 V (the pre-roll reset level), the 6.70 mV
+# grid, T0 = 60 us, the ramp ending at count 259. From v5: ONE VDD/2 buffer
+# (../midrail_ref, ADR 0021, vref = vbl), bias_gen_s = bias_gen - XOB + XOL,
+# four cells (switches S0/S1/S2, 54.52 fF MIM, comparator_d, the standard-cell
+# latch), TR = TS3 + 300 ns (README.md).
 #
 #   ./run.sh                               phases schematic func op xtb pwr
 #   PHASES='func' ./run.sh                 the functional record alone (~1 min)
@@ -15,15 +16,16 @@
 #              the GENERATED analog_top.spice (REGEN=1 rewrites it, otherwise a
 #              difference FAILs); every block against its deck (make_refs.py for
 #              the three derived cells); no RLK / 1e15 / {param} in the macro;
-#              check_equiv.py: the macro is v4's minus XVBL and XBG.XOB with vbl
+#              check_equiv.py: the macro is v5's with the declared ramp swap and
+#              vrlo_ref's re-tapped divider (v5's text follows: v4's minus XVBL and XBG.XOB with vbl
 #              = vref, nothing else; tb_analog_top.sch netlists to the hand
 #              bench; renders (render.sh: assets/*.png, *.svg)
 #   func       func.sh: tb_analog_top.spice, one record from a cold supply:
 #              power-up, four samples, ramp, four trips; check-func.awk;
-#              compare_v4.py: the record against v4's (reported)
+#              compare_prev.py: the record against v5's (reported)
 #   op         op.sh: the in-macro operating point (Id, gm, gm/Id, gds,
 #              Vds - Vdsat, region; switch Ron; R = V / I; MIM C) at two instants
-#              -> data/op_point.csv, data/op_rc.csv, the table on analog_top.sch
+#              -> data/op_point.csv, data/op_rc.csv
 #   xtb        xtb.sh: the xschem testbench netlist, simulated, reproduces func
 #   pwr        pwr.sh (~1 min): the func record again, every AVDD branch
 #              current saved; averages per phase (track, sample, hold, ramp,

@@ -1,0 +1,75 @@
+* tb_seq -- the sampling sequencer driving four cells' control inputs.
+*
+* TEMPLATE: bench.py replaces @VDD@, @TEMP@, @DUTY@, @NETLIST@ and the corner
+* token on the .lib line, writes work/<tag>/tb.spice; ngspice runs there and
+* writes out.csv.
+*
+* Timeline: the clock's rising edges at k x 50 ns; dvdd and avdd ramp up in
+* 100 ns with acq high (track). acq falls 2 ns after the edge at R0 - 50 ns
+* (the controller's flop), so cell k samples at R0 + k x 50 ns; acq rises
+* 2 ns after R0 + 400 ns (R0 = 400 ns), so cell k re-enters track at R0 + 450 + k x 50 ns.
+* Every control net carries atop_cell's input stage (its inverter, the switch
+* gates with their channels at VDD/2) and a route capacitance.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
+.include /foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice
+.include @NETLIST@
+
+.param VDD=@VDD@
+.param TCOUNT=50n
+.param TCE=0.5n
+.param DUTY=@DUTY@
+.param R0=400n
+.param TACQ='R0-TCOUNT+2n'
+.param TREL='R0+8*TCOUNT+2n'
+.param CROUTE=@CROUTE@
+.temp @TEMP@
+.options reltol=1e-4
+
+VDVDD dvdd 0 PWL(0 0 100n {VDD})
+VAVDD avdd 0 PWL(0 0 100n {VDD})
+* the switch channels at VDD/2, ramped with the supplies (no forward junction at t = 0)
+VMID vm 0 PWL(0 0 100n {VDD/2})
+* 50 % crossings of the rising edges at k x 50 ns
+VCLK clk 0 PULSE(0 {VDD} {TCOUNT-TCE/2} {TCE} {TCE} {DUTY*TCOUNT-TCE} {TCOUNT})
+VACQ acq 0 PWL(0 0 100n {VDD} {TACQ-TCE/2} {VDD} {TACQ+TCE/2} 0 {TREL-TCE/2} 0 {TREL+TCE/2} {VDD})
+
+XSEQ acq clk s2_0 s2_1 s2_2 s2_3 s0_0 s0_1 s0_2 s0_3 s1_0 s1_1 s1_2 s1_3 dvdd 0 sample_seq
+
+* atop_cell's input stage on each control (XI*P/N, sw_s2's NMOS, the TG pair)
+.subckt ld_s2 ctl ctlb avdd vm
+XIP ctlb ctl avdd avdd pfet_03v3 L=0.28u W=0.88u nf=1
+XIN ctlb ctl 0 0 nfet_03v3 L=0.28u W=0.44u nf=1
+XN vm ctl vm 0 nfet_03v3 L=0.28u W=0.36u nf=1 ad=0.1584p as=0.1584p pd=1.60u ps=1.60u
+CR ctl 0 {CROUTE}
+.ends
+.subckt ld_tg ctl ctlb avdd vm
+XIP ctlb ctl avdd avdd pfet_03v3 L=0.28u W=0.88u nf=1
+XIN ctlb ctl 0 0 nfet_03v3 L=0.28u W=0.44u nf=1
+XN vm ctl vm 0 nfet_03v3 L=0.28u W=0.50u nf=1 ad=0.2200p as=0.2200p pd=1.88u ps=1.88u
+XP vm ctlb vm avdd pfet_03v3 L=0.28u W=1.00u nf=1 ad=0.4400p as=0.4400p pd=2.88u ps=2.88u
+CR ctl 0 {CROUTE}
+.ends
+XL2_0 s2_0 s2b_0 avdd vm ld_s2
+XL2_1 s2_1 s2b_1 avdd vm ld_s2
+XL2_2 s2_2 s2b_2 avdd vm ld_s2
+XL2_3 s2_3 s2b_3 avdd vm ld_s2
+XL0_0 s0_0 s0b_0 avdd vm ld_tg
+XL0_1 s0_1 s0b_1 avdd vm ld_tg
+XL0_2 s0_2 s0b_2 avdd vm ld_tg
+XL0_3 s0_3 s0b_3 avdd vm ld_tg
+XL1_0 s1_0 s1b_0 avdd vm ld_tg
+XL1_1 s1_1 s1b_1 avdd vm ld_tg
+XL1_2 s1_2 s1b_2 avdd vm ld_tg
+XL1_3 s1_3 s1b_3 avdd vm ld_tg
+
+.tran 10p 1200n 0 40p
+
+.control
+set wr_singlescale
+set wr_vecnames
+run
+wrdata out.csv v(clk) v(acq) v(s2_0) v(s2_1) v(s2_2) v(s2_3) v(s0_0) v(s0_1) v(s0_2) v(s0_3) v(s1_0) v(s1_1) v(s1_2) v(s1_3) v(s0b_0) v(s0b_1) v(s0b_2) v(s0b_3) v(s1b_0) v(s1b_1) v(s1b_2) v(s1b_3) v(xseq.c0) i(vdvdd)
+quit
+.endc
+.end

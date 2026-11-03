@@ -72,14 +72,7 @@ def cap(name, x, y, a, b, value):
     lab(x, y + 30, b)
 
 
-T(TBN + " -- the shared ramp generator (" + SUB + ") driving four 8-bit true bottom-plate unit cells "
-  "(cell_bps: S0/S1/S2, 54.52 fF MIM, cmp_bps)\non the shared bias generator and the two FVF VDD/2 buffers. "
-  "Every cell samples its own DC level vin_i at TS, connects its bottom plate to vr_cell at TCONN and "
-  "converts:\ndout_i falls when the ramp passes vin_i; code_i = floor((t_dout_i - TR) / TCOUNT) against "
-  "floor((vin_i - 0.5 V) / LSB), LSB = 1.5 V / 256.\nRREAL / RIDEAL select the real ramp or an ideal one "
-  "(RAMP_REAL in case.spice): the difference is the ramp generator's own contribution.\n"
-  "Timeline, measures, analysis: tb_ramp_adc4_ctl.inc. run.sh netlists this drawing and simulates it.",
-  60, -1500, 0.32)
+T(TBN.upper() + "  -  " + SUB + " driving four 8-bit bottom-plate unit cells", 60, -1420, 0.7)
 
 # code block: models and the blocks the primitive symbols name
 code = ("* models (typical) and the blocks behind the primitive symbols, by path\n"
@@ -116,7 +109,7 @@ out.append("C {../ramp_gen/ref/midrail_ref/midref_b.sym} 520 -240 0 0 {name=XVBL
 lab(600, -240, "vbl"); lab(440, -240, "pbias", right=False); lab(520, -300, "vdd_bias"); lab(520, -180, "0")
 
 # ---- the ramp generator and the selector
-T("the ramp generator (DUT) and the real / ideal selector", 800, -900, 0.4, 13)
+T("ramp generator (DUT), real / ideal selector", 800, -900, 0.4, 13)
 out.append("C {%s.sym} 1000 -700 0 0 {name=XRG}" % SUB)
 lab(1120, -700, "vramp"); lab(880, -700, "rst", right=False); lab(880, -760, "vrlo", right=False)
 lab(880, -640, "pbias_r", right=False); lab(1000, -820, "vdd_ramp"); lab(1000, -580, "0")
@@ -132,14 +125,14 @@ res("RREAL", 1240, -700, "vramp", "vr_cell", "{RSEL_REAL}")
 res("RIDEAL", 1240, -460, "videal", "vr_cell", "{RSEL_IDEAL}")
 
 # ---- shared switch controls and clock
-T("switch controls (HIGH = closed, shared by the four cells) and the count clock", 800, -300, 0.4, 13)
+T("switch controls and count clock", 800, -300, 0.4, 13)
 vsrc("VS2", 820, -160, "s2", "0", "PWL(0 0 {TPWR} {VDD} {TS} {VDD} {TS+TEDGE} 0)")
 vsrc("VS0", 940, -160, "s0", "0", "PWL(0 0 {TPWR} {VDD} {TISO} {VDD} {TISO+TEDGE} 0)")
 vsrc("VS1", 1060, -160, "s1", "0", "PWL(0 0 {TCONN} 0 {TCONN+TEDGE} {VDD})")
 vsrc("VCLK", 1180, -160, "clk", "0", "PULSE(0 {VDD} {TR} {TEDGE} {TEDGE} {TCOUNT/2-TEDGE} {TCOUNT})")
 
 # ---- four cells
-T("four unit cells: each samples its own level vin_i and trips when the ramp passes it", 1500, -900, 0.4, 13)
+T("four unit cells", 1500, -900, 0.4, 13)
 for i in range(4):
     x, y = 1700 + 520 * i, -600
     out.append("C {../ramp_gen/ref/unit_cell_bps/cell_bps.sym} %d %d 0 0 {name=XC%d}" % (x, y, i))

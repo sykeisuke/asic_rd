@@ -1,0 +1,22 @@
+{
+ "n_stage": 22,
+ "delay_cell": "gf180mcu_as_sc_mcu7t3v3__dlybuff_2",
+ "gap_min_ns": 5.0,
+ "gap_margin_ns": 0.25,
+ "n_probe": [
+  8,
+  24
+ ],
+ "binding": {
+  "corner": "ff",
+  "temp": 0,
+  "vdd": 3.6,
+  "gap": "g20_min_ns",
+  "a_ns": 0.09206359335765923,
+  "b_ns_per_cell": 0.24407674303896995
+ },
+ "b_ns_per_cell_range": [
+  0.24407674303896995,
+  0.4853876256917784
+ ]
+}

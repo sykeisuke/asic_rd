@@ -78,8 +78,6 @@ T {16.5 uA} 625 -722 0 0 0.28 0.28 {layer=4}
 T {16.5 uA} 150 -452 0 0 0.28 0.28 {layer=4}
 T {16.5 uA} 600 -452 0 0 0.28 0.28 {layer=4}
 T {37 uA*} 1100 -760 0 0 0.28 0.28 {layer=4}
-T {(VBL, VDD/2)} 150 -660 0 0 0.3 0.3 {}
-T {(MIM top plate)} 705 -662 0 0 0.3 0.3 {}
 T {PMOS 5T OTA} 320 -412 0 0 0.4 0.4 {}
 T {starved inverter} 760 -412 0 0 0.4 0.4 {}
 T {output inverter} 1000 -412 0 0 0.4 0.4 {}
@@ -202,36 +200,5 @@ N 40 -790 40 -820 {lab=vdd}
 C {devices/lab_pin.sym} 40 -820 0 1 {name=lv4_2 sig_type=std_logic lab=vdd}
 N 40 -760 80 -760 {lab=vdd}
 C {devices/lab_pin.sym} 80 -760 0 1 {name=lv4_3 sig_type=std_logic lab=vdd}
-T {XREFP  pbias diode  1 / 0.28 um
-(current in: icmp_k from
-bias_gen_v2s, 3.25 uA design)} -170 -660 0 0 0.3 0.3 {layer=13}
-T {CMP_UPDT_V3D  -  comparator with its own pbias diode (Analog_top)} 140 -1315 0 0 0.7 0.7 {}
-T {The ten devices, wires and bench notes of ../comparator/comparator.sch (ADR 0015), copied by
-analog_top_sch.py, plus XREFP: PMOS diode W/L = 1 / 0.28 um, drain = gate = ibias. bias_gen_s SINKS
-icmp_k from ibias, so ibias is a CURRENT input; its diode voltage biases XTAIL (11 fingers) and XBST (5).
-Pins (subckt order, = the symbol's): inp inn ibias dout vdd vss. The old no-connect ports clk / nbias are gone.
-dout is HIGH while inn < inp and falls when inn (the cell's bot plate) rises through inp (vbl).
-Every MOS here, XREFP included, uses the PDK symbol's S/D junction geometry template.
-Currents next to the devices: design values in THIS macro, I_B = icmp_k = 3.25 uA (1.68 x the comparator's
-1.93 uA sizing bias, ADR 0017), the same as on ../comparator/comparator.sch (* during tracking).} 160 -1240 0 0 0.4 0.4 {}
-T {Design currents in this macro (I_B = 3.25 uA)} 1350 -865 0 0 0.5 0.5 {}
-T {I_B = icmp_k = 3.25 uA into XREFP: bias_gen_s's comparator sink, sized 1.68 x the comparator's
-   1.93 uA sizing bias for its worst untrimmed PVT cell (ADR 0017).  Branches: the comparator's sizing
-   record x the same ratio (../comparator/intent.py), as on comparator.sch and the CPAD slide.
-
-XTAIL            11 x 1 um, L 0.28      33 uA
-XINP / XINN      12 x 1 um, L 0.32      16.5 uA each
-XLOADD / XLOADM  1 x 0.5 um, L 0.36     16.5 uA each
-XBST             5 x 1 um, L 0.28       16 uA*  (starved inverter)
-XBUF4 / XBUF3    1 x 1 / 1 x 0.5 um     37 uA*  (output inverter)
-   * during tracking.  XBUF4 is not a sized current: its crowbar as ngspice gives it.
-Static power converting (design): 3.3 V x (3.25 + 33) uA = 120 uW (diode + tail).
-
-Simulated static power: converting 107-110 uW, tracking 285 uW in this macro (pwr record, typical);
-   converting <= 238 uW over bias_gen's 135 PVT cells (comparator/gain_pvt.py).
-The op record puts the tail ~10 % under the design (L 0.28 um channel-length modulation;
-   check_intent.py reports it; gm/Id, gds, Vds - Vdsat per device: the op table on analog_top.sch).} 1350 -830 0 0 0.35 0.35 {}
-L 4 1330 -880 2461 -880 {}
-L 4 2461 -880 2461 -474 {}
-L 4 2461 -474 1330 -474 {}
-L 4 1330 -474 1330 -880 {}
+T {3.25 uA} -120 -800 0 0 0.28 0.28 {layer=4}
+T {COMPARATOR_D  -  comparator + pbias diode XREFP (current input ibias)} 140 -1000 0 0 0.6 0.6 {}

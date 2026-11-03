@@ -21,8 +21,4 @@ C {devices/iopin.sym} 160 -260 0 1 {name=pvss lab=vss}
 C {devices/ipin.sym} 160 -420 0 0 {name=pd lab=d}
 C {devices/ipin.sym} 160 -380 0 0 {name=pclk lab=clk}
 C {devices/opin.sym} 640 -420 0 0 {name=pq lab=q}
-T {latch: the clocked latch after comparator, from the frozen library gf180mcu_as_sc_mcu7t3v3} 100 -700 0 0 0.5 0.5 {}
-T {q = d at the FALLING edge of clk (the 20 MHz count clock). One cell, dfxtn_2: static master-slave,
-26 devices, 59.27 um2. No output buffer: its own stage drives 50 fF in 0.20 ns (0.27 ns at ss 85 C).
-VNW = vdd, VPW = vss. The netlist needs the library: .include /foss/pdk_libs/gf180mcuD/libs.ref/
-gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice (make pdk-libs).} 100 -650 0 0 0.3 0.3 {}
+T {LATCH  -  negative-edge flip-flop gf180mcu_as_sc_mcu7t3v3__dfxtn_2} 100 -700 0 0 0.6 0.6 {}

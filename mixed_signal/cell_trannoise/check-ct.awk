@@ -10,7 +10,11 @@
 #   complete     every noisy conversion: armed at TR, one q fall, a dout fall
 #   capture      every q fell on Clk or Clk+1, no other edge
 #   match        dout before Clk <=> q on Clk, for every conversion more than 1 ns from Clk
-#   share        the share on Clk+1 agrees with dout's share after Clk within 3 standard errors
+#   share        the share on Clk+1 agrees within 3 standard errors with dout's share after
+#                the latch's sampling instant (its setup before Clk, measured at the other
+#                level); dout's share after Clk itself is reported (2026-10-30: at c16 the
+#                noiseless decision sat 0.42 ns before Clk, inside the ~0.5 ns setup, and
+#                the share after Clk missed by 0.067 against 0.062)
 #   floor        noiseless spread <= 0.1 x the noisy sigma
 #   total        sigma <= 0.25 LSB: the noise share of the ENOB-7 budget (ADR 0013)
 #   groups       the four blocks alone, added in power, agree with all-on within 3 standard errors
@@ -33,7 +37,9 @@ END {
         printf "REPORT: %s: dout crossed VDD/2 more than once in %d of %d conversions (the latch took the first)\n", L[i], v[t "dout_chatter"], v[t "conversions"]
         ok(v[t "q_other_edge"] == 0, sprintf("%s capture: q on Clk %d, on Clk+1 %d, on another edge %d", L[i], v[t "q_on_clk"], v[t "q_on_clk1"], v[t "q_other_edge"]))
         ok(v[t "match_mismatch_outside"] == 0, sprintf("%s match: dout before Clk <=> q on Clk in every conversion more than 1 ns from Clk (%d mismatches outside, %d in all, %d conversions within 1 ns; best boundary %+.3f ns with %d)", L[i], v[t "match_mismatch_outside"], v[t "match_mismatch"], v[t "match_near_edge"], v[t "match_boundary_ns"], v[t "match_boundary_mismatch"]))
-        ok(abs(v[t "frac_clk1"] - v[t "frac_clk1_dout"]) <= 3 * v[t "frac_clk1_se"], sprintf("%s share on Clk+1 %.3f vs dout after Clk %.3f (3 se %.3f); Gaussian %.3f", L[i], v[t "frac_clk1"], v[t "frac_clk1_dout"], 3 * v[t "frac_clk1_se"], v[t "frac_clk1_gauss"]))
+        if (has[t "frac_clk1_dout_lat"])
+            ok(abs(v[t "frac_clk1"] - v[t "frac_clk1_dout_lat"]) <= 3 * v[t "frac_clk1_se"], sprintf("%s share on Clk+1 %.3f vs dout after the latch's instant (%+.3f ns from Clk, the other level's) %.3f (3 se %.3f); after Clk %.3f, Gaussian %.3f", L[i], v[t "frac_clk1"], v[t "frac_clk1_lat_ns"], v[t "frac_clk1_dout_lat"], 3 * v[t "frac_clk1_se"], v[t "frac_clk1_dout"], v[t "frac_clk1_gauss"]))
+        else { print "FAIL: " L[i] ": no latch-instant share"; bad++ }
         ok(v[t "floor_over_sigma"] <= 0.1, sprintf("%s numerical floor %.4f LSB = %.3f x sigma (<= 0.1)", L[i], v[t "floor_lsb"], v[t "floor_over_sigma"]))
         ok(v[t "sigma_lsb"] <= 0.25, sprintf("%s total transient noise %.4f +- %.4f LSB (<= 0.25)", L[i], v[t "sigma_lsb"], v[t "sigma_ci95_lsb"]))
         if (has[t "groups_rss_over_total"])
@@ -48,6 +54,17 @@ END {
         ok(abs(v["ct_tol_dmean_lsb"]) <= v["ct_tol_dmean_tol_lsb"], sprintf("reltol: c240 mean decision at 2e-7 - 1e-6 %+.4f LSB (tol %.4f; %d conversions)", v["ct_tol_dmean_lsb"], v["ct_tol_dmean_tol_lsb"], v["ct_tol_conversions"]))
         ok(abs(v["ct_tol_sigma_ratio"] - 1) <= v["ct_tol_ratio_tol"], sprintf("reltol: c240 sigma at 2e-7 / 1e-6 x%.3f (tol %.3f)", v["ct_tol_sigma_ratio"], v["ct_tol_ratio_tol"]))
     } else { print "FAIL: reltol: no 2e-7 result"; bad++ }
+    # kick: the plate after a decision and the clock edge that follows it (ct_kick.py;
+    # ngspice, noiseless; README finding 6). Gate: the net step the edge leaves on the
+    # shared ramp node <= 0.01 LSB [A: a tenth of the 0.1 LSB crosstalk allocation]. The
+    # rest is reported; the two controls (clock held: no edge; latch D decoupled: no path)
+    # attribute the drift to the comparator's own settling and the spike to the edge.
+    if (has["ct_kick_nom_pk_mv"]) {
+        ok(abs(v["ct_kick_nom_vramp_step_lsb"]) <= 0.01, sprintf("kick: net step on vramp from the clock edge after the decision %+.5f LSB (%+.2f uV; <= 0.01)", v["ct_kick_nom_vramp_step_lsb"], v["ct_kick_nom_vramp_step_uv"]))
+        printf "REPORT: kick: edge %.1f ns after the decision; plate %+.3f mV above its line before it (decision kick), spike to %+.3f mV at the edge, drift %+.3f mV by +25 ns; dout glitch %.3f V; plate peak %+.3f mV at td + %.1f ns, %+.3f mV at td + 50 ns\n", v["ct_kick_nom_tedge_minus_td_ns"], v["ct_kick_nom_dec_mv"], v["ct_kick_nom_pk_mv"], v["ct_kick_nom_drift_mv"], v["ct_kick_nom_dout_glitch_v"], v["ct_kick_nom_plate_max_mv"], v["ct_kick_nom_t_plate_max_minus_td_ns"], v["ct_kick_nom_dev_td50_mv"]
+        printf "REPORT: kick: clock held (no edge): spike %+.3f mV, drift %+.3f mV, peak at td + %.1f ns, dout glitch %.3f V; latch D decoupled: spike %+.3f mV, drift %+.3f mV, peak at td + %.1f ns, dout glitch %.3f V\n", v["ct_kick_clkhold_pk_mv"], v["ct_kick_clkhold_drift_mv"], v["ct_kick_clkhold_t_plate_max_minus_td_ns"], v["ct_kick_clkhold_dout_glitch_v"], v["ct_kick_ddec_pk_mv"], v["ct_kick_ddec_drift_mv"], v["ct_kick_ddec_t_plate_max_minus_td_ns"], v["ct_kick_ddec_dout_glitch_v"]
+        printf "REPORT: kick: comparator nodes at the edge, spike / drift by +25 ns (mV): outa %.2f / %+.2f, outb %.2f / %+.2f, bst %.2f / %+.2f, tail %.2f / %+.2f; latch master in %.0f / %+.0f, out %.0f / %+.0f\n", v["ct_kick_nom_outa_spike_mv"], v["ct_kick_nom_outa_drift_mv"], v["ct_kick_nom_outb_spike_mv"], v["ct_kick_nom_outb_drift_mv"], v["ct_kick_nom_bst_spike_mv"], v["ct_kick_nom_bst_drift_mv"], v["ct_kick_nom_tail_spike_mv"], v["ct_kick_nom_tail_drift_mv"], v["ct_kick_nom_ffin_spike_mv"], v["ct_kick_nom_ffin_drift_mv"], v["ct_kick_nom_ffm_spike_mv"], v["ct_kick_nom_ffm_drift_mv"]
+    } else print "REPORT: kick: no clock-edge kick result (STEPS without kick)"
     if (bad) { printf "FAIL: cell_trannoise: %d of %d checks failed\n", bad, n; exit 1 }
     printf "PASS: cell_trannoise: %d checks\n", n
 }

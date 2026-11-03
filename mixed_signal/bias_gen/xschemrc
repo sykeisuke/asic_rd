@@ -1,0 +1,15 @@
+# xschemrc for mixed_signal/bias_gen: the PDK's rc, then this folder and the
+# comparator block appended to the symbol path. The testbench drawings
+# (tb_*.sch, by tb_sch.py) place bias_gen.sym (this folder; xschem descends
+# into bias_gen.sch) and, in tb_cmp.sch and tb_xtalk.sch, comparator.sym
+# (../comparator; xschem descends into comparator.sch). Without a path entry
+# xschem cannot find a symbol and SILENTLY drops the instance from the
+# netlist, so tb_sch.py check counts every instance of every netlist.
+# Blocks are read by path, never copied.
+#
+# xschem reads ./xschemrc by itself when started in this directory;
+# schematic.sh and xtb.py pass it explicitly with --rcfile.
+source $env(PDK_ROOT)/gf180mcuD/libs.tech/xschem/xschemrc
+set BG_DIR [file normalize [file dirname [info script]]]
+append XSCHEM_LIBRARY_PATH :$BG_DIR
+append XSCHEM_LIBRARY_PATH :[file normalize [file join $BG_DIR .. comparator]]

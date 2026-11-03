@@ -1,12 +1,15 @@
 """intent.py -- the design-intent currents written on the Analog_top drawings
-(analog_top.sch, atop_cell.sch, comparator_d.sch, ramp_simple_d.sch,
-bias_gen_s.sch), the one source for them; check_intent.py compares them with
+(analog_top.sch, atop_cell.sch, comparator_d.sch, bias_gen_s.sch), the one
+source for them; check_intent.py compares them with
 the op record (data/op_point.csv) in the op phase.
 
 Bias outputs: bias_gen_s as sized (ADR 0017). icmp_k = 1.68 x the
 comparator's design bias I_B (../comparator/intent.py, 1.93 uA): the
 factor that keeps its worst untrimmed corner above the comparator's delay
-requirement. iramp comes from a sink of the same size, so it equals icmp.
+requirement. iramp comes from a sink of the same size, so it equals icmp; it
+biases the I/C source ../ic_source (its own diode, v6, ADR 0026), whose output,
+the ramp current C_UNIT x V_REF x F_CLK, is RAMP_UA (../ramp_simple's sizing
+record: the design current every ramp bench reads).
 
 Comparator in the macro: its design currents (the sizing record at 1.93 uA)
 scaled to I_B = 3.25 uA: tail 33, pair / loads 16.5 each, starved inverter 16
@@ -16,6 +19,7 @@ and pair (L 0.28 um channel-length modulation): check_intent.py reports the
 deviation and fails only beyond the comparator's sanity bound CMP.TOL.
 """
 import importlib.util
+import json
 import os
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -30,12 +34,16 @@ K_CMP = 1.68                     # bias_gen_s comparator output / I_B (ADR 0017)
 
 BIAS_UA = {                      # bias_gen_s outputs, design
     "icmp": 3.25,                # sink into each comparator's XREFP = K_CMP x 1.93
-    "iramp": 3.25,               # sink into the ramp's XRD (same sink device as icmp)
+    "iramp": 3.25,               # sink into ic_source's bias diode (same sink device as icmp)
     "ivref": 11.2,               # source into midref_buf ib (0.90 x its 12.36 uA bench bias)
     "ivrlo": 1.53,               # source into vrlo_ref ib (XOL: 6/44 of ivref)
 }
 assert abs(BIAS_UA["icmp"] / (K_CMP * CMP.I_B_UA) - 1) < 0.01
 assert BIAS_UA["icmp"] == CMP.MACRO_I_B_UA, "the comparator sheet quotes CMP.MACRO_I_B_UA"
+
+# the ramp current out of ic_source into ramp_simple (I = C_UNIT x V_REF x F_CLK), uA
+RAMP_UA = round(json.load(open(os.path.join(_HERE, "..", "ramp_simple", "data", "sizing.json")))
+                ["predicted"]["i_ramp_ua"], 4)
 
 CMP_UA = dict(CMP.MACRO_UA)       # the one design allocation: ../comparator/intent.py MACRO_UA
 

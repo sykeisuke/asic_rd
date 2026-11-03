@@ -3,7 +3,7 @@
 # run.sh calls it through container.sh). Prints only `name = value`, PASS:/FAIL:
 # and REPORT: lines, then check-ct.awk's verdicts.
 #
-#   STEPS   subset of: models align ngspice sim reduce   (default all)
+#   STEPS   subset of: models schematic align ngspice kick sim reduce   (default all)
 #   JOBS    parallel simulator runs (12)                 FORCE=1   re-simulate cached runs
 #   NSEED (12)  NREC_LO (48)  NREC_HI (16)  NSEED_G (4)  NSEED_BAND (4)  NSEED_TOL (4)
 #   TWARM (150e-6)  FMAX (2e9)  RELTOL (1e-6)  NOISE_BLOCKS ('ramp cmp ff sw')
@@ -14,6 +14,14 @@
 # models   work/models.inc (ct_models.py) and the translated subcircuits:
 #          net_drawn.inc (as drawn, noiseless references), net_all.inc (every group
 #          noisy, NF1 finger expansion), net_only_<g>.inc (group g alone noisy)
+# schematic  tb_sch.py -> tb_cell_tn.sch, the ngspice bench drawn (sources with their
+#          tb_params.inc expressions, XR through ../ramp_simple/ramp_simple.sym, XC through
+#          ../Analog_top/atop_cell.sym, CQ, the deck's cards); xschem netlists it through
+#          xschemrc (the hierarchy descends into the blocks' own drawings); ct_xtb.py: the
+#          top level carries exactly the instances of a deck ct_bench.py writes at POS 16.5
+#          NREC 1, every subcircuit emitted equals ../Analog_top/analog_top.spice's; render
+#          assets/tb_cell_tn_xschem.png / .svg; ngspice runs the xschem netlist and the hand
+#          deck (one record) and ct_extract.py's decision and q fall times agree within 1 ns
 # align    per level (nominal mid-code 16.5, 240.5): a noiseless VACASK run, then
 #          ct_align.py moves POS so that the noiseless decision lands on a falling
 #          clock edge (work/align.txt). Every later run uses the aligned POS.
@@ -44,7 +52,7 @@ set -uo pipefail
 B=/foss/designs/mixed_signal/cell_trannoise
 cd "$B"
 export PYTHONPATH="/foss/tools/vacask/lib/vacask/python:${PYTHONPATH:-}"
-STEPS=${STEPS:-'models align ngspice sim reduce'}
+STEPS=${STEPS:-'models schematic align ngspice kick sim reduce'}
 JOBS=${JOBS:-12}; NSEED=${NSEED:-12}; NREC_LO=${NREC_LO:-48}; NREC_HI=${NREC_HI:-16}
 NSEED_G=${NSEED_G:-4}; NSEED_BAND=${NSEED_BAND:-4}; NSEED_TOL=${NSEED_TOL:-4}
 TWARM=${TWARM:-150e-6}; FMAX=${FMAX:-2e9}; RELTOL=${RELTOL:-1e-6}
@@ -72,7 +80,50 @@ if has models; then
             || { cat "work/net_only_$g.txt"; exit 1; }
     done
     sed 's/^/REPORT: /' work/net_all.txt
-    echo "PASS: translated ramp_simple_d + atop_cell (sw_s0/1/2, comparator_d, latch = dfxtn_2) from ../Analog_top/analog_top.spice"
+    echo "PASS: translated ramp_simple + atop_cell (sw_s0/1/2, comparator_d, latch = dfxtn_2) from ../Analog_top/analog_top.spice"
+fi
+if has schematic; then
+    python3 tb_sch.py || { echo "FAIL: schematic: tb_sch.py"; st=1; }
+    NET=work/tb_cell_tn.spice
+    rm -f "$NET"
+    xschem --rcfile xschemrc -b -q -n -s -o work tb_cell_tn.sch > work/tb_cell_tn_xschem.txt 2>&1
+    if [ ! -s "$NET" ]; then
+        echo "FAIL: schematic: xschem produced no netlist for tb_cell_tn.sch"; st=1
+    else
+        echo "Netlist: $B/$NET"
+        for d in work/sch_ref work/sch_ng; do rm -rf "$d"; mkdir -p "$d"; cp work/.spiceinit "$d/"; done
+        python3 ct_bench.py ngspice work/sch_ref/tb.spice POS=16.5 NREC=1
+        python3 ct_xtb.py instances work/sch_ref/tb.spice "$NET" || st=1
+        python3 ct_xtb.py subckts ../Analog_top/analog_top.spice "$NET" || st=1
+        rm -f assets/tb_cell_tn_xschem.png assets/tb_cell_tn_xschem.svg
+        timeout 120 xvfb-run -a -s "-screen 0 2400x1400x24" \
+            xschem --rcfile xschemrc --tcl "set dark_colorscheme 0" \
+            --command "xschem zoom_full; xschem print png assets/tb_cell_tn_xschem.png 2400 1400; xschem print svg assets/tb_cell_tn_xschem.svg; xschem exit closewindow force" \
+            tb_cell_tn.sch > work/tb_cell_tn_print.txt 2>&1
+        if [ -s assets/tb_cell_tn_xschem.png ] && [ -s assets/tb_cell_tn_xschem.svg ]; then
+            echo "PASS: schematic: xschem render assets/tb_cell_tn_xschem.png / .svg"
+            echo "Figure: $B/assets/tb_cell_tn_xschem.png"
+        else
+            echo "FAIL: schematic: xschem headless print produced no png/svg for tb_cell_tn.sch"; st=1
+        fi
+        # the equivalence proof: ngspice on both netlists, one record at POS 16.5 (the
+        # drawing includes tb_params.inc by path; its copy here sets NREC=1)
+        sed 's/^\.param NREC=.*/.param NREC=1/' tb_params.inc > work/sch_ng/tb_params.inc
+        sed "s|^\.include .*/cell_trannoise/tb_params.inc|.include $B/work/sch_ng/tb_params.inc|" "$NET" > work/sch_ng/tb.spice
+        grep -q "work/sch_ng/tb_params.inc" work/sch_ng/tb.spice || { echo "FAIL: schematic: the xschem netlist has no .include of tb_params.inc to redirect"; st=1; }
+        t0=$(date +%s)
+        ( cd work/sch_ref && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: schematic: ngspice on the hand deck (work/sch_ref)"; st=1; }
+        ( cd work/sch_ng && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: schematic: ngspice on the xschem netlist (work/sch_ng)"; st=1; }
+        echo "sch_ngspice_s = $(( $(date +%s) - t0 ))"
+        python3 ct_extract.py work/sch_ref/tb.raw work/sch_ref/r.csv POS=16.5 NREC=1 > /dev/null \
+            || { echo "FAIL: schematic: ct_extract.py on the hand deck's raw"; st=1; }
+        python3 ct_extract.py work/sch_ng/tb_cell_tn.raw work/sch_ng/r.csv POS=16.5 NREC=1 > /dev/null \
+            || { echo "FAIL: schematic: ct_extract.py on the xschem netlist's raw"; st=1; }
+        if [ -s work/sch_ref/r.csv ] && [ -s work/sch_ng/r.csv ]; then
+            python3 ct_xtb.py compare work/sch_ref/r.csv work/sch_ng/r.csv || st=1
+        fi
+        rm -f work/sch_ref/tb.raw work/sch_ng/tb_cell_tn.raw
+    fi
 fi
 for f in work/models.inc work/net_drawn.inc work/net_all.inc; do
     [ -s "$f" ] || { echo "FAIL: $f missing; run the models step"; exit 1; }
@@ -116,6 +167,30 @@ if has ngspice; then
         python3 ct_extract.py "$d/tb.raw" "$d/r.csv" POS=$pos NREC=4 > /dev/null || { echo "FAIL: ct_extract ngspice $tag"; st=1; }
         rm -f "$d/tb.raw"
     done
+fi
+
+# kick: the clock-edge kickback after a decision (ct_kick.py), three noiseless ngspice
+# runs of one record at the aligned c16 level: as is (nom), the clock held low after
+# the decision's edge (clkhold: no rising edge, so the latch master never switches),
+# and the latch's D decoupled from dout (ddec). Lines go to work/kick.txt, which the
+# reduce step appends to the summary.
+if has kick; then
+    pos=$(apos c16); k=$(awk '$1 == "c16" { print $3 }' work/align.txt)
+    stop=$(python3 -c "
+import sys; sys.path.insert(0, '.')
+from ct_common import load_params, fall_edge
+P = load_params({'POS': $pos, 'NREC': 1})
+print('%.12g' % (P['TFIRST'] + P['TRREL'] + fall_edge(P, $k) + 5e-9))")
+    : > work/kick.txt
+    for c in "nom" "clkhold CLKSTOP=$stop" "ddec LATDEC=1"; do
+        set -- $c; tag=$1; shift; d=work/kick_$tag
+        rm -rf "$d"; mkdir -p "$d"; cp work/.spiceinit "$d/"
+        python3 ct_bench.py ngspice "$d/tb.spice" POS=$pos NREC=1 "$@"
+        ( cd "$d" && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: ngspice kick run $tag"; st=1; }
+        python3 ct_kick.py "$tag" "$d/tb.raw" POS=$pos NREC=1 "$@" >> work/kick.txt || { echo "FAIL: ct_kick.py $tag"; st=1; }
+        rm -f "$d/tb.raw"
+    done
+    cat work/kick.txt
 fi
 
 lost() {   # REPORT every run directory with a VACASK console but no result
@@ -197,6 +272,7 @@ fi
 
 if has reduce; then
     python3 ct_reduce.py > work/summary.txt || st=1
+    [ -s work/kick.txt ] && cat work/kick.txt >> work/summary.txt
     cat work/summary.txt
     awk -f check-ct.awk work/summary.txt || st=1
 fi
