@@ -39,7 +39,7 @@ vclk (clk 0) vsource dc=@VDD@
 vinp (inp 0) vsource dc=@VLEVEL@
 vramp (inn 0) vsource type="pulse" val0=@VLO@ val1=@VHI@ delay=@TDELAY@ rise=@TRISE@ width=@TWIDTH@ fall=@TFALL@ period=@TPER@
 
-xdut (inp inn dout clk vdd 0 nbias pbias) cmp
+xdut (inn inp dout clk vdd 0 nbias pbias) comparator
 cload (dout 0) capacitor c=@CLOAD@
 
 control

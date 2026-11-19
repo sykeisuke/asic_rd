@@ -1,17 +1,16 @@
-* Input-referred noise of one candidate at its decision point (size_v3.py,
-* stage B). As ../comparator_bkp/comparator_updt_v2/tb_noise.spice: dout fed back to inn
-* through a 1 TH inductor parks the OTA at its own trip; CINN (1 F)
-* AC-grounds inn; the reference is the inp source, at VBL = VDD/2.
+* Input-referred noise at the decision point (adapted from
+* comparator_bkp/comparator_10dev/tb_nz.spice). dout is fed back through a 1 TH inductor to the
+* pin on which it gives NEGATIVE feedback, which parks the OTA at its own trip;
+* a 1 F capacitor AC-grounds that pin; the AC / noise source is the other pin,
+* at VREF = VDD/2. The hookup (bench.py NZNET) per variant:
+*   base  VSIG inp (DC VCM, AC 1), LFB dout -> inn, CFB inn
+*   sw    VSIG inn (DC VCM, AC 1), LFB dout -> inp, CFB inp   (dout falls as inp rises)
 *
-*   nz_own_vin   OUTPUT noise on outa from 1 kHz to 10 GHz (the OTA's own pole
-*                band-limits it) divided by the DC gain: the input-referred
-*                rms over the comparator's own band, thermal + 1/f. The gated
-*                number (user, 2026-10-06: < 1.2 mV at the pins).
-*   nz_lo_vin    the same from 1 kHz to 100 kHz: the flicker-dominated part
-*   nz_ugb_vin   input-referred spectrum integrated 1 kHz .. unity-gain
-*                frequency: a pessimistic bound, reported
-*
-* TEMPLATE: size_v3.py replaces @DUT@ @IREF@ @REFP@ @CLOAD@.
+*   nz_own_vin   OUTPUT noise on outa from 1 kHz to 10 GHz divided by the DC gain
+*                vsig -> outa: input-referred rms over the OTA's own band,
+*                thermal + 1/f (the gated number, < 1.2 mV at the pins)
+*   nz_lo_vin    the same, 1 kHz .. 100 kHz (flicker part)
+*   nz_ugb_vin   input-referred spectrum 1 kHz .. unity-gain frequency (bound)
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
 .include @DUT@
@@ -30,11 +29,7 @@ IREFP pbias 0 {IREF}
 @REFP@
 VCLK clk 0 {VDD}
 
-VINP inp 0 DC @VCM@ AC 1
-CINN inn 0 1
-LFB dout inn 1T
-
-XDUT inp inn dout clk vdd 0 nbias pbias cmp
+@NZNET@
 CLOAD dout 0 @CLOAD@
 
 .control
@@ -49,13 +44,13 @@ meas ac ota_ugbw_hz when vm(xdut.outa)=1 fall=1
 set g = $&ota_gain_vv
 set ugb = $&ota_ugbw_hz
 set fp = $&ota_pole_hz
-noise v(xdut.outa) vinp dec 20 1k 10G
+noise v(xdut.outa) vsig dec 20 1k 10G
 let nz_own_vin = onoise_total / $g
 set s_own = $&nz_own_vin
-noise v(xdut.outa) vinp dec 20 1k 100k
+noise v(xdut.outa) vsig dec 20 1k 100k
 let nz_lo_vin = onoise_total / $g
 set s_lo = $&nz_lo_vin
-noise v(xdut.outa) vinp dec 20 1k $ugb
+noise v(xdut.outa) vsig dec 20 1k $ugb
 let nz_ugb_vin = inoise_total
 set s_ugb = $&nz_ugb_vin
 echo "RESULT_BEGIN"

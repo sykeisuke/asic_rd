@@ -123,7 +123,7 @@ function sortk(k, n,    i, j, t) {
 
 function strip(v) { gsub(/['" \t]/, "", v); return tolower(v) }
 
-function subckt_key(text,    n, a, i, first, nodes, model, np, pk, eq, key, hasm, out) {
+function subckt_key(text,    n, a, i, first, nodes, model, np, pk, eq, key, hasm, out, mval, parv) {
     n = split(squeeze(text), a, /[ \t]+/)
     first = n + 1
     for (i = 2; i <= n; i++) if (index(a[i], "=") > 1) { first = i; break }
@@ -142,10 +142,14 @@ function subckt_key(text,    n, a, i, first, nodes, model, np, pk, eq, key, hasm
             gx[side, curname, key] = strip(substr(a[i], eq + 1)); ngx[side, curname]++
             continue
         }
-        if (key == "m") hasm = 1
+        # par: the PDK MOS symbols (792ef670) write par=@m, the model's
+        # mismatch-area multiplier; it is compared only when it is not m
+        if (key == "par") { parv = norm(substr(a[i], eq + 1)); continue }
+        if (key == "m") { hasm = 1; mval = norm(substr(a[i], eq + 1)) }
         pk[++np] = key "=" norm(substr(a[i], eq + 1))
     }
-    if (!hasm) pk[++np] = "m=1"
+    if (!hasm) { pk[++np] = "m=1"; mval = norm("1") }
+    if (parv != "" && parv != mval) pk[++np] = "par=" parv
     sortk(pk, np)
     out = ""
     for (i = 1; i <= np; i++) out = out (out == "" ? "" : " ") pk[i]

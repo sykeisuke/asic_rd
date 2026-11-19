@@ -40,7 +40,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ct_common import load_params, fall_edge  # noqa: E402
 
-WORK = os.path.join(HERE, "work")
+#- CT_HOME: where work/, data/ and assets/ live (default this block; the
+#- comparator-PEX variant of pex/run.sh keeps its own, see ct.sh)
+HOME = os.environ.get("CT_HOME") or HERE
+WORK = os.path.join(HOME, "work")
 P0 = load_params()
 TC, LSB, VDD = P0["TCOUNT"], P0["LSB"], P0["VDD"]
 LEVELS = (("c16", 16.5), ("c240", 240.5))
@@ -390,13 +393,13 @@ def figures(res):
                 % ({"c16": 16.5, "c240": 240.5}[tag], v.size, sg, sg * 50, 100 * f1, 100 * fd),
                 ha="right", va="center", fontsize=FS_T + 0.5)
     fig.text(0.06, 0.01, "One Analog_top cell (S0/S1/S2 + inverters, 54.5 fF MIM, comparator_d, dfxtn_2 latch) on ramp_simple; "
-             "VREF = VBL, VR_LO, bias currents, supplies, controls and clock ideal. VACASK transient noise, every device "
+             "VREF, VR_LO, bias currents, supplies, controls and clock ideal. VACASK transient noise, every device "
              "source (thermal + flicker), 1 kHz-%g GHz, reltol %g, %d seeds."
              % (summary.get("ct_fmax_ghz", 2), summary.get("ct_reltol", 1e-6), int(summary.get("ct_c16_seeds", 0))),
              fontsize=FS_T - 1, color=GREY)
-    os.makedirs(os.path.join(HERE, "assets"), exist_ok=True)
+    os.makedirs(os.path.join(HOME, "assets"), exist_ok=True)
     for ext in ("png", "svg"):
-        fig.savefig(os.path.join(HERE, "assets", "ct_noise." + ext), dpi=200, bbox_inches="tight")
+        fig.savefig(os.path.join(HOME, "assets", "ct_noise." + ext), dpi=200, bbox_inches="tight")
     plt.close(fig)
 
     # per-block breakdown
@@ -419,7 +422,7 @@ def figures(res):
     ax.legend(fontsize=FS_T, frameon=False)
     ax.grid(True, axis="y", color="#E6E6E6", lw=0.7)
     for ext in ("png", "svg"):
-        fig.savefig(os.path.join(HERE, "assets", "ct_groups." + ext), dpi=200, bbox_inches="tight")
+        fig.savefig(os.path.join(HOME, "assets", "ct_groups." + ext), dpi=200, bbox_inches="tight")
     plt.close(fig)
 
     # the data behind the figure (for ../cpad_talk), decimated waves
@@ -433,7 +436,7 @@ def figures(res):
             d["td_minus_tclk_" + tag] = rr["td"] - rr["tclk"]
             d["clk1_" + tag] = rr["on_clk1"]
             d["k_" + tag] = rr["k"]
-    np.savez_compressed(os.path.join(HERE, "data", "ct_noise.npz"), **d)
+    np.savez_compressed(os.path.join(HOME, "data", "ct_noise.npz"), **d)
 
 
 def main():
@@ -450,10 +453,10 @@ def main():
     band(res.get("c16", {}))
     tol(res.get("c240", {}))
     put("ct_noise_share_lsb", SHARE)
-    os.makedirs(os.path.join(HERE, "data"), exist_ok=True)
+    os.makedirs(os.path.join(HOME, "data"), exist_ok=True)
     for line in out:
         print(line)
-    json.dump(summary, open(os.path.join(HERE, "data", "ct_summary.json"), "w"), indent=1, sort_keys=True)
+    json.dump(summary, open(os.path.join(HOME, "data", "ct_summary.json"), "w"), indent=1, sort_keys=True)
     try:
         figures(res)
         print("REPORT: figures assets/ct_noise.png/.svg, assets/ct_groups.png/.svg")

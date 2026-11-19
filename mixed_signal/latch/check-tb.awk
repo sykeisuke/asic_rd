@@ -23,7 +23,7 @@ BEGIN {
         want[++n] = "^xl dout clk q dvdd 0 latch$"; dut = n
         want[++n] = "^\\.subckt latch d clk q vdd vss$"
         want[++n] = "^xff vdd vdd vss vss clk d q gf180mcu_as_sc_mcu7t3v3__dfxtn_2$"
-        want[++n] = "^xdut vbl top dout 0 vdd 0 0 pbias comparator$"; cmpi = n
+        want[++n] = "^xdut top vref dout 0 vdd 0 0 pbias comparator$"; cmpi = n
         want[++n] = "^\\.subckt comparator inp inn dout clk vdd vss nbias pbias$"
         want[++n] = "^xrefp pbias pbias vdd vdd pfet_03v3 "
         want[++n] = "^irefp pbias 0 "
@@ -32,7 +32,6 @@ BEGIN {
         want[++n] = "^rlkt top 0 1e15"
         want[++n] = "^vdd_source vdd 0 "
         want[++n] = "^vdvdd dvdd 0 "
-        want[++n] = "^vvbl vbl 0 "
         want[++n] = "^vvref vref 0 "
         want[++n] = "^vclk clk 0 pulse\\("
         want[++n] = "^vbot bot 0 pwl\\("

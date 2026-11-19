@@ -3,8 +3,8 @@
 
     python3 tb_sch.py   -> tb_op.sch, tb_kick.sch, tb_cmp.sch, tb_mc.sch, tb_noise.sch
 
-Each drawing is one bench of verify_v3.py at its nominal case (typical, 27 C,
-3.3 V, the ideal bias I_F of data/sizing_v2.json into ib): every source with
+Each drawing is one bench of verify.py at its nominal case (typical, 27 C,
+3.3 V, the ideal bias I_F of data/sizing.json into ib): every source with
 its expression, the loads and switch models, the DUT as midref_div.sym +
 midref_buf.sym wired as the wrapper `midref` of midref.spice (XD, XB: xschem
 descends into midref_div.sch / midref_buf.sch, so the testbench exercises
@@ -29,11 +29,11 @@ from pathlib import Path
 
 BLOCK = Path(__file__).resolve().parent
 sys.path.insert(0, str(BLOCK))
-import bench as B  # noqa: E402  I_F, SEED (verify_v3.py's SEED_BASE)
+import bench as B  # noqa: E402  I_F, SEED (verify.py's SEED_BASE)
 
 IF = "%.6g" % B.I_F
 IB_TXT = "I_B = %.2f uA" % (B.I_F * 1e6)
-SEED_BASE = 20261007          # verify_v3.py; draw 1 of the record is seed + 1
+SEED_BASE = 20261007          # verify.py; draw 1 of the record is seed + 1
 MODELS = (".include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice\n"
           ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical\n"
           ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical\n"
@@ -194,7 +194,7 @@ quit
 
 def tb_kick():
     s = Sch()
-    header(s, "TB_KICK  -  S2 event of one cell on the one output (vref = vbl), both charge directions")
+    header(s, "TB_KICK  -  S2 event of one cell on the one output (vref), both charge directions")
     supply_and_bias(s, "{VDD}", extra=[("VTOP0", "{TOP0}", "vtop0")])
     s.vsrc("VSNS", 630, -1130, "0", "vref", "vrefs")
     s.T("SWITCH CONTROLS", 60, -990)
@@ -310,7 +310,7 @@ def tb_cmp():
     s.mim("XCS", 1850, -650, "top", "bot")
     s.T("C_S 54.52 fF", 1890, -550, 0.3, 4)
     s.res("RLKT", 2150, -650, "1e15", "top")
-    s.part("cmp", 2500, -600, "name=XCMP", {"inp": "vref", "inn": "top", "clk": "clk", "nbias": "nbias",
+    s.part("cmp", 2500, -600, "name=XCMP", {"inp": "top", "inn": "vref", "clk": "clk", "nbias": "nbias",
                                             "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
     s.cap("CLOAD", 2750, -600, "10f", "dout")
     s.T("NEIGHBOUR: S2 closes at TK (agg 0: never)", 1500, -400)
@@ -321,7 +321,6 @@ def tb_cmp():
     s.res("RLKTA", 2400, -200, "1e15", "topa")
     s.res("RS0A", 2650, -200, "{RS0}", "botsa", "bota")
     code = MODELS + """
-.include /foss/designs/mixed_signal/comparator/comparator.spice
 .temp 27
 .param IF=%s
 .param VDD=3.3

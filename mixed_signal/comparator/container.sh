@@ -1,14 +1,8 @@
 #!/bin/sh
 # Run one command inside the pinned IIC-OSIC-TOOLS container with this block
-# as the working directory. Everything in this folder goes through here, so
-# no tool ever runs on the host.
+# as the working directory (as comparator_bkp/comparator_10dev/container.sh).
 #
-#   ./container.sh 'python3 size_v3.py'
-#   ./container.sh 'ngspice -b -o work/x.log tb_offset.spice'
-#
-# The image pin and the Docker CLI come from scripts/eda-common.sh, which is
-# sourced by path rather than copied. That script derives PROJECT_ROOT from
-# $0, which is this file when sourced, so PROJECT_ROOT is recomputed here.
+#   ./container.sh 'python3 derive.py'
 set -eu
 
 BLOCK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)

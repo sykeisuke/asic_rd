@@ -169,10 +169,6 @@ text {font-family: Sans-Serif;}
 <path class="l4" d="M191.113 116.114L191.113 118.166"/>
 <path class="l4" d="M189.06 114.061L189.06 138.691"/>
 <circle class="l4" cx="189.06" cy="126.376" r="6.15752" style="fill:none;" />
-<path class="l4" d="M259.872 117.14L261.924 117.14"/>
-<path class="l4" d="M260.898 116.114L260.898 118.166"/>
-<path class="l4" d="M258.846 114.061L258.846 138.691"/>
-<circle class="l4" cx="258.846" cy="126.376" r="6.15752" style="fill:none;" />
 <path class="l4" d="M329.657 117.14L331.71 117.14"/>
 <path class="l4" d="M330.683 116.114L330.683 118.166"/>
 <path class="l4" d="M328.631 114.061L328.631 138.691"/>
@@ -233,12 +229,12 @@ text {font-family: Sans-Serif;}
 <path class="l4" d="M747.342 159.216L747.342 241.316"/>
 <path class="l4" d="M739.132 175.636L747.342 175.636"/>
 <path class="l4" d="M739.132 187.951L747.342 187.951"/>
-<path class="l4" d="M739.132 200.266L747.342 200.266"/>
-<path class="l4" d="M739.132 212.581L747.342 212.581"/>
-<path class="l4" d="M739.132 224.896L747.342 224.896"/>
 <path class="l4" d="M813.022 181.794L821.232 181.794"/>
+<path class="l4" d="M739.132 200.266L747.342 200.266"/>
 <path class="l4" d="M780.182 151.006L780.182 159.216"/>
 <path class="l4" d="M780.182 241.316L780.182 249.526"/>
+<path class="l4" d="M739.132 212.581L747.342 212.581"/>
+<path class="l4" d="M739.132 224.896L747.342 224.896"/>
 <path class="l4" d="M911.542 157.164L977.222 157.164"/>
 <path class="l4" d="M977.222 157.164L977.222 206.424"/>
 <path class="l4" d="M911.542 206.424L977.222 206.424"/>
@@ -270,10 +266,6 @@ text {font-family: Sans-Serif;}
 <path class="l5" d="M188.034 137.665L190.087 137.665L190.087 139.717L188.034 139.717L188.034 137.665z"/>
 <path class="l5" d="M188.547 97.1279L189.574 97.1279L189.574 98.1541L188.547 98.1541L188.547 97.1279z"/>
 <path class="l5" d="M188.547 154.598L189.574 154.598L189.574 155.624L188.547 155.624L188.547 154.598z"/>
-<path class="l5" d="M257.819 113.035L259.872 113.035L259.872 115.087L257.819 115.087L257.819 113.035z"/>
-<path class="l5" d="M257.819 137.665L259.872 137.665L259.872 139.717L257.819 139.717L257.819 137.665z"/>
-<path class="l5" d="M258.332 97.1279L259.359 97.1279L259.359 98.1541L258.332 98.1541L258.332 97.1279z"/>
-<path class="l5" d="M258.332 154.598L259.359 154.598L259.359 155.624L258.332 155.624L258.332 154.598z"/>
 <path class="l5" d="M327.605 113.035L329.657 113.035L329.657 115.087L327.605 115.087L327.605 113.035z"/>
 <path class="l5" d="M327.605 137.665L329.657 137.665L329.657 139.717L327.605 139.717L327.605 137.665z"/>
 <path class="l5" d="M328.118 97.1279L329.144 97.1279L329.144 98.1541L328.118 98.1541L328.118 97.1279z"/>
@@ -353,14 +345,10 @@ text {font-family: Sans-Serif;}
 <text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(127.485, 132.818)" >{VDD}</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(100.197, 100.702)" >dvdd</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(111.197, 158.172)" >0</text>
-<text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(197.27, 122.556)" >VVBL</text>
+<text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(197.27, 122.556)" >VVREF</text>
 <text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(197.27, 132.818)" >{VDD/2}</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(175.982, 100.702)" >vbl</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(171.982, 100.702)" >vref</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(180.982, 158.172)" >0</text>
-<text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(267.056, 122.556)" >VVREF</text>
-<text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(267.056, 132.818)" >{VDD/2}</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(241.767, 100.702)" >vref</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(250.767, 158.172)" >0</text>
 <text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(336.841, 122.556)" >VCLK</text>
 <text fill="#222222"  xml:space="preserve" font-size="4.26921" transform="translate(336.841, 132.818)" >PULSE(0 {VDD} {TCOUNT-TCE/2} {TCE} {TCE} {TCOUNT/2-TCE} {TCOUNT})</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(314.552, 100.702)" >clk</text>
@@ -412,16 +400,16 @@ text {font-family: Sans-Serif;}
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(632.533, 227.957)" >0</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(749.805, 178.988)" >inp</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(749.805, 191.303)" >inn</text>
+<text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(798.244, 185.145)" >dout</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(749.805, 203.618)" >clk</text>
-<text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(749.805, 215.933)" >nbias</text>
-<text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(749.805, 228.248)" >pbias</text>
-<text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(800.707, 185.145)" >dout</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(782.645, 159.284)" >vdd</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(782.645, 248.773)" >vss</text>
+<text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(749.805, 215.933)" >nbias</text>
+<text fill="#222222"  xml:space="preserve" font-size="6.40382" transform="translate(749.805, 228.248)" >pbias</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.53842" transform="translate(747.342, 152.191)" >XDUT</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.53842" transform="translate(775.256, 204.735)" >comparator</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(709.633, 178.697)" >vbl</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(707.633, 191.012)" >top</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.53842" transform="translate(751.447, 237.575)" >comparator</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(707.633, 178.697)" >top</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(705.633, 191.012)" >vref</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(714.633, 203.327)" >0</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(714.633, 215.642)" >0</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="7.0442" transform="translate(701.633, 227.957)" >pbias</text>
@@ -481,7 +469,7 @@ text {font-family: Sans-Serif;}
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 495.034)" >let half = $&amp;cs_vdd / 2</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 502.379)" >let hi90 = 0.9 * $&amp;cs_vdd</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 509.724)" >let lo10 = 0.1 * $&amp;cs_vdd</text>
-<text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 517.069)" >meas tran t_cross when v(top)=v(vbl) rise=1 td=$&amp;cs_tr</text>
+<text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 517.069)" >meas tran t_cross when v(top)=v(vref) rise=1 td=$&amp;cs_tr</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 524.414)" >meas tran t_dout when v(dout)=$&amp;half fall=1 td=$&amp;cs_tr</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 531.76)" >meas tran t_f90 when v(dout)=$&amp;hi90 fall=1 td=$&amp;cs_tr</text>
 <text fill="#222222"  xml:space="preserve" font-size="6.40382" style="font-family:Monospace;" transform="translate(515.409, 539.105)" >meas tran t_f10 when v(dout)=$&amp;lo10 fall=1 td=$&amp;cs_tr</text>
@@ -510,8 +498,6 @@ text {font-family: Sans-Serif;}
 <path class="l1" d="M119.275 138.691L119.275 155.111"/>
 <path class="l1" d="M189.06 97.641L189.06 114.061"/>
 <path class="l1" d="M189.06 138.691L189.06 155.111"/>
-<path class="l1" d="M258.846 97.641L258.846 114.061"/>
-<path class="l1" d="M258.846 138.691L258.846 155.111"/>
 <path class="l1" d="M328.631 97.641L328.631 114.061"/>
 <path class="l1" d="M328.631 138.691L328.631 155.111"/>
 <path class="l1" d="M49.4901 212.581L49.4901 229.001"/>

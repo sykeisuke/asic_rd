@@ -93,18 +93,20 @@ def drc(cell, decks, tag, gds=None):
     return count(report), report
 
 
-def lvs(cell, netlist, gds=None):
+def lvs(cell, netlist, gds=None, tag=""):
     """Extract the GDS and compare it with `netlist`.
 
     `gds` overrides the final_views path, the same way `drc` does, for
-    cells that are build output rather than deliverables."""
+    cells that are build output rather than deliverables. `tag` keeps a
+    second run of the same cell (a control) in its own directory,
+    work/<cell>-lvs<tag>/."""
     converted = os.path.join(WORK, f"{cell}-klayout.spice")
     r = run(["python3", SPICE_CONVERT, netlist, "-o", converted], WORK,
             os.path.join(WORK, f"{cell}-spice-convert.log"))
     if not os.path.exists(converted):
         raise SystemExit(f"could not convert {netlist} for KLayout: "
                          f"{r.stdout[-1000:]}")
-    rundir = os.path.join(WORK, f"{cell}-lvs")
+    rundir = os.path.join(WORK, f"{cell}-lvs{tag}")
     shutil.rmtree(rundir, ignore_errors=True)
     #- --combine is not optional here. The layout draws nf fingers as nf
     #- separate transistors and the netlist names one device with nf;
@@ -117,7 +119,7 @@ def lvs(cell, netlist, gds=None):
              "--topcell=" + cell,
              "--run_mode=deep", "--combine",
              "--run_dir=" + rundir],
-            WORK, os.path.join(WORK, f"{cell}-lvs.log"))
+            WORK, os.path.join(WORK, f"{cell}-lvs{tag}.log"))
     if "Congratulations! Netlists match" in r.stdout:
         return "match", netlist
     if "Netlists don't match" in r.stdout:

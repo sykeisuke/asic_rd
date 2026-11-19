@@ -1,0 +1,99 @@
+* Delay bench of comparator (adapted from tb_sel.spice): the
+* unit cell's charge path with ideal parts around the comparator. The 54.52 fF
+* MIM between `plate` (floating, reset to VREF = VDD/2 by an ideal S2 opening
+* at TS) and `drv` (driven: at VIN, moved to VR_LO at TCONN, ramped from TR at
+* the ADR 0025 slope LSB / 50 ns). The plate RISES during the ramp, as in the
+* cell. dout drives CLOAD (10 fF).
+*
+* XDUT (the hookup) is, written by bench.py per variant:
+*   base      XDUT vref plate ... comparator_core (plate on inn, the macro before 2026-11-17)
+*   sw        XDUT plate vref ... comparator  (plate on inp, + output inverter)
+*   sw_noinv  XDUT plate vref ... comparator_core (plate on inp, no inverter)
+* EDGE is dout's expected edge at the decision (fall, or rise for sw_noinv).
+* The static trip VTRIP comes from tb_dc.spice (run first): the delay from
+* the static trip is measured from the instant the plate crosses THAT level.
+*
+* TEMPLATE: bench.py fills every template key; measures are printed name = value.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_@MIMCORNER@
+.include @DUT@
+@MISMATCH@
+
+.param VDD=@VDD@
+.temp @TEMP@
+.param IREF=@IREF@
+.param VIN=@VIN@
+.param VR_LO=@VRLO@
+.param LSB=@LSB@
+.param TCOUNT=50n
+.param SLOPE='LSB/TCOUNT'
+.param TS=300n
+.param TCONN=310n
+.param TR=400n
+.param TEDGE=100p
+
+.csparam cs_vdd={VDD}
+.csparam cs_tr={TR}
+.csparam cs_tconn={TCONN}
+.csparam cs_tideal={TR+(VIN-VR_LO)/SLOPE}
+
+.options savecurrents reltol=1e-4 gmin=1e-15
+
+VDD_SOURCE vdd 0 {VDD}
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREF}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREF}
+@REFP@
+VCLK clk 0 0
+
+VVREF vref 0 {VDD/2}
+VDRV drv 0 PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+20u} {VR_LO+20u*SLOPE})
+VS2 s2 0 PWL(0 1 {TS} 1 {TS+TEDGE} 0)
+S2 vref plate s2 0 swideal
+.model swideal sw vt=0.5 vh=0.1 ron=100 roff=1e16
+XCS plate drv cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
+RLKT plate 0 1e15
+
+@XDUT@
+CLOAD dout 0 @CLOAD@
+
+.control
+set wr_singlescale
+let half = $&cs_vdd / 2
+let hi90 = 0.9 * $&cs_vdd
+let lo10 = 0.1 * $&cs_vdd
+let lvla = @LVLA@
+let lvlb = @LVLB@
+set vtrip_s = "@VTRIP@"
+tran 0.25n @TSTOP@ 0 0.5n
+meas tran t_cross when v(plate)=@VCM@ rise=1 td=$&cs_tr
+meas tran t_cs when v(plate)=$vtrip_s rise=1 td=$&cs_tr
+meas tran t_dout when v(dout)=$&half @EDGE@=1 td=$&cs_tr
+meas tran t_ea when v(dout)=$&lvla @EDGE@=1 td=$&cs_tr
+meas tran t_eb when v(dout)=$&lvlb @EDGE@=1 td=$&cs_tr
+meas tran armed find v(dout) at=$&cs_tr
+meas tran vplate_tr find v(plate) at=$&cs_tr
+meas tran i_avg avg i(vdd_source) from=$&cs_tconn to=$&t_cross
+let delay_vref = t_dout - t_cross
+let delay_dyn = t_dout - t_cs
+let edge = t_eb - t_ea
+let ped_counts = (t_dout - $&cs_tideal) / 50e-9
+let p_avg = -$&cs_vdd * i_avg
+echo "RESULT_BEGIN"
+echo "vtrip_v = $vtrip_s"
+print delay_vref
+print delay_dyn
+print edge
+print ped_counts
+print armed
+print p_avg
+print vplate_tr
+print t_dout
+echo "RESULT_END"
+@WRDATA@
+quit
+.endc
+
+.end

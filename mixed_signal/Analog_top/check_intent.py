@@ -28,6 +28,12 @@ def main():
 
     def gate(name, sim, want, tol=I.TOL):
         nonlocal st
+        if want <= 0.1:          # drawn without a marker (the comparator's XBUF6): ~0 uA expected
+            ok = sim < I.CMP_ZERO_UA
+            st |= not ok
+            print("%s: intent: %s %.3f uA in the op record vs ~0 uA design (no marker; < %g uA)"
+                  % ("PASS" if ok else "FAIL", name, sim, I.CMP_ZERO_UA))
+            return
         err = sim / want - 1
         ok = abs(err) <= tol
         st |= not ok

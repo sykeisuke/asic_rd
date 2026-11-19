@@ -1,8 +1,9 @@
 #!/bin/sh
 # The on-chip sampling sequencer of the bottom-plate cells
 # (mixed_signal/sample_seq): S2 / S0 / S1 of the four cells from the 20 MHz
-# clock and the controller's acquire level, >= 5 ns between phases. Sizing of
-# the delay line over 45 PVT cells, schematic, typical, PVT, clock duty.
+# clock and the controller's acquire level, non-overlapping by at least a
+# four-inverter delay (ADR 0031). Sizing of the short delay stage over 45 PVT
+# cells, schematic, typical, PVT, clock duty.
 #
 #   ./scripts/sim.sh sample-seq
 #   ./scripts/sim.sh sample-seq PHASES='typ check'

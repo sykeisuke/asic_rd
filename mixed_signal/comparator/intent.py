@@ -1,70 +1,77 @@
 """intent.py -- the design currents of comparator: the ONE source for every
-current written on the drawings (comparator.sch, tb_*.sch, the copies in
-../Analog_top and the CPAD slide).
+current written on its drawings (comparator.sch, tb_*.sch, and any copy a
+macro generator makes of comparator.sch).
 
-They are the numbers the design was chosen with, not simulation readings:
+comparator is comparator_core's ten sized devices plus one inverter
+(XBUF5 / XBUF6, copies of XBUF3 / XBUF4). The ten devices carry the same
+currents as there, so their allocation is intent_core.py's, read
+at run time (never copied):
 
-- the comparator was sized (size_v3.py, data/sizing.json) at I_B = iref
-  1.93 uA into its 1 um / 0.28 um reference finger: tail i_tail 19.7 uA, each
-  pair / load branch id_branch 9.9 uA, starve i_st 9.6 uA;
-- in Analog_top bias_gen feeds it 1.68 x I_B = 3.25 uA by design: its
-  8-finger sink was sized for the comparator's worst PVT cell, untrimmed
-  (../bias_gen/data/sizing.json s_c, ADR 0017). The branches scale with it.
+- sized at I_B = 1.93 uA into one tail finger: tail 20 uA, each pair / load
+  branch 9.9 uA, starve 9.6 uA;
+- in Analog_top bias_gen feeds 3.25 uA (1.68 x I_B, ADR 0017): every branch
+  scales with it (tail 33, pair 16.5, starve 16 uA).
 
-Drawn values are rounded to two figures (the pair is half the tail). ngspice
-on the drawing (intent_op.py) gives less in the tail and the pair: at L 0.28 um
-the tail sits at a lower V_SD than the sizing model took and channel-length
-modulation copies ~9 x I_B, not the model's 10.2 x. That deviation is reported,
-not designed in; TOL is only a sanity bound that catches a marker no longer
-describing the circuit.
+The two output inverters were not sized for a current. Their crowbar while
+the cell tracks (plate = VREF: inp = inn) is drawn as ngspice gives it on the
+drawing (intent_op.py, typical, 27 C): XBUF4 is the base's output inverter in
+the same state, XBUF6 the added one. TOL is only a sanity bound that catches a
+marker no longer describing the circuit.
 
-The output inverter was not sized for a current. Its tracking crowbar is
-drawn as ngspice gives it at each bias (intent_op.py, trip point, typical).
+For a generator that copies comparator.sch onto a macro sheet (as
+../Analog_top/analog_top_sch.py copies this folder's comparator.sch):
+  MARKER_XY   where each device current is written (find them by position)
+  HEADINGS    the section headings (the whitelist of text to keep)
+  NOTES       the two net notes next to inp / inn (keep or drop)
+  NC_PORTS    the ipin labels of the not-connected ports (drop them)
+  TITLE_XY, LAYOUT_XY  the title and the layout line (replace / drop)
 """
-import json
+import importlib.util
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-SZ = json.loads((HERE / "data" / "sizing.json").read_text())
-BG = json.loads((HERE / ".." / "bias_gen" / "data" / "sizing.json").read_text())
+_spec = importlib.util.spec_from_file_location("cmp_base_intent", HERE / "intent_core.py")
+BASE = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(BASE)
 
-I_B_UA = round(SZ["iref"] * 1e6, 2)               # 1.93 uA: the sizing bias
-I_CMP_NOM_UA = 1.931                               # bias_gen/bg.py I_CMP_NOM: s_c is relative to it
-MACRO_I_B_UA = round(BG["s_c"] * I_CMP_NOM_UA, 2)  # 3.25 uA in Analog_top (8-finger sink, 1.681 x 1.931)
-K_MACRO = MACRO_I_B_UA / I_B_UA                    # the branches scale with the bias
-TOL = 0.20                                         # sanity bound |ngspice / design - 1| (intent_op.py)
+I_B_UA = BASE.I_B_UA                    # 1.93 uA: the benches' ideal bias (one tail finger)
+MACRO_I_B_UA = BASE.MACRO_I_B_UA        # 3.25 uA in Analog_top
+K_MACRO = BASE.K_MACRO
+TOL = BASE.TOL                          # sanity bound |ngspice / design - 1| (intent_op.py)
 
+# ngspice on the drawing at inp = inn = VDD/2 (intent_op.py, data/intent_op.json),
+# two significant figures; the crowbar of the two output inverters while tracking
+XBUF_IB_UA = {"xbuf4": 5.3, "xbuf6": 0.0}       # at I_B 1.93 uA
+XBUF_MACRO_UA = {"xbuf4": 37, "xbuf6": 0.0}     # at 3.25 uA
 
-def _two(v):
-    """Two significant figures: 19.73 -> 20, 33.16 -> 33, 9.626 -> 9.6."""
-    return float("%.2g" % v)
-
-
-def _alloc(k, xbuf4):
-    tail = _two(SZ["i_tail"] * 1e6 * k)
-    return {"xtail": tail, "xinp": tail / 2, "xinn": tail / 2, "xloadd": tail / 2, "xloadm": tail / 2,
-            "xbst": _two(SZ["i_st"] * 1e6 * k),    # starved inverter: tracking only
-            "xbuf4": xbuf4}                        # output inverter crowbar: tracking only (ngspice)
-
-
-INTENT_UA = _alloc(1.0, 5.3)                       # at I_B 1.93 uA: the testbenches' bias
-MACRO_UA = _alloc(K_MACRO, 37)                     # at 3.25 uA: drawn on every sheet and slide
-SIZED = ("xtail", "xinp", "xinn", "xloadd", "xloadm", "xbst")   # from the sizing record
-TRACKING_ONLY = ("xbst", "xbuf4")                  # ~0 uA once dout has settled (converting)
+SIZED = BASE.SIZED                      # from the sizing record, data/sizing.json
+INTENT_UA = {**{d: BASE.INTENT_UA[d] for d in SIZED}, **XBUF_IB_UA}
+MACRO_UA = {**{d: BASE.MACRO_UA[d] for d in SIZED}, **XBUF_MACRO_UA}
+TRACKING_ONLY = ("xbst", "xbuf4", "xbuf6")      # ~0 uA once dout has settled (converting)
 CONVERTING_UA = MACRO_I_B_UA + MACRO_UA["xtail"]   # diode + tail: the static current while converting
 
-# where comparator_sch.py writes each device's marker (the copy in
-# ../Analog_top finds them by these coordinates)
+# where comparator_sch.py writes each device's marker (the base's positions,
+# plus XBUF6 on the added inverter); a device with no marker is drawn without one
 MARKER_XY = {"xtail": (235, -850), "xbst": (615, -850), "xinp": (130, -630),
              "xinn": (625, -722), "xloadd": (150, -452), "xloadm": (600, -452),
-             "xbuf4": (1100, -760)}
+             "xbuf4": (1100, -760), "xbuf6": (1320, -760)}
+HEADINGS = ("PMOS 5T OTA", "starved inverter", "output inverters")
+NOTES = ("(plate VBOT)", "(VREF, VDD/2)")
+NC_PORTS = ("clk", "nbias")
+TITLE_XY = (160, -1000)
+LAYOUT_XY = (160, -950)
 
 
 def ua(v):
     """33 -> '33 uA', 16.5 -> '16.5 uA'."""
-    return ("%g uA" % v)
+    return "%g uA" % v
 
 
 def marker(dev):
     """The text next to a device (the macro allocation; * = during tracking)."""
     return ua(MACRO_UA[dev]) + ("*" if dev in TRACKING_ONLY else "")
+
+
+def drawn(dev):
+    """A marker is drawn for every device with a design current above 0.1 uA."""
+    return dev in MARKER_XY and MACRO_UA[dev] > 0.1

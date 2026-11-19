@@ -7,7 +7,9 @@
 * Timeline: the clock's rising edges at k x 50 ns; dvdd and avdd ramp up in
 * 100 ns with acq high (track). acq falls 2 ns after the edge at R0 - 50 ns
 * (the controller's flop), so cell k samples at R0 + k x 50 ns; acq rises
-* 2 ns after R0 + 400 ns (R0 = 400 ns), so cell k re-enters track at R0 + 450 + k x 50 ns.
+* 2 ns after R0 + 400 ns (R0 = 600 ns), so cell k re-enters track at R0 + 450 + k x 50 ns.
+* R0 leaves the shift register (filled by the 4th edge after the ramp) and
+* every clock generator settled well before bench.py's tracking window.
 * Every control net carries atop_cell's input stage (its inverter, the switch
 * gates with their channels at VDD/2) and a route capacitance.
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
@@ -19,7 +21,7 @@
 .param TCOUNT=50n
 .param TCE=0.5n
 .param DUTY=@DUTY@
-.param R0=400n
+.param R0=600n
 .param TACQ='R0-TCOUNT+2n'
 .param TREL='R0+8*TCOUNT+2n'
 .param CROUTE=@CROUTE@
@@ -63,13 +65,14 @@ XL1_1 s1_1 s1b_1 avdd vm ld_tg
 XL1_2 s1_2 s1b_2 avdd vm ld_tg
 XL1_3 s1_3 s1b_3 avdd vm ld_tg
 
-.tran 10p 1200n 0 40p
+* max step 20 ps: the gaps are a few hundred ps (ADR 0031)
+.tran 5p 1400n 0 20p
 
 .control
 set wr_singlescale
 set wr_vecnames
 run
-wrdata out.csv v(clk) v(acq) v(s2_0) v(s2_1) v(s2_2) v(s2_3) v(s0_0) v(s0_1) v(s0_2) v(s0_3) v(s1_0) v(s1_1) v(s1_2) v(s1_3) v(s0b_0) v(s0b_1) v(s0b_2) v(s0b_3) v(s1b_0) v(s1b_1) v(s1b_2) v(s1b_3) v(xseq.c0) i(vdvdd)
+wrdata out.csv v(clk) v(acq) v(s2_0) v(s2_1) v(s2_2) v(s2_3) v(s0_0) v(s0_1) v(s0_2) v(s0_3) v(s1_0) v(s1_1) v(s1_2) v(s1_3) v(s0b_0) v(s0b_1) v(s0b_2) v(s0b_3) v(s1b_0) v(s1b_1) v(s1b_2) v(s1b_3) v(xseq.xg0.b1) v(xseq.xg0.b2) v(xseq.xg1.b1) v(xseq.xg1.b2) v(xseq.xg2.b1) v(xseq.xg2.b2) v(xseq.xg3.b1) v(xseq.xg3.b2) v(xseq.xg0.n1) v(xseq.xg0.a1) v(xseq.xg1.n1) v(xseq.xg1.a1) v(xseq.xg2.n1) v(xseq.xg2.a1) v(xseq.xg3.n1) v(xseq.xg3.a1) i(vdvdd)
 quit
 .endc
 .end

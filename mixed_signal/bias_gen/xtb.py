@@ -14,7 +14,7 @@ Gates (PASS/FAIL), figure by figure:
       absolute, whichever is larger
   with the comparator (cmp, xtalk): the drawing's comparator comes from
       comparator.sch, whose PDK symbols write the S/D geometry as exact
-      expressions where the deck (size_v3.dev, DUT_GEOM=1) writes them
+      expressions where the deck (../comparator/bench.py add_geom) writes them
       rounded to four digits, and the trip deck runs on ngspice's default
       reltol / gmin where the drawing's one .control runs both analyses on
       the dynamic bench's options: times are gated at 1 ns (the deck's
@@ -167,7 +167,7 @@ def ref_startup(d):
     return out
 
 
-MC_COLS = ("icmp0", "icmp1", "icmp2", "icmp3", "iramp", "ivref", "ivbl", "icore")
+MC_COLS = ("icmp0", "icmp1", "icmp2", "icmp3", "iramp", "ivref", "ivref2", "icore")
 
 
 def mc_figs(txt):
@@ -182,7 +182,7 @@ def ref_mc(d):
 def noise_deck():
     """phase_noise's "new" deck, verbatim."""
     return ("* new: iramp into the ramp's diode\n" + bg.NGSPICE_HEAD.format(corner="typical", rcorner="res_typical", mim="typical")
-            + f".include {GEN}\n.temp 27\nVDD vdd 0 3.3 ac 1\nXG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl bias_gen\n"
+            + f".include {GEN}\n.temp 27\nVDD vdd 0 3.3 ac 1\nXG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 bias_gen\n"
             + bg.consumer_loads()
             + ".control\nset num_threads=1\nnoise v(lr) VDD dec 20 1 100meg\nsetplot noise1\n"
             + "wrdata nz_new.txt onoise_spectrum\nquit\n.endc\n.end\n")
@@ -205,7 +205,7 @@ def ref_noise(d):
     return noise_figs(d)
 
 
-CMP_KEYS = ("vtrip_v", "delay_vbl", "delay_dyn", "fall", "ped_counts", "armed", "p_avg")
+CMP_KEYS = ("vtrip_v", "delay_vref", "delay_dyn", "fall", "ped_counts", "armed", "p_avg")
 
 
 def cmp_figs(txt):
@@ -220,18 +220,18 @@ def ref_cmp(d):
     c, t, rc = NOMINAL
     subs = S3.common_subs(s, d, 0.0, (c, t, 3.3))
     subs["IREF"] = "0"
-    cmp_net = open(subs["DUT"]).read()
+    cmp_net, decks = V.cmp_netlist(), V.cmp_decks()
     for name, mim in (("dut_dc.spice", bg.mimcorner(c)), ("dut_tr.spice", None)):
         with open(os.path.join(d, name), "w") as h:
             h.write(cmp_net + "\n" + V.gen_lines(rc, "vddb", "pbias", mim=mim) + "\n")
     subs["DUT"] = os.path.join(d, "dut_dc.spice")
-    vtrip = S3.grab(S3.run_deck(d, "tb_sel_dc.spice", subs, BUDGET_S), "vtrip")
+    vtrip = S3.grab(S3.run_deck(d, decks["tb_sel_dc.spice"], subs, BUDGET_S), "vtrip")
     shutil.copy(os.path.join(d, "tb_sel_dc.spice"), os.path.join(d, "ref_dc.spice"))
     k = 40.5                                   # the plateau level (phase_cmp "plat")
     subs["DUT"] = os.path.join(d, "dut_tr.spice")
     sub2 = dict(subs, VIN="%.9g" % (S3.VR_LO + k * S3.LSB), TSTOP="%.6g" % (400e-9 + k * S3.TCOUNT + 400e-9),
                 VTRIP="%.6f" % vtrip)
-    blk = S3.run_deck(d, "tb_sel.spice", sub2, BUDGET_S)
+    blk = S3.run_deck(d, decks["tb_sel.spice"], sub2, BUDGET_S)
     shutil.copy(os.path.join(d, "tb_sel.spice"), os.path.join(d, "ref_tr.spice"))
     out = {k2: S3.grab(blk, k2) for k2 in CMP_KEYS}
     out["vtrip_v"] = float("%.6f" % vtrip) if np.isfinite(vtrip) else vtrip
@@ -247,7 +247,7 @@ def ref_xtalk(d):
     """phase_xtalk's typical cell, cases a and q (its cell lines reproduced here)."""
     S3, s = T.cmp_design()
     dut = os.path.join(d, "cmp_dut.spice")
-    open(dut, "w").write(S3.subckt(s))
+    open(dut, "w").write(V.cmp_netlist())
     kind, L, wf, nf = bg.CMP_DIODE
     k2, L2, w2, n2 = bg.RAMP_DIODE
     k3, L3, w3, n3 = bg.MR_DIODE
@@ -266,7 +266,7 @@ def ref_xtalk(d):
                     f"XCS{i} top{i} bot{i} cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u",
                     f"RLK{i} top{i} 0 1e15",
                     f"VBOT{i} bot{i} 0 PWL(0 {vin:.6f} 310n {vin:.6f} 310.1n 0.5 400n 0.5 14.4u {0.5 + 14e-6 * 1.5 / 256 / 50e-9:.6f})",
-                    f"XDUT{i} vbl top{i} dout{i} clk vdd 0 0 pb{i} cmp",
+                    f"XDUT{i} top{i} vref dout{i} clk vdd 0 0 pb{i} comparator",
                     f"CL{i} dout{i} 0 10f"]
         return "\n".join(out)
     c, t, rc = NOMINAL
@@ -465,7 +465,7 @@ def main():
     if ref:
         nfail0 = tab.bad
         tab.cmp("cmp", "vtrip_v", ref["vtrip_v"], sch["vtrip_v"], ("abs", TOL_TRIP))
-        for fig in ("delay_vbl", "delay_dyn", "fall"):
+        for fig in ("delay_vref", "delay_dyn", "fall"):
             tab.cmp("cmp", fig, ref[fig], sch[fig], ("abs", TOL_T_CMP))
         tab.cmp("cmp", "ped_counts", ref["ped_counts"], sch["ped_counts"], ("abs", TOL_T_CMP / 50e-9), gate=False)
         for fig in ("armed", "p_avg"):
@@ -473,7 +473,7 @@ def main():
         dd = (sch["delay_dyn"] - ref["delay_dyn"]) * 1e12
         line("cmp", tab.bad == nfail0, f"comparator on icmp0 of the drawn generator: static trip {sch['vtrip_v']:.6f} V "
              f"(deck {ref['vtrip_v']:.6f}, |d| <= 50 uV), delay from the trip {sch['delay_dyn'] * 1e9:.3f} ns (deck "
-             f"{ref['delay_dyn'] * 1e9:.3f}, d {dd:+.1f} ps), from VBL {sch['delay_vbl'] * 1e9:.3f} ns, dout fall "
+             f"{ref['delay_dyn'] * 1e9:.3f}, d {dd:+.1f} ps), from VREF {sch['delay_vref'] * 1e9:.3f} ns, dout fall "
              f"{sch['fall'] * 1e9:.3f} ns; times gated at 1 ns: the drawn comparator's S/D geometry is the PDK symbols' "
              "exact expressions where the deck writes them rounded to 4 digits, and the trip runs on the dynamic "
              "bench's reltol / gmin")
@@ -481,7 +481,7 @@ def main():
               f"{sch['ped_counts']:.4f} counts (deck {ref['ped_counts']:.4f}); average supply power {sch['p_avg'] * 1e6:.2f} uW "
               f"(deck {ref['p_avg'] * 1e6:.2f}: the one-sheet bench keeps the static-trip comparator XDC, parked at its "
               "trip point, on the same supply during the transient)")
-        for fig in ("vtrip_v", "delay_dyn", "delay_vbl", "fall"):
+        for fig in ("vtrip_v", "delay_dyn", "delay_vref", "fall"):
             print(f"xtb_cmp_{fig} = {sch[fig]:.6g}")
         print(f"xtb_cmp_delay_dyn_diff_ps = {dd:.2f}")
         judged.append("cmp")

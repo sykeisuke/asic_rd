@@ -16,14 +16,11 @@ import sys
 
 LIBPINS = {
     "gf180mcu_as_sc_mcu7t3v3__dlybuff_2": ["VDD", "VNW", "VPW", "VSS", "Y", "A"],
-    "gf180mcu_as_sc_mcu7t3v3__clkbuff_4": ["VDD", "VNW", "VPW", "VSS", "A", "Y"],
     "gf180mcu_as_sc_mcu7t3v3__dfxtp_2": ["VDD", "VNW", "VPW", "VSS", "CLK", "D", "Q"],
-    "gf180mcu_as_sc_mcu7t3v3__nor2_2": ["VDD", "VNW", "VPW", "VSS", "Y", "B", "A"],
-    "gf180mcu_as_sc_mcu7t3v3__xor2_2": ["VDD", "VNW", "VPW", "VSS", "B", "A", "Y"],
-    "gf180mcu_as_sc_mcu7t3v3__nor3_2": ["VDD", "VNW", "VPW", "VSS", "A", "B", "C", "Y"],
-    "gf180mcu_as_sc_mcu7t3v3__nand4_2": ["VDD", "VNW", "VPW", "VSS", "A", "B", "C", "D", "Y"],
-    "gf180mcu_as_sc_mcu7t3v3__and2_2": ["VDD", "VNW", "VPW", "VSS", "B", "A", "Y"],
-    "gf180mcu_as_sc_mcu7t3v3__dlxtn_2": ["VDD", "VNW", "VPW", "VSS", "ENA", "D", "Q"],
+    "gf180mcu_as_sc_mcu7t3v3__inv_2": ["VDD", "VNW", "VPW", "VSS", "Y", "A"],
+    "gf180mcu_as_sc_mcu7t3v3__inv_4": ["VDD", "VNW", "VPW", "VSS", "Y", "A"],
+    "gf180mcu_as_sc_mcu7t3v3__inv_8": ["VDD", "VNW", "VPW", "VSS", "Y", "A"],
+    "gf180mcu_as_sc_mcu7t3v3__nand2_2": ["VDD", "VNW", "VPW", "VSS", "Y", "B", "A"],
 }
 
 

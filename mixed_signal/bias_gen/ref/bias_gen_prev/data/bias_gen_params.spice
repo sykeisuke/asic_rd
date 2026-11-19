@@ -1,0 +1,28 @@
+* Written by size_bias_gen.py. Do not edit by hand; re-run the sizer.
+* Rationale: SIZING.md. Topology: ../bias_gen.spice.
+.param BG_LN=4u
+.param BG_W1=6.12u
+.param BG_NF1=2
+.param BG_K=4
+.param BG_RW=2u
+.param BG_RLEN=153.62u
+.param BG_WKICK=4.12u
+.param BG_CPL=10u
+.param BG_CPW=20u
+.param BG_CPNF=2
+.param BG_WSL=6.07u
+.param BG_NFSL=3
+.param BG_LNW=4u
+.param BG_WNW=0.25u
+.param BG_LNC=1u
+.param BG_WNC=1.44u
+.param BG_LNM=4u
+.param BG_WNM=2u
+.param BG_LPW=4u
+.param BG_WPW=1.50u
+.param BG_LPM=4u
+.param BG_WPM=16u
+.param BG_NFPM=1
+.param BG_LPC=1u
+.param BG_WPC=6.38u
+.param BG_WLS=2.92u

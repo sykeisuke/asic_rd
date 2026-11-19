@@ -5,12 +5,12 @@ drawings), so that schematic.sh can check what xschem netlists from the
 drawings:
 
   work/sch/ref_comparator_d.spice   ../comparator/comparator.spice
-                                    subckt cmp with the ports inp inn ibias dout
+                                    subckt comparator with the ports inp inn ibias dout
                                     vdd vss (pbias -> ibias; the no-connects clk,
                                     nbias dropped) + XREFP (the diode of every
                                     comparator bench: pfet 1 / 0.28 um)
   work/sch/ref_bias_gen_s.spice   ../bias_gen/bias_gen.spice subckt
-                                    bias_gen - port ivbl - XOB (v5: one
+                                    bias_gen - port ivref2 - XOB (v5: one
                                     VDD/2 buffer) + port ivrlo + XOL (the
                                     parameters analog_top_sch.py draws)
 
@@ -49,21 +49,33 @@ def rename_net(line, a, b):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    # comparator
-    src = getsub(os.path.join(MS, "comparator", "comparator.spice"), "cmp")
-    assert src[0].split() == [".subckt", "cmp", "inp", "inn", "dout", "clk", "vdd", "vss", "nbias", "pbias"], src[0]
+    # comparator (../comparator: the sized core's ten devices + XBUF5 / XBUF6)
+    src = getsub(os.path.join(MS, "comparator", "comparator.spice"), "comparator")
+    assert src[0].split() == [".subckt", "comparator", "inp", "inn", "dout", "clk", "vdd", "vss", "nbias",
+                              "pbias"], src[0]
     body = [rename_net(ln, "pbias", "ibias") for ln in src[1:-1]]
-    assert not any(t in ("clk", "nbias") for ln in body for t in ln.split()), "clk / nbias used in cmp"
+    assert not any(t in ("clk", "nbias") for ln in body for t in ln.split()), "clk / nbias used in comparator"
+    assert len(body) == 12, "comparator: %d devices, expected 12" % len(body)
+    ref = ([".subckt comparator_d inp inn ibias dout vdd vss"] + body
+           + ["XREFP ibias ibias vdd vdd pfet_03v3 L=0.28u W=1u nf=1 m=1", ".ends comparator_d"])
     with open(os.path.join(OUT, "ref_comparator_d.spice"), "w") as f:
-        f.write("\n".join([".subckt comparator_d inp inn ibias dout vdd vss"] + body
-                          + ["XREFP ibias ibias vdd vdd pfet_03v3 L=0.28u W=1u nf=1 m=1", ".ends comparator_d"]) + "\n")
+        f.write("\n".join(ref) + "\n")
+    # cross-check: the comparator's own macro form (derive.py) is the same subcircuit
+    sw_d = getsub(os.path.join(MS, "comparator", "comparator_d.spice"), "comparator_d")
+    a = [ln.split() for ln in ref[1:-1]]
+    b = [ln.split() for ln in sw_d[1:-1] if ln.split() and not ln.startswith("*")]
+    if sorted(a) == sorted(b) and sw_d[0].split()[2:] == ref[0].split()[2:]:
+        print("PASS: schematic: make_refs: ref_comparator_d (comparator.spice + ibias + XREFP) equals "
+              "../comparator/comparator_d.spice device for device (13 devices, ports %s)" % " ".join(ref[0].split()[2:]))
+    else:
+        print("FAIL: schematic: make_refs: ref_comparator_d differs from ../comparator/comparator_d.spice")
     # bias generator
     src = getsub(os.path.join(MS, "bias_gen", "bias_gen.spice"), "bias_gen")
     hdr = src[0].split()
-    assert hdr[2:] == ["vdd", "vss", "icmp0", "icmp1", "icmp2", "icmp3", "iramp", "ivref", "ivbl"], hdr
+    assert hdr[2:] == ["vdd", "vss", "icmp0", "icmp1", "icmp2", "icmp3", "iramp", "ivref", "ivref2"], hdr
     body = [ln for ln in src[1:-1] if not ln.split() or ln.split()[0] != "XOB"]
     assert len(body) == len(src) - 3, "XOB not found exactly once"
-    assert not any("ivbl" in ln.split() for ln in body), "ivbl used by another device"
+    assert not any("ivref2" in ln.split() for ln in body), "ivref2 used by another device"
     p = XOL
     xol = ("XOL ivrlo pb vdd vdd pfet_03v3 L=%s W=%s nf=%s m=%s ad=%s pd=%s as=%s ps=%s nrd=%s nrs=%s"
            % (p["L"], p["W"], p["nf"], p["m"], p["ad"], p["pd"], p["as"], p["ps"], p["nrd"], p["nrs"]))

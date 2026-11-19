@@ -11,7 +11,7 @@ CNT_CLK,1,in,digital,DVDD,0/3.3 V 20 MHz,count clock; latch samples on falling e
 Q,4,out,digital,DVDD,0/3.3 V,retimed comparator decision; falls once per conversion (Gray capture clock),q[i],tspc_dff[i].q,south,core
 EXT_RAMP,1,in,analog,AVDD,0.5-2.0 V,external ramp injection,ext_ramp,vramp via RAMP_SEL TG,north,proposed
 RAMP_SEL,1,in,digital,AVDD,0/3.3 V,0 = internal ramp; 1 = EXT_RAMP,ramp_sel,ramp select TG,south,proposed
-AMON,1,out,analog,AVDD,0-3.3 V,buffered monitor of vramp/vref/vbl/replica bot,amon,monitor buffer,north,proposed
+AMON,1,out,analog,AVDD,0-3.3 V,buffered monitor of vramp/vref/replica bot,amon,monitor buffer,north,proposed
 AMON_SEL,2,in,digital,AVDD,0/3.3 V,monitor select,amon_sel[1:0],monitor mux,south,proposed
 ATEST,1,inout,analog,AVDD,0-3.3 V,analog test mux: bias current; replica MOS/cap; standalone cmp input,atest,test mux,north,proposed
 CMP_SA_OUT,1,out,digital,DVDD,0/3.3 V,standalone replica comparator output,cmp_sa_q,replica cmp + tspc,south,proposed

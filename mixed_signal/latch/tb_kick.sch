@@ -10,8 +10,6 @@ N 290 -1210 290 -1250 {}
 N 290 -1150 290 -1110 {}
 N 460 -1210 460 -1250 {}
 N 460 -1150 460 -1110 {}
-N 630 -1210 630 -1250 {}
-N 630 -1150 630 -1110 {}
 N 800 -1210 800 -1250 {}
 N 800 -1150 800 -1110 {}
 N 120 -930 120 -970 {}
@@ -62,18 +60,15 @@ C {devices/lab_pin.sym} 120 -1110 0 0 {name=l2 sig_type=std_logic lab=0}
 C {devices/vsource.sym} 290 -1180 0 0 {name=VDVDD value="\{VDD\}" savecurrent=false}
 C {devices/lab_pin.sym} 290 -1250 0 0 {name=l3 sig_type=std_logic lab=dvdd}
 C {devices/lab_pin.sym} 290 -1110 0 0 {name=l4 sig_type=std_logic lab=0}
-C {devices/vsource.sym} 460 -1180 0 0 {name=VVBL value="\{VDD/2\}" savecurrent=false}
-C {devices/lab_pin.sym} 460 -1250 0 0 {name=l5 sig_type=std_logic lab=vbl}
+C {devices/vsource.sym} 460 -1180 0 0 {name=VVREF value="\{VDD/2\}" savecurrent=false}
+C {devices/lab_pin.sym} 460 -1250 0 0 {name=l5 sig_type=std_logic lab=vref}
 C {devices/lab_pin.sym} 460 -1110 0 0 {name=l6 sig_type=std_logic lab=0}
-C {devices/vsource.sym} 630 -1180 0 0 {name=VVREF value="\{VDD/2\}" savecurrent=false}
-C {devices/lab_pin.sym} 630 -1250 0 0 {name=l7 sig_type=std_logic lab=vref}
-C {devices/lab_pin.sym} 630 -1110 0 0 {name=l8 sig_type=std_logic lab=0}
 C {devices/vsource.sym} 800 -1180 0 0 {name=VCLK value="PULSE(0 \{VDD\} \{TCOUNT-TCE/2\} \{TCE\} \{TCE\} \{TCOUNT/2-TCE\} \{TCOUNT\})" savecurrent=false}
-C {devices/lab_pin.sym} 800 -1250 0 0 {name=l9 sig_type=std_logic lab=clk}
-C {devices/lab_pin.sym} 800 -1110 0 0 {name=l10 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 800 -1250 0 0 {name=l7 sig_type=std_logic lab=clk}
+C {devices/lab_pin.sym} 800 -1110 0 0 {name=l8 sig_type=std_logic lab=0}
 C {devices/isource.sym} 120 -900 0 0 {name=IREFP value="\{IBIAS\}"}
-C {devices/lab_pin.sym} 120 -970 0 0 {name=l11 sig_type=std_logic lab=pbias}
-C {devices/lab_pin.sym} 120 -830 0 0 {name=l12 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 120 -970 0 0 {name=l9 sig_type=std_logic lab=pbias}
+C {devices/lab_pin.sym} 120 -830 0 0 {name=l10 sig_type=std_logic lab=0}
 C {symbols/pfet_03v3.sym} 320 -900 0 0 {name=REFP
 L=0.28u W=1u nf=1 m=1
 ad="'int((nf+1)/2) * W/nf * 0.18u'"
@@ -82,45 +77,45 @@ as="'int((nf+2)/2) * W/nf * 0.18u'"
 ps="'2*int((nf+2)/2) * (W/nf + 0.18u)'"
 nrd="'0.18u / W'" nrs="'0.18u / W'"
 sa=0 sb=0 sd=0 model=pfet_03v3 spiceprefix=X}
-C {devices/lab_pin.sym} 260 -900 0 0 {name=l13 sig_type=std_logic lab=pbias}
-C {devices/lab_pin.sym} 340 -830 0 0 {name=l14 sig_type=std_logic lab=pbias}
-C {devices/lab_pin.sym} 340 -970 0 0 {name=l15 sig_type=std_logic lab=vdd}
-C {devices/lab_pin.sym} 380 -900 0 1 {name=l16 sig_type=std_logic lab=vdd}
+C {devices/lab_pin.sym} 260 -900 0 0 {name=l11 sig_type=std_logic lab=pbias}
+C {devices/lab_pin.sym} 340 -830 0 0 {name=l12 sig_type=std_logic lab=pbias}
+C {devices/lab_pin.sym} 340 -970 0 0 {name=l13 sig_type=std_logic lab=vdd}
+C {devices/lab_pin.sym} 380 -900 0 1 {name=l14 sig_type=std_logic lab=vdd}
 C {devices/vsource.sym} 120 -600 0 0 {name=VBOT value="PWL(0 \{VIN\} \{TCONN\} \{VIN\} \{TCONN+TEDGE\} \{VR_LO\} \{TR\} \{VR_LO\} \{TR+TRAMP\} \{VR_HI+OVR\})" savecurrent=false}
-C {devices/lab_pin.sym} 120 -670 0 0 {name=l17 sig_type=std_logic lab=bot}
-C {devices/lab_pin.sym} 120 -530 0 0 {name=l18 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 120 -670 0 0 {name=l15 sig_type=std_logic lab=bot}
+C {devices/lab_pin.sym} 120 -530 0 0 {name=l16 sig_type=std_logic lab=0}
 C {devices/vsource.sym} 120 -430 0 0 {name=VS2 value="PWL(0 1 \{TS\} 1 \{TS+TEDGE\} 0)" savecurrent=false}
-C {devices/lab_pin.sym} 120 -500 0 0 {name=l19 sig_type=std_logic lab=s2}
-C {devices/lab_pin.sym} 120 -360 0 0 {name=l20 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 120 -500 0 0 {name=l17 sig_type=std_logic lab=s2}
+C {devices/lab_pin.sym} 120 -360 0 0 {name=l18 sig_type=std_logic lab=0}
 C {devices/switch_ngspice.sym} 1400 -1140 0 0 {name=S2 model=swideal}
-C {devices/lab_pin.sym} 1400 -1210 0 0 {name=l21 sig_type=std_logic lab=vref}
-C {devices/lab_pin.sym} 1400 -1070 0 0 {name=l22 sig_type=std_logic lab=top}
-C {devices/lab_pin.sym} 1320 -1140 0 0 {name=l23 sig_type=std_logic lab=s2}
-C {devices/lab_pin.sym} 1320 -1120 0 0 {name=l24 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 1400 -1210 0 0 {name=l19 sig_type=std_logic lab=vref}
+C {devices/lab_pin.sym} 1400 -1070 0 0 {name=l20 sig_type=std_logic lab=top}
+C {devices/lab_pin.sym} 1320 -1140 0 0 {name=l21 sig_type=std_logic lab=s2}
+C {devices/lab_pin.sym} 1320 -1120 0 0 {name=l22 sig_type=std_logic lab=0}
 C {symbols/cap_mim_2f0fF.sym} 1400 -900 0 0 {name=XCS W=5u L=5u model=cap_mim_2f0_m4m5_noshield spiceprefix="" m=1}
-C {devices/lab_pin.sym} 1400 -830 0 0 {name=l25 sig_type=std_logic lab=top}
-C {devices/lab_pin.sym} 1400 -970 0 0 {name=l26 sig_type=std_logic lab=bot}
+C {devices/lab_pin.sym} 1400 -830 0 0 {name=l23 sig_type=std_logic lab=top}
+C {devices/lab_pin.sym} 1400 -970 0 0 {name=l24 sig_type=std_logic lab=bot}
 C {devices/res.sym} 1560 -1010 0 0 {name=RLKT value=1e15 footprint=1206 device=resistor m=1}
-C {devices/lab_pin.sym} 1560 -1080 0 0 {name=l27 sig_type=std_logic lab=top}
-C {devices/lab_pin.sym} 1560 -940 0 0 {name=l28 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 1560 -1080 0 0 {name=l25 sig_type=std_logic lab=top}
+C {devices/lab_pin.sym} 1560 -940 0 0 {name=l26 sig_type=std_logic lab=0}
 C {comparator.sym} 1900 -1000 0 0 {name=XDUT}
-C {devices/lab_pin.sym} 1760 -1060 0 0 {name=l29 sig_type=std_logic lab=vbl}
-C {devices/lab_pin.sym} 1760 -1030 0 0 {name=l30 sig_type=std_logic lab=top}
-C {devices/lab_pin.sym} 1760 -1000 0 0 {name=l31 sig_type=std_logic lab=0}
-C {devices/lab_pin.sym} 1760 -970 0 0 {name=l32 sig_type=std_logic lab=0}
-C {devices/lab_pin.sym} 1760 -940 0 0 {name=l33 sig_type=std_logic lab=pbias}
-C {devices/lab_pin.sym} 2040 -1045 0 1 {name=l34 sig_type=std_logic lab=dout}
-C {devices/lab_pin.sym} 1900 -1160 0 0 {name=l35 sig_type=std_logic lab=vdd}
-C {devices/lab_pin.sym} 1900 -840 0 0 {name=l36 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 1760 -1060 0 0 {name=l27 sig_type=std_logic lab=top}
+C {devices/lab_pin.sym} 1760 -1030 0 0 {name=l28 sig_type=std_logic lab=vref}
+C {devices/lab_pin.sym} 1760 -1000 0 0 {name=l29 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 1760 -970 0 0 {name=l30 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 1760 -940 0 0 {name=l31 sig_type=std_logic lab=pbias}
+C {devices/lab_pin.sym} 2040 -1045 0 1 {name=l32 sig_type=std_logic lab=dout}
+C {devices/lab_pin.sym} 1900 -1160 0 0 {name=l33 sig_type=std_logic lab=vdd}
+C {devices/lab_pin.sym} 1900 -840 0 0 {name=l34 sig_type=std_logic lab=0}
 C {latch.sym} 2300 -1045 0 0 {name=XL}
-C {devices/lab_pin.sym} 2160 -1065 0 0 {name=l37 sig_type=std_logic lab=dout}
-C {devices/lab_pin.sym} 2160 -1025 0 0 {name=l38 sig_type=std_logic lab=clk}
-C {devices/lab_pin.sym} 2440 -1065 0 1 {name=l39 sig_type=std_logic lab=q}
-C {devices/lab_pin.sym} 2300 -1165 0 0 {name=l40 sig_type=std_logic lab=dvdd}
-C {devices/lab_pin.sym} 2300 -925 0 0 {name=l41 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 2160 -1065 0 0 {name=l35 sig_type=std_logic lab=dout}
+C {devices/lab_pin.sym} 2160 -1025 0 0 {name=l36 sig_type=std_logic lab=clk}
+C {devices/lab_pin.sym} 2440 -1065 0 1 {name=l37 sig_type=std_logic lab=q}
+C {devices/lab_pin.sym} 2300 -1165 0 0 {name=l38 sig_type=std_logic lab=dvdd}
+C {devices/lab_pin.sym} 2300 -925 0 0 {name=l39 sig_type=std_logic lab=0}
 C {devices/capa.sym} 2540 -1065 0 0 {name=CQ value=50f m=1}
-C {devices/lab_pin.sym} 2540 -1135 0 0 {name=l42 sig_type=std_logic lab=q}
-C {devices/lab_pin.sym} 2540 -995 0 0 {name=l43 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 2540 -1135 0 0 {name=l40 sig_type=std_logic lab=q}
+C {devices/lab_pin.sym} 2540 -995 0 0 {name=l41 sig_type=std_logic lab=0}
 C {devices/code_shown.sym} 1240 -810 0 0 {name=CTL only_toplevel=false value=".include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
@@ -153,7 +148,7 @@ run
 let half = $&cs_vdd / 2
 let hi90 = 0.9 * $&cs_vdd
 let lo10 = 0.1 * $&cs_vdd
-meas tran t_cross when v(top)=v(vbl) rise=1 td=$&cs_tr
+meas tran t_cross when v(top)=v(vref) rise=1 td=$&cs_tr
 meas tran t_dout when v(dout)=$&half fall=1 td=$&cs_tr
 meas tran t_f90 when v(dout)=$&hi90 fall=1 td=$&cs_tr
 meas tran t_f10 when v(dout)=$&lo10 fall=1 td=$&cs_tr

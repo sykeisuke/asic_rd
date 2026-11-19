@@ -1,7 +1,7 @@
 * tb_analog_top -- one four-cell record of the analog macro (v7) from a cold
 * supply: power-up, the four samples (40 ns apart), the shared ramp and the four
 * trips. The macro is analog_top.spice, GENERATED from analog_top.sch by
-* schematic.sh: every block down to transistors, as drawn. v5 (v4 with ONE VDD/2 buffer, vref = vbl) has every analog
+* schematic.sh: every block down to transistors, as drawn. The macro (ONE VDD/2 buffer for vref, ADR 0021) has every analog
 * block of the ADC inside, vrlo included (vrlo_ref, biased by bias_gen_s):
 * the ONLY ideal sources are the supplies, the input, the switch controls,
 * ramp_rst and the count clock. The latch latch is the standard cell

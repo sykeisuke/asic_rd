@@ -1,14 +1,14 @@
-* The output of midref under the PDK's local mismatch (verify_v3.py): the
+* The output of midref under the PDK's local mismatch (verify.py): the
 * divider and its one buffer on an ideal bias current. ONE DRAW PER RUN:
 * `.param sw_stat_mismatch=1` after the PDK include switches on the agauss()
 * draws in every nfet_03v3 / pfet_03v3 wrapper, and `.options seed` fixes them,
-* so verify_v3.py runs draw k with seed BASE + k (a `reset` loop under one fixed
+* so verify.py runs draw k with seed BASE + k (a `reset` loop under one fixed
 * seed redraws the SAME sample, the trap ../comparator recorded). Draw 0
 * is mismatch-free (mm 0). The ppolyf_u_3k model carries global
 * (sw_stat_global) variation only, so the divider ratio's own mismatch is NOT
 * in this figure.
 *
-* VREF and VBL are one node, so VBL - VREF is zero in every draw: the buffer's
+* The S2 level and the comparator reference are one node (VREF), so their difference is zero in every draw: the buffer's
 * offset only moves VDD/2, the common level of the plate and the comparator.
 *
 * One line:  MC <k> <v(out) - VDD/2>

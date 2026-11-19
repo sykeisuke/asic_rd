@@ -1,5 +1,5 @@
 #!/bin/sh
-# Short-L gm/Id tables and device noise for size_v3.py. Run through the
+# Short-L gm/Id tables and device noise for size.py. Run through the
 # block's container wrapper:
 #
 #   ./container.sh 'sh lut/build.sh'

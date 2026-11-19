@@ -4,7 +4,7 @@
 # I/C current source ../ic_source (count clock, bias_gen_s's ramp sink, DVDD),
 # vrlo_ref at 7/55 AVDD = 0.420 V (the pre-roll reset level), the 6.70 mV
 # grid, T0 = 60 us, the ramp ending at count 259. From v5: ONE VDD/2 buffer
-# (../midrail_ref, ADR 0021, vref = vbl), bias_gen_s = bias_gen - XOB + XOL,
+# (../midrail_ref, ADR 0021), bias_gen_s = bias_gen - XOB + XOL,
 # four cells (switches S0/S1/S2, 54.52 fF MIM, comparator_d, the standard-cell
 # latch), TR = TS3 + 300 ns (README.md).
 #
@@ -31,6 +31,10 @@
 #              current saved; averages per phase (track, sample, hold, ramp,
 #              before/after each decision) per branch -> data/pwr_branches.csv,
 #              data/pwr_windows.csv, assets/pwr_profile.png
+#   pvt        pvt.sh (opt-in, NOT in the default phases; target analog-top-pvt):
+#              the func bench at PVT cells (PVT_CELLS, default 45: 5 corners x
+#              0/27/85 C x 3.0/3.3/3.6 V), check-func.awk per cell, check-pvt.awk
+#              over the set -> data/pvt_cells.csv
 # v4's trannoise phase is NOT ported (it has no v4 record either).
 #
 # Writes runs/$TARGET/<stamp>/metrics.json (scripts/summarize-metrics.awk).
@@ -64,7 +68,11 @@ sh "$BLOCK_DIR/container.sh" "
     if has op; then sh op.sh || echo 'FAIL: op.sh'; fi
     if has xtb; then sh xtb.sh || echo 'FAIL: xtb.sh'; fi
     if has pwr; then sh pwr.sh || echo 'FAIL: pwr.sh'; fi
+    if has pvt; then PVT_CELLS='${PVT_CELLS:-}' sh pvt.sh || echo 'FAIL: pvt.sh'; fi
 " 2>&1 | tee "$run_dir/console.log" || status=$?
+# tee's status hides the container's: a run that printed no verdict failed
+grep -q '^\(PASS\|FAIL\)' "$run_dir/console.log" ||
+    { echo 'FAIL: no check ran (container did not start?)' | tee -a "$run_dir/console.log"; status=1; }
 
 if [ "${NO_RECORD:-0}" != 1 ]; then
     : >"$run_dir/extra-metrics.txt"

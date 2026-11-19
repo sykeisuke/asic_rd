@@ -26,10 +26,10 @@ Phases
   xtalk    four comparator on this generator; three aggressors decide 1 LSB
            before the victim: victim decision shift <= 0.1 LSB (comparator_updt
            SPEC item 20), typical and two corners
-  midref   midref_v2 (shared divider, two buffers) on ivref / ivbl: follower,
+  midref   midref_v2 (shared divider, two buffers) on ivref / ivref2: follower,
            IB-source and output-diode headroom and VDD/2 error at 135 cells
-           (midrail_ref_v2's tb_op), and its S2-kick bench at the low- and
-           high-current cells (midrail_ref_v2's tb_kick)
+           (ref/midref_prev's tb_op), and its S2-kick bench at the low- and
+           high-current cells (ref/midref_prev's tb_kick)
 
 Results: data/verify_*.csv / .json. The simulators are the authority.
 """
@@ -59,8 +59,8 @@ DATA = os.path.join(bg.BLOCK, "data")
 WORK = os.path.join(bg.BLOCK, "work", "verify")
 GEN = os.path.join(bg.BLOCK, "bias_gen.spice")
 CMP_BLOCK = os.path.join(bg.BLOCK, "..", "comparator")
-MR_BLOCK = os.path.join(bg.BLOCK, "ref", "midrail_ref_v2")
-OLD_BG = os.path.join(bg.BLOCK, "ref", "bias_gen_v1")
+MR_BLOCK = os.path.join(bg.BLOCK, "ref", "midref_prev")
+OLD_BG = os.path.join(bg.BLOCK, "ref", "bias_gen_prev")
 
 SIZ = json.load(open(os.path.join(DATA, "sizing.json")))
 for _k in ("K", "na", "npm", "nc", "nr", "nm", "nbl", "rseg"):
@@ -146,14 +146,21 @@ def phase_op():
             f"({tag(bl['corner'], bl['temp'], bl['rcorner'], bl['vdd'])})")
     print(f"op_bleed_max_na = {bl['ibl'] * 1e9:.2f}")
     # the comparator requirement, nominal (mismatch-free) and with the 3-sigma margin
-    marg = []
+    # (a cell without a recorded requirement cannot be shown to meet it: the gate needs all 135)
+    marg, miss = [], []
     for r in rows:
-        q = req[(r["corner"], r["temp"], r["vdd"])]
+        q = req.get((r["corner"], r["temp"], r["vdd"]))
+        if q is None:
+            miss.append(r)
+            continue
         marg.append((r["ic"] / bg.I_CMP_NOM / q, r))
     marg.sort(key=lambda z: z[0])
-    w, r = marg[0]
-    verdict(w >= 1.0, f"op comparator current >= comparator's requirement at all 135 cells (mismatch-free): worst "
-            f"delivered/required {w:.3f} at {tag(r['corner'], r['temp'], r['rcorner'], r['vdd'])}")
+    w, r = marg[0] if marg else (float("nan"), None)
+    at = tag(r['corner'], r['temp'], r['rcorner'], r['vdd']) if r else "-"
+    verdict(w >= 1.0 and not miss, f"op comparator current >= comparator's requirement at all 135 cells (mismatch-free): "
+            f"requirement recorded at {len(rows) - len(miss)} of {len(rows)} cells (../comparator/data/bias_req.csv); "
+            f"worst delivered/required there {w:.3f} at {at}")
+    print(f"op_cmp_req_cells = {len(rows) - len(miss)}")
     print(f"op_cmp_margin_min = {w:.4f}")
     with open(os.path.join(DATA, "verify_op.csv"), "w") as h:
         keys = ["corner", "temp", "rcorner", "vdd"] + list(bg.OP_COLS) + ["hr_min", "hr_dev"]
@@ -207,7 +214,7 @@ def opdev_deck():
     deck = ("* bias_gen device operating point at the bench bias\n"
             + bg.NGSPICE_HEAD.format(corner="typical", rcorner="res_typical", mim="typical")
             + f".temp 27\n.include {GEN}\nVDD vdd 0 3.3\n"
-            + "XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl bias_gen\n"
+            + "XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 bias_gen\n"
             + bg.consumer_loads() + "\n".join(rep) + "\n"
             + ".control\nset num_threads=1\nop\n" + "\n".join(lets) + "\n"
             + "let r_strip = 0.1 / abs(i(vrs1))\nlet r_string = 0.1 / abs(i(vrss))\n"
@@ -257,7 +264,7 @@ def phase_opdev():
         ioc, ior, iov, isup = [float(x) for x in m4.group(1).split()]
         h.write(f"i_icmp,,{ioc:.6g},A,port icmp0 (each of icmp0..3) into its diode\n"
                 f"i_iramp,,{ior:.6g},A,port iramp into the ramp diode\n"
-                f"i_ivref,,{iov:.6g},A,port ivref (= ivbl) into the midref diode\n"
+                f"i_ivref,,{iov:.6g},A,port ivref (= ivref2) into the midref diode\n"
                 f"i_vdd,,{isup:.6g},A,supply current incl. the sourced midref currents\n")
     for r in rows:
         print(f"opdev_{r['dev']}_id_ua = {r['id'] * 1e6:.4f}")
@@ -303,7 +310,7 @@ def startup_deck(c, t, rc, case, dut):
     step = (tstop - 0) / 4000
     return (f"* bias_gen startup {case}\n" + bg.NGSPICE_HEAD.format(corner=c, rcorner=rc, mim=bg.mimcorner(c))
             + f".temp {t:g}\n.include {dut}\n{vsrc}\n{hold}"
-            + f"XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl nb pb su {name}\n" + bg.consumer_loads()
+            + f"XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 nb pb su {name}\n" + bg.consumer_loads()
             + ".save all @m.xg.xmn1.m0[id]\n"
             + ".control\nset num_threads=1\n"
             + f"tran {step:g} {tstop:g} 0 {step:g} uic\n"
@@ -372,7 +379,7 @@ def mc_deck(k, mm):
     return ("* bias_gen local mismatch, one draw\n"
             + bg.NGSPICE_HEAD.format(corner="typical", rcorner="res_typical", mim="typical")
             + f".include {GEN}\n.param sw_stat_mismatch={mm}\n.temp 27\n.options seed={SEED_BASE + k}\n"
-            + "VDD vdd 0 3.3\nXG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl bias_gen\n" + bg.consumer_loads()
+            + "VDD vdd 0 3.3\nXG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 bias_gen\n" + bg.consumer_loads()
             + ".control\nset num_threads=1\nop\n"
             + "let a0 = i(vmc0)\nlet a1 = i(vmc1)\nlet a2 = i(vmc2)\nlet a3 = i(vmc3)\nlet a4 = i(vmr)\n"
             + "let a5 = i(vmv)\nlet a6 = i(vmb)\nlet a7 = @m.xg.xmn1.m0[id]\n"
@@ -413,13 +420,18 @@ def phase_mc(op):
           f"and per-output {100 * s_pair:.2f} % (predicted {100 * SIZ['sig_out']:.2f} %); ramp {100 * s_ramp:.2f} %, midref {100 * s_mr:.2f} %")
     if op:
         req = bg.bias_req()
-        worst = min((r["ic"] / bg.I_CMP_NOM / req[(r["corner"], r["temp"], r["vdd"])], r) for r in op["rows"])
+        have = [r for r in op["rows"] if (r["corner"], r["temp"], r["vdd"]) in req]
+        worst = min(((r["ic"] / bg.I_CMP_NOM / req[(r["corner"], r["temp"], r["vdd"])], k) for k, r in enumerate(have)),
+                    default=(float("nan"), None))
+        wr = have[worst[1]] if worst[1] is not None else None
         need = 1 + N_SIGMA * s_cmp
-        verdict(worst[0] >= need, f"mc + op: comparator current at -3 sigma (measured {100 * s_cmp:.2f} %) still meets the "
-                f"requirement at every cell: worst delivered/required {worst[0]:.3f} >= {need:.3f} "
-                f"({tag(worst[1]['corner'], worst[1]['temp'], worst[1]['rcorner'], worst[1]['vdd'])})")
+        verdict(worst[0] >= need and len(have) == len(op["rows"]),
+                f"mc + op: comparator current at -3 sigma (measured {100 * s_cmp:.2f} %) still meets the "
+                f"requirement at every cell: requirement recorded at {len(have)} of {len(op['rows'])} cells; worst "
+                f"delivered/required there {worst[0]:.3f} >= {need:.3f} "
+                f"({tag(wr['corner'], wr['temp'], wr['rcorner'], wr['vdd']) if wr else '-'})")
     with open(os.path.join(DATA, "verify_mc.csv"), "w") as h:
-        h.write("k,icmp0,icmp1,icmp2,icmp3,iramp,ivref,ivbl,icore\n")
+        h.write("k,icmp0,icmp1,icmp2,icmp3,iramp,ivref,ivref2,icore\n")
         for k, x in enumerate(a):
             if x is not None:
                 h.write(f"{k}," + ",".join("%.6g" % v for v in x) + "\n")
@@ -430,14 +442,14 @@ def phase_noise():
     """Voltage noise on the ramp's mirror line (the gate the ramp's XM7/XM6/XPS see)."""
     d = rundir("noise")
     new = ("* new: iramp into the ramp's diode\n" + bg.NGSPICE_HEAD.format(corner="typical", rcorner="res_typical", mim="typical")
-           + f".include {GEN}\n.temp 27\nVDD vdd 0 3.3 ac 1\nXG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl bias_gen\n"
+           + f".include {GEN}\n.temp 27\nVDD vdd 0 3.3 ac 1\nXG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 bias_gen\n"
            + bg.consumer_loads()
            + ".control\nset num_threads=1\nnoise v(lr) VDD dec 20 1 100meg\nsetplot noise1\n"
            + "wrdata nz_new.txt onoise_spectrum\nquit\n.endc\n.end\n")
     old = ("* old: bias_gen configuration S, the ramp mirrors its pbias line\n"
            + bg.NGSPICE_HEAD.format(corner="typical", rcorner="res_typical", mim="typical")
            + f".include {OLD_BG}/data/bias_gen_params.spice\n.include {OLD_BG}/bias_gen.spice\n.temp 27\n"
-           + "VDD vdd 0 3.3 ac 1\nXB vdd 0 pbias nbias bias_gen_v1\n"
+           + "VDD vdd 0 3.3 ac 1\nXB vdd 0 pbias nbias bias_gen_prev\n"
            + ".control\nset num_threads=1\nnoise v(pbias) VDD dec 20 1 100meg\nsetplot noise1\n"
            + "wrdata nz_old.txt onoise_spectrum\nquit\n.endc\n.end\n")
     bg.run(d, new, "new.spice")
@@ -507,8 +519,39 @@ def gen_lines(rc, vdd_node, out0, out_names=None, mim=None):
 def cmp_module():
     sys.path.insert(0, os.path.abspath(CMP_BLOCK))
     os.environ["DUT_GEOM"] = "1"            # the drawn S/D geometry (bias_req.py's geom case)
-    import size_v3 as S3                     # read by path, never modified
+    import size as S3                        # read by path, never modified
     return S3
+
+
+# The comparator under test is the macro's: ../comparator/comparator.spice's `comparator`
+# (12 devices), plate on inp, the reference VREF on inn; dout falls at the decision as before.
+# size.py's bench templates carry its 10-device core with the plate on inn; their one
+# hookup line is replaced (copied into work/cmp_tpl, ../comparator is never written).
+CMP_HOOK = {"tb_sel_dc.spice": ("XDC vref vdc doutdc clk vdd 0 nbias pbias comparator_core",
+                                "XDC vdc vref doutdc clk vdd 0 nbias pbias comparator"),
+            "tb_sel.spice": ("XDUT vref top dout clk vdd 0 nbias pbias comparator_core",
+                             "XDUT top vref dout clk vdd 0 nbias pbias comparator")}
+
+
+def cmp_netlist():
+    """../comparator/comparator.spice's `comparator` with the S/D geometry the PDK symbols draw."""
+    sys.path.insert(0, os.path.abspath(CMP_BLOCK))
+    import bench as CB                       # ../comparator/bench.py: subckt_text, add_geom
+    t = CB.subckt_text(CB.SW_SRC)
+    return "\n".join(CB.add_geom(ln) if ln.startswith("X") else ln for ln in t.splitlines()) + "\n"
+
+
+def cmp_decks():
+    """{template: path} of size.py's tb_sel_dc / tb_sel with the macro's comparator hookup."""
+    d = rundir("cmp_tpl")
+    out = {}
+    for name, (a, b) in CMP_HOOK.items():
+        t = open(os.path.join(CMP_BLOCK, name)).read()
+        if t.count(a) != 1:
+            raise SystemExit(f"FAIL: ../comparator/{name}: hookup line {a!r} not found once")
+        out[name] = os.path.join(d, name)
+        open(out[name], "w").write(t.replace(a, b))
+    return out
 
 
 def phase_cmp():
@@ -518,6 +561,7 @@ def phase_cmp():
     for k in ("nf_in", "nf_ld", "nf_tail", "nf_st"):
         s[k] = int(s[k])
     levels = (("c4", 4.5), ("plat", 40.5))
+    cmp_net, decks = cmp_netlist(), cmp_decks()
 
     def one(j):
         c, t, rc, v = j
@@ -526,12 +570,11 @@ def phase_cmp():
         subs["IREF"] = "0"
         # the generator goes into the included DUT file, not into @REFP@: the templates name
         # @REFP@ in a header comment, where a multi-line value would leak out as live cards
-        cmp_net = open(subs["DUT"]).read()
         for name, mim in (("dut_dc.spice", bg.mimcorner(c)), ("dut_tr.spice", None)):   # tb_sel_dc loads no MIM models
             with open(os.path.join(d, name), "w") as h:
                 h.write(cmp_net + "\n" + gen_lines(rc, "vddb", "pbias", mim=mim) + "\n")
         subs["DUT"] = os.path.join(d, "dut_dc.spice")
-        vtrip = S3.grab(S3.run_deck(d, "tb_sel_dc.spice", subs, 180), "vtrip")
+        vtrip = S3.grab(S3.run_deck(d, decks["tb_sel_dc.spice"], subs, 180), "vtrip")
         if not np.isfinite(vtrip) and (c, t, rc, v) == ("typical", 27.0, "res_typical", 3.3):
             p = os.path.join(d, "tb_sel_dc.out")
             txt = open(p, errors="replace").read() if os.path.exists(p) else ""
@@ -545,7 +588,7 @@ def phase_cmp():
             dd = rundir("cmp", f"{c}_{t:g}_{rc}_{v:g}", lt)
             sub2 = dict(subs, DUT=subs["DUT"], VIN="%.9g" % (S3.VR_LO + k * S3.LSB),
                         TSTOP="%.6g" % (400e-9 + k * S3.TCOUNT + 400e-9), VTRIP="%.6f" % vtrip)
-            blk = S3.run_deck(dd, "tb_sel.spice", sub2, 600)
+            blk = S3.run_deck(dd, decks["tb_sel.spice"], sub2, 600)
             out[lt] = {key: S3.grab(blk, key) for key in ("delay_dyn", "fall", "p_avg", "armed")}
         return j, out
     jobs = [(c, t, rc, v) for c, t, rc in CELLS for v in bg.VDDS]
@@ -591,7 +634,6 @@ XT_DECK = """* four comparator on bias_gen: victim 0 at level K, aggressors 1..3
 .param SLOPE='LSB/50n'
 .options savecurrents reltol=1e-4 gmin=1e-15
 VDD_SOURCE vdd 0 {{VDD}}
-VVBL vbl 0 {{VDD/2}}
 VVREF vref 0 {{VDD/2}}
 VS2 s2 0 PWL(0 1 300n 1 300.1n 0)
 .model swideal sw vt=0.5 vh=0.1 ron=100 roff=1e16
@@ -621,7 +663,7 @@ def phase_xtalk():
         s[k] = int(s[k])
     d0 = rundir("xtalk")
     dut = os.path.join(d0, "cmp_dut.spice")
-    open(dut, "w").write(S3.subckt(s))
+    open(dut, "w").write(cmp_netlist())
     kind, L, wf, nf = bg.CMP_DIODE
     k2, L2, w2, n2 = bg.RAMP_DIODE
     k3, L3, w3, n3 = bg.MR_DIODE
@@ -640,7 +682,7 @@ def phase_xtalk():
                     f"XCS{i} top{i} bot{i} cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u",
                     f"RLK{i} top{i} 0 1e15",
                     f"VBOT{i} bot{i} 0 PWL(0 {vin:.6f} 310n {vin:.6f} 310.1n 0.5 400n 0.5 14.4u {0.5 + 14e-6 * 1.5 / 256 / 50e-9:.6f})",
-                    f"XDUT{i} vbl top{i} dout{i} clk vdd 0 0 pb{i} cmp",
+                    f"XDUT{i} top{i} vref dout{i} clk vdd 0 0 pb{i} comparator",
                     f"CL{i} dout{i} 0 10f"]
         return "\n".join(out)
 
@@ -672,7 +714,7 @@ def phase_xtalk():
 # ------------------------------------------------------------------ midref
 def mr_module():
     sys.path.insert(0, os.path.abspath(MR_BLOCK))
-    import size_v2 as S2                     # read by path, never modified
+    import size_prev as S2                     # read by path, never modified
     return S2
 
 
@@ -680,7 +722,7 @@ def phase_midref(op):
     S2 = mr_module()
     des = json.load(open(os.path.join(MR_BLOCK, "data", "sizing.json")))["design"]
     share = des["share"] > 0.5
-    net = open(os.path.join(MR_BLOCK, "midref_v2.spice")).read()
+    net = open(os.path.join(MR_BLOCK, "midref_prev.spice")).read()
 
     # operating point: tb_op with the ideal IREF replaced by this generator's ivref
     def one(j):
@@ -739,7 +781,7 @@ def phase_midref(op):
             wxt = max(wxt, np.nan_to_num(xt, nan=1e9))
         nok += good
     verdict(nok == len(cells), f"midref kick on this generator: {nok} of {len(cells)} extreme-current cells hold both S2 "
-            f"cases (midrail_ref_v2 gates): worst return to 1/2 LSB {wts:.0f} ns (limit {S2.TS_MAX * 1e9:.0f}), worst VBL "
+            f"cases (the previous midref's gates, ref/midref_prev): worst return to 1/2 LSB {wts:.0f} ns (limit {S2.TS_MAX * 1e9:.0f}), worst VREF "
             f"crosstalk {wxt:.1f} uV")
     print(f"midref_kick_ts_worst_ns = {wts:.1f}")
 

@@ -46,7 +46,7 @@ or `../comparator_bkp/comparator_updt/SPEC.md`), **PDK** (tables, model cards, D
   - At 1 GHz C_gd feed-through corrupts low-gm points, so 1 GHz is not used.
   - The model uses A/(W L) and gamma = B gm / 4kT.
 
-## 3. Search (size_v3.py, stage A, tables only)
+## 3. Search (size.py, stage A, tables only)
 
 **Variables.**
 
@@ -229,7 +229,7 @@ Other figures:
 | armed at TR | 3.3 V | | PASS |
 | noise at the pins, 1 kHz .. own band | 0.168 mV (0.038 LSB at the ADC input; 1/f to 100 kHz 0.074 mV) | < 1.2 mV | PASS |
 | sigma(Vos), ngspice MC, 200 samples (independent draws; see the note below on seeding) | 9.38 mV = 2.11 LSB at the ADC input (model 1.99) | 4/3 LSB contract | **FAIL** |
-| delay from VBL (offset included) | 2.54 ns | reported | |
+| delay from VREF (offset included) | 2.54 ns | reported | |
 | delay at bias_gen's 0.69x / 1.77x current | 12.97 / 7.82 ns | reported | 0.69x exceeds 12.5 ns |
 
 Two earlier 100-sample runs read 2.22 and 2.02 LSB. Those
@@ -285,7 +285,7 @@ Checks, all PASS:
   | --- | --- |
   | trip | 1 uV |
   | delay from the trip | 21 ps |
-  | delay from VBL | 0 |
+  | delay from VREF | 0 |
   | fall | 0 |
   | OTA gain | 1e-6 relative |
   | noise | 2e-6 relative |
@@ -294,7 +294,7 @@ Checks, all PASS:
 
 - **As drawn, with S/D junction capacitance** (reported):
   - delay from the trip 11.30 ns (+6.7 %);
-  - delay from VBL 3.26 ns;
+  - delay from VREF 3.26 ns;
   - fall 5.38 ns (+1.0 %);
   - noise -2.7 %;
   - trip and MC unchanged.
@@ -304,7 +304,7 @@ Checks, all PASS:
 ## 9. PVT (`./scripts/sim.sh comparator-pvt`, records `runs/comparator-updt-v3-pvt/20261007T024232Z`, `-pvt-geom/20261007T024803Z`)
 
 **Grid.** typical / ss / ff / sf / fs x 0 / 27 / 85 C x 3.0 / 3.3 / 3.6 V,
-which is 45 cells. inp = VBL = VDD/2.
+which is 45 cells. inp = VREF = VDD/2.
 
 **Bias.** The ideal current is held constant over PVT (user: the bias
 generator comes later); the reference finger follows the corner.
@@ -362,7 +362,7 @@ load mirror), not of the corner.
 
 Every device noise source (thermal and flicker, including the bias
 reference) injects in the time domain while the attenuated 8-bit ramp
-crosses VBL, repeated over 800 conversions in one record. The spread of
+crosses VREF, repeated over 800 conversions in one record. The spread of
 dout's falling instant, times the ramp slope at the pins, is the noise the
 conversion sees.
 
@@ -405,7 +405,7 @@ Engine and measurement checks (typical):
 - **The same draw at every level.** The mismatch draw is identical at all
   four levels: `.options seed=N` per sample, in the same netlist.
 - **The figure.** The code offset of a sample at a level is
-  t(dout falls) - t(top crosses VBL), in counts.
+  t(dout falls) - t(top crosses VREF), in counts.
 - **The window** runs to 28 counts past the ideal crossing.
 - **Gate.** Per sample, the offset moves <= 0.1 LSB between levels (SPEC
   item 10).

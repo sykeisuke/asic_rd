@@ -7,7 +7,7 @@
 * 54.52 fF MIM, comparator_d, latch = gf180mcu_as_sc_mcu7t3v3__dfxtn_2) on
 * ramp_simple (73 unit MIMs + XRST), read by path from
 * ../Analog_top/analog_top.spice. Ideal: AVDD, DVDD, VREF (= the comparator's
-* VBL input, one node as in v5), VR_LO, VIN, the comparator's bias, the ramp
+* reference input, one node), VR_LO, VIN, the comparator's bias, the ramp
 * current (ic_source's design value; ic_source itself is not in this bench),
 * the switch controls and the count clock. The grid is ADR 0025's (as
 * ../Analog_top/tb_params.inc).

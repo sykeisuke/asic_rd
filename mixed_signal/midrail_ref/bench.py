@@ -1,4 +1,4 @@
-"""Constants and bench helpers of midref (verify_v3.py, midref_sch.py).
+"""Constants and bench helpers of midref (verify.py, midref_sch.py).
 
 The values are midref_v2's (../midrail_ref_bkp/midrail_ref_v2/size_v2.py), which this block
 re-uses device for device; only the bench helpers that verify needs are kept
@@ -28,18 +28,18 @@ LSB = 1.5 / 256                                # [C] 5.859 mV
 ALPHA = 0.761                                  # [M] comparator in the cell (its header)
 EPS = LSB / 2                                  # [C] VREF back within 1/2 LSB
 TS_MAX = 250e-9                                # [C] 300 ns to TS minus 50 ns kept
-NOISE_MAX_LSB = 0.080                          # [B] item 6, VREF + VBL at the ADC input
+NOISE_MAX_LSB = 0.080                          # [B] item 6, VREF at the ADC input
 T_DEC = (0.1e-6, 12.9e-6)                      # [C] decision after TS: TR - TS .. TE - TS
 F_CMP = 22.3373e6                              # [M] comparator OTA pole (its data/sizing.json, ngspice)
 VERR_MAX = 0.050                               # [A] |VDD/2 error| (v2 README s.1): moves only the
                                                #     comparator common mode, which is the plate level too
 CMP_DT_MAX = 0.05                              # [C] decision: trip shift from the buffer's dynamics
-XT_MAX_LSB = 0.25                              # [C] v2's VBL-crosstalk bound (1/4 LSB), now applied to
+XT_MAX_LSB = 0.25                              # [C] v2's second-buffer crosstalk bound (1/4 LSB), now applied to
                                                #     the held cell's trip under a neighbour's S2 kick
 BIAS_LO, BIAS_HI = 0.69, 1.77                  # [M] ../bias_gen_bkp/bias_gen PVT current span
 
-# the design's bias current, from midref_v2's sizing record (copied as data/sizing_v2.json)
-I_F = float(json.load(open(os.path.join(DATA, "sizing_v2.json")))["design"]["i_f"])
+# the design's bias current, from midref_v2's sizing record (copied as data/sizing.json)
+I_F = float(json.load(open(os.path.join(DATA, "sizing.json")))["design"]["i_f"])
 
 
 def fill(tpl, subs):
@@ -82,9 +82,9 @@ def read_xy(path):
 
 
 def noise_from_files(d):
-    """VBL(t_dec) - VREF(TS) from ONE node's output noise. VREF and VBL are the
-    same node: VREF is sampled in full at TS (through S2, ~500 MHz), VBL is
-    seen through comparator's OTA pole F_CMP and averaged over the decision
+    """VREF(t_dec) - VREF(TS) from ONE node's output noise. The S2 level and
+    the comparator reference are the same node: VREF is sampled in full at TS
+    (through S2, ~500 MHz), and at the decision it is seen through comparator's OTA pole F_CMP and averaged over the decision
     time T_DEC after TS, so the noise below ~1/T_DEC is common to both and
     cancels:  S_out (1 + |H_c|^2 - 2 Re(H_c A)).
     Also returned, from the same spectra, what TWO independent buffers on one

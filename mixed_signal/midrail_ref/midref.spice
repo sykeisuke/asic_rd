@@ -1,6 +1,6 @@
 * midref -- the VDD/2 reference of the 8-bit bottom-plate cell with ONE output:
-* one midref_buf drives both VREF (every cell's S2 track level) and VBL (every
-* comparator's inp). 2026-10-13, user decision: the second buffer of midref_v2
+* one midref_buf drives VREF, both every cell's S2 track level and every
+* comparator's reference input inn. 2026-10-13, user decision: the second buffer of midref_v2
 * (one shared tap, two midref_buf) is removed. midref_div and midref_buf are
 * midref_v2's, device for device (../midrail_ref_bkp/midrail_ref_v2/midref_v2.spice, ADR 0016);
 * only the second buffer and its bias current are gone.
@@ -10,7 +10,7 @@
 *   power 260.3 uW at typical/27 C/3.3 V, divider + buffer + ideal ib (midref_v2: 494 uW for two
 *   buffers on one divider) [M, runs/midref-v3]
 * Ports: midref_div (vin vdd vss); midref_buf (out vin ib vdd vss); midref (out ib vdd vss).
-* The simulators are the authority, not these lines (verify_v3.py).
+* The simulators are the authority, not these lines (verify.py).
 
 .subckt midref_div vin vdd vss
 XRT vdd vin vss ppolyf_u_3k r_width=1u r_length=64.98u

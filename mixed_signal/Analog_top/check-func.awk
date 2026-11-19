@@ -7,23 +7,25 @@
 # gate, then REPORT: lines (recorded, not judged). Exit 1 on any FAIL.
 #
 # Gates and where each threshold comes from:
-#   sequencer   (v7, ADR 0027) the twelve controls made in the macro by
+#   sequencer   (ADR 0027) the twelve controls made in the macro by
 #               ../sample_seq from cnt_clk and acq: S2_k -> S0_k and S0_k ->
-#               S1_k >= 5 ns [U], S2_k opens <= 2 ns after the clock edge TS_k,
+#               S1_k >= the cell's own four-inverter delay [U] (ADR 0031) and
+#               no overlap at 10 / 90 % of the controls and the cell's
+#               complements, S2_k opens <= 2 ns after the clock edge TS_k,
 #               the cells TSPACE apart within 0.05 ns, S0_k open before vin
 #               steps at TS_k + TSTEP (sample_seq SPEC Q2-Q5)
 #   bias        pbias0..3 (each comparator's own diode) within TOL_BIAS = 5 mV
 #               of its final value over [T0, TS0] and between TS0 and TE: the
 #               generator is at its operating point before the first sample
 #               and stays there (../Analog_top_bkp/unit_cell_bps/check-cell.awk TOL_BIAS)
-#   references  VREF, VBL and the shared tap within TOL_REF of their final
+#   references  VREF and the shared tap within TOL_REF of their final
 #               value over [T0, TS0], TOL_REF = 0.25 LSB x alpha_min: a
 #               reference still moving by TOL_REF moves one cell's code
 #               against another's by at most 0.25 LSB, the spread allowed by
 #               check-cell.awk's linearity gate (alpha_min is the smallest
 #               bot/top transfer of the four cells, so the bound is the
 #               conservative one); and the VDD/2 error <= 50 mV
-#               (../midrail_ref/README.md s.1, common to VREF and VBL)
+#               (../midrail_ref/README.md s.1)
 #   vrlo        (v4: vrlo is made on chip by vrlo_ref, ADR 0018) settled within
 #               1 mV of its TS0 value before T0 (as the bias / references), and
 #               |vrlo - 7/55 AVDD| at TR <= 11.72 mV (vrlo_ref README R9, 2 of its
@@ -32,13 +34,13 @@
 #   sample      top = vin and bot = vref at TS_k within 0.1 LSB through the
 #               real switches (check-cell.awk TOL_SAMPLE)
 #   plate       the input-referred error at the crossing, bps_err_k =
-#               (vramp at bot = vbl) - vin_k, is ramp-independent and holds
+#               (vramp at bot = vref) - vin_k, is ramp-independent and holds
 #               everything between the sample and the comparator threshold
-#               (pedestal, plate charge, VREF at TS_k vs VBL at the decision);
+#               (pedestal, plate charge, VREF at TS_k vs at the decision);
 #               its spread over the four cells <= 0.25 LSB (check-cell.awk
 #               linearity, bps_err_lsb spread). Its mean is a pedestal the
 #               calibration removes (reported)
-#   armed       at TR, before the ramp moves: bot_k < vbl, dout_k and q_k
+#   armed       at TR, before the ramp moves: bot_k < vref, dout_k and q_k
 #               high; between S1_k closing (+ one count for q) and TR, dout_k
 #               never below VDD/2 and q_k never falls: no cell decides early
 #   decision    q_k falls exactly once in (TR, TE + TOVR], never again and
@@ -57,7 +59,7 @@
 #   rails       0 <= bot_k <= VDD from the S1 connection to TSTOP
 # Reported, not judged: offset and gain error (the calibration removes
 # both), comparator delay, dout fall, pedestals, alpha, ramp slope / INL /
-# start / kicks, bias currents, settling times, VREF/VBL in the sampling
+# start / kicks, bias currents, settling times, VREF in the sampling
 # window, power per block.
 
 function isnum(s) { return s ~ /^[-+]?([0-9]+\.?[0-9]*|\.[0-9]+)([eE][-+]?[0-9]+)?$/ }
@@ -83,18 +85,31 @@ END {
     SPREAD_MAX = 0.25
     RES_MAX = 0.5
     TCQ_MAX = 20
-    GAP_MIN = 5e-9          # [U] S2 -> S0 and S0 -> S1 at least 5 ns apart (user, 2026-10-30)
+    GAP_T4 = 1.0            # [U] ADR 0031 (user, 2026-11-15): every gap >= the cell's own four-inverter delay
+    CLR_MIN = 0             # ../sample_seq Q2b: 10 % / 90 % clearance > 0, the switches never overlap
     AP_MAX = 2e-9           # ../sample_seq Q5: S2 opens <= 2 ns after the clock edge
     SP_TOL = 0.05e-9        # ../sample_seq Q4: cells one period apart
 
     # ------------------------------------------------------- sequencer
-    gmin = 1; apx = 0; spx = 0; stepmin = 1
+    gmin = 1; apx = 0; spx = 0; stepmin = 1; rmin = 1e9; cmin = 1; t4x = 0
     for (k = 0; k < 4; k++) {
         if (!need("sequencer", "seq_g20_" k) || !need("sequencer", "seq_g01_" k) || !need("sequencer", "seq_ap_" k) \
-            || !need("sequencer", "seq_s0_vs_step_" k)) continue
-        g20 = v("seq_g20_" k); g01 = v("seq_g01_" k); ap = v("seq_ap_" k); st = v("seq_s0_vs_step_" k)
+            || !need("sequencer", "seq_s0_vs_step_" k) || !need("sequencer", "seq_t4_" k) \
+            || !need("sequencer", "seq_s2off_" k) || !need("sequencer", "seq_s0go_" k) || !need("sequencer", "seq_s0bgo_" k) \
+            || !need("sequencer", "seq_s0off_" k) || !need("sequencer", "seq_s0boff_" k) \
+            || !need("sequencer", "seq_s1go_" k) || !need("sequencer", "seq_s1bgo_" k)) continue
+        g20 = v("seq_g20_" k); g01 = v("seq_g01_" k); ap = v("seq_ap_" k); st = v("seq_s0_vs_step_" k); t4 = v("seq_t4_" k)
         if (g20 < gmin) gmin = g20; if (g01 < gmin) gmin = g01; if (ap > apx) apx = ap; if (st < stepmin) stepmin = st
-        if (g20 < GAP_MIN || g01 < GAP_MIN) note("sequencer", sprintf("cell %d gaps %.3f / %.3f ns", k, g20 * 1e9, g01 * 1e9))
+        if (t4 > t4x) t4x = t4
+        r = (g20 < g01 ? g20 : g01) / t4; if (r < rmin) rmin = r
+        # S2 fully off -> S0 starts to open (either gate); S0 fully off (both gates) -> S1 starts to close
+        a = v("seq_s0go_" k); b = v("seq_s0bgo_" k); c20 = (a < b ? a : b) - v("seq_s2off_" k)
+        a = v("seq_s0off_" k); b = v("seq_s0boff_" k); s0done = (a > b ? a : b)
+        a = v("seq_s1go_" k); b = v("seq_s1bgo_" k); c01 = (a < b ? a : b) - s0done
+        val["seq_clr20_" k] = c20; val["seq_clr01_" k] = c01
+        if (c20 < cmin) cmin = c20; if (c01 < cmin) cmin = c01
+        if (r < GAP_T4) note("sequencer", sprintf("cell %d gaps %.3f / %.3f ns under %.2f x its four-inverter delay %.3f ns", k, g20 * 1e9, g01 * 1e9, GAP_T4, t4 * 1e9))
+        if (c20 <= CLR_MIN || c01 <= CLR_MIN) note("sequencer", sprintf("cell %d overlaps at 10/90 %%: clearance %.3f / %.3f ns", k, c20 * 1e9, c01 * 1e9))
         if (ap < 0 || ap > AP_MAX) note("sequencer", sprintf("cell %d S2 opens %.3f ns after its edge", k, ap * 1e9))
         if (st <= 0) note("sequencer", sprintf("cell %d S0 opens after vin steps", k))
         if (k && need("sequencer", "seq_sp_" k)) {
@@ -102,11 +117,11 @@ END {
             if (d > SP_TOL) note("sequencer", sprintf("cells %d-%d %.4f ns apart", k - 1, k, v("seq_sp_" k) * 1e9))
         }
     }
-    printf "%s: sequencer: in the macro, S2 -> S0 -> S1 gaps >= %.0f ns (min %.3f ns), S2 opens %.3f ns at most after its clock edge (<= %.0f ns), cells %.0f ns apart within %.4f ns (<= %.2f), S0 open %.2f ns before vin moves%s\n", \
-        verdict("sequencer"), GAP_MIN * 1e9, gmin * 1e9, apx * 1e9, AP_MAX * 1e9, v("p_tspace") * 1e9, spx * 1e9, SP_TOL * 1e9, stepmin * 1e9, tail("sequencer")
+    printf "%s: sequencer: in the macro, S2 -> S0 -> S1 gaps >= %.2f x the cell's four-inverter delay (min %.3f ns = %.2f x, delay <= %.3f ns), no overlap at 10/90 %% (min clearance %.3f ns), S2 opens %.3f ns at most after its clock edge (<= %.0f ns), cells %.0f ns apart within %.4f ns (<= %.2f), S0 open %.2f ns before vin moves%s\n", \
+        verdict("sequencer"), GAP_T4, gmin * 1e9, rmin, t4x * 1e9, cmin * 1e9, apx * 1e9, AP_MAX * 1e9, v("p_tspace") * 1e9, spx * 1e9, SP_TOL * 1e9, stepmin * 1e9, tail("sequencer")
     for (k = 0; k < 4; k++)
-        printf "REPORT: sequencer cell %d: S2 opens %+.3f ns after TS%d, S0 %.3f ns later, S1 %.3f ns after S0\n", \
-            k, v("seq_ap_" k) * 1e9, k, v("seq_g20_" k) * 1e9, v("seq_g01_" k) * 1e9
+        printf "REPORT: sequencer cell %d: S2 opens %+.3f ns after TS%d, S0 %.3f ns later, S1 %.3f ns after S0; four-inverter delay %.3f ns; 10/90 clearance %.3f / %.3f ns\n", \
+            k, v("seq_ap_" k) * 1e9, k, v("seq_g20_" k) * 1e9, v("seq_g01_" k) * 1e9, v("seq_t4_" k) * 1e9, val["seq_clr20_" k] * 1e9, val["seq_clr01_" k] * 1e9
 
     # ------------------------------------------------------------ bias
     w = 0
@@ -122,18 +137,18 @@ END {
 
     # ------------------------------------------------------ references
     w = 0
-    split("vref vbl vmid", rn, " ")
-    for (i = 1; i <= 3; i++) {
+    split("vref vmid", rn, " ")
+    for (i = 1; i <= 2; i++) {
         if (!need("references", "dev_" rn[i] "_mv")) continue
         d = v("dev_" rn[i] "_mv") * 1e-3; if (d > w) { w = d; wn = rn[i] }
         if (d > TOL_REF) note("references", sprintf("%s %.3f mV from its final value in [T0, TS0]", rn[i], d * 1e3))
     }
-    for (i = 1; i <= 2; i++) {
+    for (i = 1; i <= 1; i++) {
         k = rn[i] "_err_ts0"
         if (need("references", k) && aabs(v(k)) > VMID_ERR) note("references", sprintf("%s %.1f mV from VDD/2", rn[i], v(k) * 1e3))
     }
-    printf "%s: references: VREF, VBL and the tap at their final value over [T0, TS0] within %.3f mV (0.25 LSB x alpha_min %.3f), worst %.4f mV (%s); VDD/2 error %.2f / %.2f mV <= %.0f mV%s\n", \
-        verdict("references"), TOL_REF * 1e3, v("alpha_min"), w * 1e3, wn, v("vref_err_ts0") * 1e3, v("vbl_err_ts0") * 1e3, VMID_ERR * 1e3, tail("references")
+    printf "%s: references: VREF and the tap at their final value over [T0, TS0] within %.3f mV (0.25 LSB x alpha_min %.3f), worst %.4f mV (%s); VDD/2 error %.2f mV <= %.0f mV%s\n", \
+        verdict("references"), TOL_REF * 1e3, v("alpha_min"), w * 1e3, wn, v("vref_err_ts0") * 1e3, VMID_ERR * 1e3, tail("references")
 
     # ------------------------------------------------------------ vrlo
     VRLO_ERR = 2 * 1.5 / 256
@@ -167,16 +182,16 @@ END {
 
     # ----------------------------------------------------------- armed
     for (k = 0; k < 4; k++) {
-        if (!need("armed", "vbot_tr" k) || !need("armed", "vbl_at_tr") || !need("armed", "dout_tr" k) || !need("armed", "q_tr" k) \
+        if (!need("armed", "vbot_tr" k) || !need("armed", "vref_at_tr") || !need("armed", "dout_tr" k) || !need("armed", "q_tr" k) \
             || !need("armed", "q_falls_pre" k) || !need("armed", "dout_min_pre" k)) continue
-        if (v("vbot_tr" k) >= v("vbl_at_tr")) note("armed", sprintf("cell %d: bot %.4f V >= vbl %.4f V at TR", k, v("vbot_tr" k), v("vbl_at_tr")))
+        if (v("vbot_tr" k) >= v("vref_at_tr")) note("armed", sprintf("cell %d: bot %.4f V >= vref %.4f V at TR", k, v("vbot_tr" k), v("vref_at_tr")))
         if (v("dout_tr" k) <= VMID) note("armed", sprintf("cell %d: dout %.3f V at TR", k, v("dout_tr" k)))
         if (v("q_tr" k) <= VMID) note("armed", sprintf("cell %d: q %.3f V at TR", k, v("q_tr" k)))
         if (v("q_falls_pre" k) != 0) note("armed", sprintf("cell %d: q fell %d times before TR", k, v("q_falls_pre" k)))
         if (v("dout_min_pre" k) <= VMID) note("armed", sprintf("cell %d: dout down to %.3f V before TR", k, v("dout_min_pre" k)))
-        mg = v("vbl_at_tr") - v("vbot_tr" k); if (k == 0 || mg < mgmin) mgmin = mg
+        mg = v("vref_at_tr") - v("vbot_tr" k); if (k == 0 || mg < mgmin) mgmin = mg
     }
-    printf "%s: armed: at TR every bot below vbl (smallest margin %.2f mV), dout and q high; no dout below VDD/2 and no q fall between S1 closing and TR%s\n", \
+    printf "%s: armed: at TR every bot below vref (smallest margin %.2f mV), dout and q high; no dout below VDD/2 and no q fall between S1 closing and TR%s\n", \
         verdict("armed"), mgmin * 1e3, tail("armed")
 
     # -------------------------------------------------------- decision
@@ -227,19 +242,19 @@ END {
     printf "%s: rails: every bottom plate inside 0..%.1f V from S1 closing to TSTOP (%.3f .. %.3f V)%s\n", verdict("rails"), VDD, tmin, tmax, tail("rails")
 
     # --------------------------------------------------------- reports
-    printf "REPORT: power-up: avdd 90 %% at %.1f ns; settled to 1 mV (vs TS0) at pbias0..3 %.0f/%.0f/%.0f/%.0f ns, pbias_r %.0f, vmid %.0f, vref %.0f, vbl %.0f, vrlo %.0f, vramp %.0f ns; T0 = %.2f us\n", \
+    printf "REPORT: power-up: avdd 90 %% at %.1f ns; settled to 1 mV (vs TS0) at pbias0..3 %.0f/%.0f/%.0f/%.0f ns, pbias_r %.0f, vmid %.0f, vref %.0f, vrlo %.0f, vramp %.0f ns; T0 = %.2f us\n", \
         v("t_avdd90") * 1e9, v("settle_pbias0_ns"), v("settle_pbias1_ns"), v("settle_pbias2_ns"), v("settle_pbias3_ns"), v("settle_pbias_r_ns"), \
-        v("settle_vmid_ns"), v("settle_vref_ns"), v("settle_vbl_ns"), v("settle_vrlo_ns"), v("settle_vramp_ns"), v("p_t0") * 1e6
+        v("settle_vmid_ns"), v("settle_vref_ns"), v("settle_vrlo_ns"), v("settle_vramp_ns"), v("p_t0") * 1e6
     printf "REPORT: bias currents at TS0 (device drain currents): icmp0..3 %.3f/%.3f/%.3f/%.3f uA, iramp %.3f uA (%+.2f %% of 3.1314), ivref %.3f uA, ivrlo %.3f uA (%.3f x 1.37), core %.3f uA\n", \
         v("icmp0_ts0_ua"), v("icmp1_ts0_ua"), v("icmp2_ts0_ua"), v("icmp3_ts0_ua"), v("iramp_ts0_ua"), (v("iramp_ts0_ua") / 3.1314 - 1) * 100, \
         v("ivref_ts0_ua"), v("ivrlo_ts0_ua"), v("ivrlo_ts0_ua") / 1.37, v("icore_ts0_ua")
     printf "REPORT: vrlo: %.5f V at T0, %.5f at TS0, %.5f at TR, %.5f at TE (peak-to-peak %.3f mV over [TS0, TSTOP]); vramp - vrlo at TR %+.2f uV (%+.4f LSB: XRST drop from the ramp current + the S1 charge left after the 300 ns gap)\n", \
         v("vrlo_at_t0"), v("vrlo_at_ts0"), v("vrlo_at_tr"), v("vrlo_at_te"), v("vrlo_pp_conv_mv"), v("vramp_vrlo_tr_uv"), v("vramp_vrlo_tr_lsb")
-    printf "REPORT: references at TS0: vref %.5f V, vbl %.5f V (VDD/2 error %.2f / %.2f mV), vbl - vref %+.4f mV; at the samples TS0..3 vref is %+.3f/%+.3f/%+.3f/%+.3f mV from final; peaks in [TS0, TR] (vin steps, S2 kicks) vref %.1f, vbl %.1f, tap %.1f mV; back within 0.1 LSB %.0f / %.0f / %.0f ns after the last vin step (vref / vbl / tap)\n", \
-        v("vref_at_ts0"), v("vbl_at_ts0"), v("vref_err_ts0") * 1e3, v("vbl_err_ts0") * 1e3, v("vbl_vref_ts0") * 1e3, \
-        v("vref_dev_ts0_mv"), v("vref_dev_ts1_mv"), v("vref_dev_ts2_mv"), v("vref_dev_ts3_mv"), v("vref_kick_pk_mv"), v("vbl_kick_pk_mv"), v("vmid_kick_pk_mv"), \
-        v("vref_recover_ns"), v("vbl_recover_ns"), v("vmid_recover_ns")
-    printf "REPORT: sample: S2 pedestal on bot %.3f/%.3f/%.3f/%.3f mV; vbl - vref(TS_k) at the crossing %.3f/%.3f/%.3f/%.3f mV; alpha (large signal, TR to crossing) %.3f/%.3f/%.3f/%.3f\n", \
+    printf "REPORT: references at TS0: vref %.5f V (VDD/2 error %.2f mV); at the samples TS0..3 vref is %+.3f/%+.3f/%+.3f/%+.3f mV from final; peaks in [TS0, TR] (vin steps, S2 kicks) vref %.1f, tap %.1f mV; back within 0.1 LSB %.0f / %.0f ns after the last vin step (vref / tap)\n", \
+        v("vref_at_ts0"), v("vref_err_ts0") * 1e3, \
+        v("vref_dev_ts0_mv"), v("vref_dev_ts1_mv"), v("vref_dev_ts2_mv"), v("vref_dev_ts3_mv"), v("vref_kick_pk_mv"), v("vmid_kick_pk_mv"), \
+        v("vref_recover_ns"), v("vmid_recover_ns")
+    printf "REPORT: sample: S2 pedestal on bot %.3f/%.3f/%.3f/%.3f mV; vref(crossing) - vref(TS_k) %.3f/%.3f/%.3f/%.3f mV; alpha (large signal, TR to crossing) %.3f/%.3f/%.3f/%.3f\n", \
         v("ped_bot0") * 1e3, v("ped_bot1") * 1e3, v("ped_bot2") * 1e3, v("ped_bot3") * 1e3, v("refd0") * 1e3, v("refd1") * 1e3, v("refd2") * 1e3, v("refd3") * 1e3, \
         v("alpha0"), v("alpha1"), v("alpha2"), v("alpha3")
     printf "REPORT: ramp: reset level %.5f V (%+.2f LSB from VR_LO), release step %+.3f mV, fitted start %+.3f LSB, slope %.5f V/us (gain error %+.3f %%; first/last 1.2 us %.5f/%.5f, bow %+.3f %%), INL %.3f LSB best-fit / %.3f end-point, VR_HI after %.2f counts; vramp %.4f V at TE, %.4f at TE+TOVR\n", \

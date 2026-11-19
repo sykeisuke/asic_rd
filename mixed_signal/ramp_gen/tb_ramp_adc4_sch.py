@@ -81,7 +81,7 @@ code = ("* models (typical) and the blocks behind the primitive symbols, by path
         ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical\n"
         ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical\n"
         ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice moscap_typical\n"
-        ".include /foss/designs/mixed_signal/ramp_gen/ref/comparator_updt/cmp_updt.spice\n"
+        ".include /foss/designs/mixed_signal/ramp_gen/ref/comparator_prev/cmp_updt.spice\n"
         ".include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/data/bias_gen_params.spice\n"
         ".include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/bias_gen.spice\n"
         ".include /foss/designs/mixed_signal/ramp_gen/ref/midrail_ref/data/midrail_params.spice\n"

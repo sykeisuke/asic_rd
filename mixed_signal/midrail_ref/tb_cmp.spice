@@ -1,7 +1,7 @@
 * The one output of midref as BOTH the cell's S2 level (VREF) and
-* comparator's threshold (VBL) through one decision, typical / 27 C / 3.3 V.
+* comparator's threshold (VREF) through one decision, typical / 27 C / 3.3 V.
 * ../midrail_ref_bkp/midrail_ref_v2/tb_cmp.spice with the second buffer removed: S2 and the
-* comparator's inp sit on the same node. TEMPLATE: if vdrop src agg v0 (verify_v3.py
+* comparator's inn (its reference input) sit on the same node. TEMPLATE: if vdrop src agg v0 (verify.py
 * writes one deck per run):
 *   src 1  the buffer drives the node                      (run A, and C1 / C2)
 *   src 0  an IDEAL source at run A's pre-sample level v0  (run B, the control)
@@ -74,7 +74,7 @@ VS2 s2 0 PWL(0 {VDD} {TS} {VDD} {TS+0.1n} 0)
 S2 vref top s2 0 sws2
 .model sws2 sw vt={VDD/2} vh=0.05 ron={RS2} roff=1e14
 VBOT bot 0 PWL(0 {VDD/2} {TDROP} {VDD/2} {TDROP+0.1n} {VDD/2-VDROP} {TR} {VDD/2-VDROP} {TSTOP} {VDD/2-VDROP+SLOPE*(TSTOP-TR)})
-XCMP vref top dout clk vdd 0 nbias pbias cmp
+XCMP top vref dout clk vdd 0 nbias pbias comparator
 CLOAD dout 0 10f
 VCLK clk 0 0
 * the neighbour: its S2 closes on the node at TK (agg 1 / 2), or never (agg 0)

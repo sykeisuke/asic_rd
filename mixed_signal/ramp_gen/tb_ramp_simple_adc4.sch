@@ -11,7 +11,7 @@ C {devices/code_shown.sym} 60 -1320 0 0 {name=MODELS only_toplevel=false value="
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice moscap_typical
-.include /foss/designs/mixed_signal/ramp_gen/ref/comparator_updt/cmp_updt.spice
+.include /foss/designs/mixed_signal/ramp_gen/ref/comparator_prev/cmp_updt.spice
 .include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/data/bias_gen_params.spice
 .include /foss/designs/mixed_signal/ramp_gen/ref/bias_gen/bias_gen.spice
 .include /foss/designs/mixed_signal/ramp_gen/ref/midrail_ref/data/midrail_params.spice

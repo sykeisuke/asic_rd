@@ -1,12 +1,16 @@
 # check-schematic.awk -- the xschem schematic must netlist back to its deck.
 #
-#   awk -v ref=cmp_ts.spice -f check-schematic.awk cmp_ts.spice work/cmp_ts_sch.spice
+#   awk -v ref=comparator.spice -f check-schematic.awk comparator.spice work/comparator_sch.spice
+#
+# (Copy of comparator_bkp/comparator_10dev/check-schematic.awk with one added check: the device
+# ORDER, because ngspice's Monte Carlo draws follow it.)
 #
 # File 1 is the controlled SPICE source, file 2 is what xschem produced from
-# cmp_ts.sch. A drawing that merely looks like the deck is not evidence, so
+# comparator.sch. A drawing that merely looks like the deck is not evidence, so
 # every device is compared on its four terminals, its model and L/W/nf/m, and
 # the subcircuit port list is compared in order. xschem omits m=1 and writes
 # expressions in 'quotes' where the deck writes {braces}; both are normalised.
+# The order of the devices in the schematic's netlist must equal the deck's.
 #
 # Prints one PASS:/FAIL: line per check, exits non-zero on any failure.
 
@@ -50,7 +54,7 @@ function flush(    n, a, name, key) {
     }
     dev[side, name] = key
     if (side == 1) order[++nord] = name
-    else seen[name] = 1
+    else { seen[name] = 1; order2[++nord2] = name }
     buf = ""
 }
 
@@ -102,6 +106,15 @@ END {
             printf "FAIL: %s is in the schematic but not in %s\n", name, ref
             bad++
         }
+
+    o1 = ""; o2 = ""
+    for (i = 1; i <= nord; i++) o1 = o1 " " order[i]
+    for (i = 1; i <= nord2; i++) o2 = o2 " " order2[i]
+    if (o1 != o2) {
+        printf "FAIL: device order deck [%s] schematic [%s]\n", o1, o2
+        bad++
+    } else
+        printf "PASS: device order equals the deck:%s\n", o1
 
     if (ports[1] != ports[2]) {
         printf "FAIL: port list deck [%s] schematic [%s]\n", ports[1], ports[2]

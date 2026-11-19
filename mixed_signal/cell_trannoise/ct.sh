@@ -49,8 +49,15 @@
 #          assets/ct_noise.png/.svg; check-ct.awk
 [ -n "${BASH_VERSION:-}" ] || exec bash "$0" "$@"
 set -uo pipefail
-B=/foss/designs/mixed_signal/cell_trannoise
+# S: this block (the scripts). B: where work/, data/, assets/ live, CT_HOME if set
+# (pex/run.sh: one directory per extracted comparator, CT_CMP naming its netlist),
+# else this block. Unset, every deck and cache key is what it was before CT_HOME.
+S=/foss/designs/mixed_signal/cell_trannoise
+B=${CT_HOME:-$S}
+export S
+mkdir -p "$B"
 cd "$B"
+[ -n "${CT_CMP:-}" ] && echo "REPORT: comparator_d from $CT_CMP (everything else from ../Analog_top/analog_top.spice)"
 export PYTHONPATH="/foss/tools/vacask/lib/vacask/python:${PYTHONPATH:-}"
 STEPS=${STEPS:-'models schematic align ngspice kick sim reduce'}
 JOBS=${JOBS:-12}; NSEED=${NSEED:-12}; NREC_LO=${NREC_LO:-48}; NREC_HI=${NREC_HI:-16}
@@ -71,35 +78,35 @@ echo "ct_reltol_g = $RELTOL_G"
 echo "REPORT: blocks alone at reltol $RELTOL_G: $LOOSE_G"
 
 if has models; then
-    python3 ct_models.py || exit 1
-    CT_NF1=0 python3 ct_netlist.py > work/net_drawn.inc 2> work/net_drawn.txt || { cat work/net_drawn.txt; exit 1; }
-    CT_NF1=1 python3 ct_netlist.py > work/net_all.inc 2> work/net_all.txt || { cat work/net_all.txt; exit 1; }
+    python3 "$S"/ct_models.py || exit 1
+    CT_NF1=0 python3 "$S"/ct_netlist.py > work/net_drawn.inc 2> work/net_drawn.txt || { cat work/net_drawn.txt; exit 1; }
+    CT_NF1=1 python3 "$S"/ct_netlist.py > work/net_all.inc 2> work/net_all.txt || { cat work/net_all.txt; exit 1; }
     for g in $NOISE_BLOCKS; do
         others=$(for x in ramp cmp ff sw; do [ "$x" = "$g" ] || printf '%s ' "$x"; done)
-        CT_NF1=1 python3 ct_netlist.py $others > "work/net_only_$g.inc" 2> "work/net_only_$g.txt" \
+        CT_NF1=1 python3 "$S"/ct_netlist.py $others > "work/net_only_$g.inc" 2> "work/net_only_$g.txt" \
             || { cat "work/net_only_$g.txt"; exit 1; }
     done
     sed 's/^/REPORT: /' work/net_all.txt
     echo "PASS: translated ramp_simple + atop_cell (sw_s0/1/2, comparator_d, latch = dfxtn_2) from ../Analog_top/analog_top.spice"
 fi
 if has schematic; then
-    python3 tb_sch.py || { echo "FAIL: schematic: tb_sch.py"; st=1; }
+    python3 "$S"/tb_sch.py || { echo "FAIL: schematic: tb_sch.py"; st=1; }
     NET=work/tb_cell_tn.spice
     rm -f "$NET"
-    xschem --rcfile xschemrc -b -q -n -s -o work tb_cell_tn.sch > work/tb_cell_tn_xschem.txt 2>&1
+    xschem --rcfile "$S"/xschemrc -b -q -n -s -o work "$S"/tb_cell_tn.sch > work/tb_cell_tn_xschem.txt 2>&1
     if [ ! -s "$NET" ]; then
         echo "FAIL: schematic: xschem produced no netlist for tb_cell_tn.sch"; st=1
     else
         echo "Netlist: $B/$NET"
         for d in work/sch_ref work/sch_ng; do rm -rf "$d"; mkdir -p "$d"; cp work/.spiceinit "$d/"; done
-        python3 ct_bench.py ngspice work/sch_ref/tb.spice POS=16.5 NREC=1
-        python3 ct_xtb.py instances work/sch_ref/tb.spice "$NET" || st=1
-        python3 ct_xtb.py subckts ../Analog_top/analog_top.spice "$NET" || st=1
+        python3 "$S"/ct_bench.py ngspice work/sch_ref/tb.spice POS=16.5 NREC=1
+        python3 "$S"/ct_xtb.py instances work/sch_ref/tb.spice "$NET" || st=1
+        python3 "$S"/ct_xtb.py subckts "$S"/../Analog_top/analog_top.spice "$NET" || st=1
         rm -f assets/tb_cell_tn_xschem.png assets/tb_cell_tn_xschem.svg
         timeout 120 xvfb-run -a -s "-screen 0 2400x1400x24" \
-            xschem --rcfile xschemrc --tcl "set dark_colorscheme 0" \
+            xschem --rcfile "$S"/xschemrc --tcl "set dark_colorscheme 0" \
             --command "xschem zoom_full; xschem print png assets/tb_cell_tn_xschem.png 2400 1400; xschem print svg assets/tb_cell_tn_xschem.svg; xschem exit closewindow force" \
-            tb_cell_tn.sch > work/tb_cell_tn_print.txt 2>&1
+            "$S"/tb_cell_tn.sch > work/tb_cell_tn_print.txt 2>&1
         if [ -s assets/tb_cell_tn_xschem.png ] && [ -s assets/tb_cell_tn_xschem.svg ]; then
             echo "PASS: schematic: xschem render assets/tb_cell_tn_xschem.png / .svg"
             echo "Figure: $B/assets/tb_cell_tn_xschem.png"
@@ -115,12 +122,12 @@ if has schematic; then
         ( cd work/sch_ref && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: schematic: ngspice on the hand deck (work/sch_ref)"; st=1; }
         ( cd work/sch_ng && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: schematic: ngspice on the xschem netlist (work/sch_ng)"; st=1; }
         echo "sch_ngspice_s = $(( $(date +%s) - t0 ))"
-        python3 ct_extract.py work/sch_ref/tb.raw work/sch_ref/r.csv POS=16.5 NREC=1 > /dev/null \
+        python3 "$S"/ct_extract.py work/sch_ref/tb.raw work/sch_ref/r.csv POS=16.5 NREC=1 > /dev/null \
             || { echo "FAIL: schematic: ct_extract.py on the hand deck's raw"; st=1; }
-        python3 ct_extract.py work/sch_ng/tb_cell_tn.raw work/sch_ng/r.csv POS=16.5 NREC=1 > /dev/null \
+        python3 "$S"/ct_extract.py work/sch_ng/tb_cell_tn.raw work/sch_ng/r.csv POS=16.5 NREC=1 > /dev/null \
             || { echo "FAIL: schematic: ct_extract.py on the xschem netlist's raw"; st=1; }
         if [ -s work/sch_ref/r.csv ] && [ -s work/sch_ng/r.csv ]; then
-            python3 ct_xtb.py compare work/sch_ref/r.csv work/sch_ng/r.csv || st=1
+            python3 "$S"/ct_xtb.py compare work/sch_ref/r.csv work/sch_ng/r.csv || st=1
         fi
         rm -f work/sch_ref/tb.raw work/sch_ng/tb_cell_tn.raw
     fi
@@ -133,7 +140,7 @@ vrun() {   # dir: run VACASK on dir/tn.sim, extract with dir/params.txt
     d=$1
     ( cd "$d" && vacask tn.sim > vacask.txt 2>&1 )
     if [ -s "$d/tn.raw" ] && ! grep -q -i aborted "$d/vacask.txt"; then
-        python3 ct_extract.py "$d/tn.raw" "$d/r.csv" $(cat "$d/params.txt") > "$d/extract.txt" 2>&1 \
+        python3 "$S"/ct_extract.py "$d/tn.raw" "$d/r.csv" $(cat "$d/params.txt") > "$d/extract.txt" 2>&1 \
             || echo "FAIL: ct_extract.py $d: $(tail -1 "$d/extract.txt" | cut -c1-160)"
         rm -f "$d/tn.raw"
         return 0
@@ -148,9 +155,9 @@ if has align; then
         tag=${lv%%:*}; pos=${lv#*:}; d=work/al_$tag/s0
         mkdir -p "$d"
         echo "POS=$pos NREC=2" > "$d/params.txt"
-        python3 ct_bench.py vacask "$d/tn.sim" "$B/work/net_drawn.inc" --scale 0 --maxstep 0.2e-9 POS=$pos NREC=2
+        python3 "$S"/ct_bench.py vacask "$d/tn.sim" "$B/work/net_drawn.inc" --scale 0 --maxstep 0.2e-9 POS=$pos NREC=2
         vrun "$d" || { echo "FAIL: align $tag: VACASK noiseless run lost: $(grep -m1 -i -E 'error|abort|small' "$d/vacask.txt" | cut -c1-160)"; exit 1; }
-        python3 ct_align.py "$tag" "$pos" "$d/r.csv" || exit 1
+        python3 "$S"/ct_align.py "$tag" "$pos" "$d/r.csv" || exit 1
     done
 fi
 [ -s work/align.txt ] || { echo "FAIL: no work/align.txt; run the align step"; exit 1; }
@@ -160,11 +167,11 @@ if has ngspice; then
     for lv in $LEVELS; do
         tag=${lv%%:*}; pos=$(apos "$tag"); d=work/ng_$tag
         rm -rf "$d"; mkdir -p "$d"; cp work/.spiceinit "$d/"
-        python3 ct_bench.py ngspice "$d/tb.spice" POS=$pos NREC=4
+        python3 "$S"/ct_bench.py ngspice "$d/tb.spice" POS=$pos NREC=4
         t0=$(date +%s)
         ( cd "$d" && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: ngspice reference ($tag)"; st=1; }
         echo "ct_ngspice_${tag}_s = $(( $(date +%s) - t0 ))"
-        python3 ct_extract.py "$d/tb.raw" "$d/r.csv" POS=$pos NREC=4 > /dev/null || { echo "FAIL: ct_extract ngspice $tag"; st=1; }
+        python3 "$S"/ct_extract.py "$d/tb.raw" "$d/r.csv" POS=$pos NREC=4 > /dev/null || { echo "FAIL: ct_extract ngspice $tag"; st=1; }
         rm -f "$d/tb.raw"
     done
 fi
@@ -177,7 +184,7 @@ fi
 if has kick; then
     pos=$(apos c16); k=$(awk '$1 == "c16" { print $3 }' work/align.txt)
     stop=$(python3 -c "
-import sys; sys.path.insert(0, '.')
+import sys; sys.path.insert(0, '$S')
 from ct_common import load_params, fall_edge
 P = load_params({'POS': $pos, 'NREC': 1})
 print('%.12g' % (P['TFIRST'] + P['TRREL'] + fall_edge(P, $k) + 5e-9))")
@@ -185,9 +192,9 @@ print('%.12g' % (P['TFIRST'] + P['TRREL'] + fall_edge(P, $k) + 5e-9))")
     for c in "nom" "clkhold CLKSTOP=$stop" "ddec LATDEC=1"; do
         set -- $c; tag=$1; shift; d=work/kick_$tag
         rm -rf "$d"; mkdir -p "$d"; cp work/.spiceinit "$d/"
-        python3 ct_bench.py ngspice "$d/tb.spice" POS=$pos NREC=1 "$@"
-        ( cd "$d" && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: ngspice kick run $tag"; st=1; }
-        python3 ct_kick.py "$tag" "$d/tb.raw" POS=$pos NREC=1 "$@" >> work/kick.txt || { echo "FAIL: ct_kick.py $tag"; st=1; }
+        python3 "$S"/ct_bench.py ngspice "$d/tb.spice" POS=$pos NREC=1 "$@"
+        ( cd "$d" && ngspice -b tb.spice > ngspice.out 2>&1 ) || { echo "FAIL: ngspice kick run $tag: $( (grep -m1 -i -E 'error|abort|too small|singular' "$d/ngspice.out" || grep -v '^\s*$' "$d/ngspice.out" | tail -n 1) | cut -c1-160)"; st=1; }
+        python3 "$S"/ct_kick.py "$tag" "$d/tb.raw" POS=$pos NREC=1 "$@" >> work/kick.txt || { echo "FAIL: ct_kick.py $tag"; st=1; }
         rm -f "$d/tb.raw"
     done
     cat work/kick.txt
@@ -206,7 +213,7 @@ if has sim; then
     add() {   # dir net prio [ct_bench.py vacask arguments ...]; queues the run unless cached
         d=$1; net=$2; prio=$3; shift 3
         mkdir -p "$d"
-        python3 ct_bench.py vacask "$d/tn.new" "$B/work/$net" "$@" || { echo "FAIL: ct_bench.py $d"; st=1; return; }
+        python3 "$S"/ct_bench.py vacask "$d/tn.new" "$B/work/$net" "$@" || { echo "FAIL: ct_bench.py $d"; st=1; return; }
         printf '%s\n' "$*" | tr ' ' '\n' | grep -E '^[A-Z][A-Z_0-9]*=' | tr '\n' ' ' > "$d/params.txt"
         key=$d/tn.sim; [ -f "$d/tn.key" ] && key=$d/tn.key    # a retried run keeps its original deck as the key
         if [ "${FORCE:-0}" != 1 ] && [ -s "$d/r.csv" ] && [ -f "$key" ] && cmp -s "$d/tn.new" "$key" \
@@ -271,9 +278,9 @@ if has sim; then
 fi
 
 if has reduce; then
-    python3 ct_reduce.py > work/summary.txt || st=1
+    python3 "$S"/ct_reduce.py > work/summary.txt || st=1
     [ -s work/kick.txt ] && cat work/kick.txt >> work/summary.txt
     cat work/summary.txt
-    awk -f check-ct.awk work/summary.txt || st=1
+    awk -f "$S"/check-ct.awk work/summary.txt || st=1
 fi
 exit $st

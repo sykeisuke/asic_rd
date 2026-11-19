@@ -1,5 +1,14 @@
 # Analog_top: conceptual pin list
 
+**Since 2026-11-17:** no pin changes (`check_equiv.py`: the 12 ports of the
+previous record, in its order). Inside each cell the comparator is `../comparator`
+(the sized core + one output inverter): `bot[i]` drives its `inp`, the
+`vref` net its `inn`, and `dout[i]` still falls once at the decision, so
+`Q[3:0]` keeps the one-monotonic-fall convention below. Where the rows below
+say a comparator `inp` sits on `vbl` / `vref`, read `inn` on `vref`. `vbl`
+is the old name of the comparator reference; since 2026-11-18 the macro
+calls it `vref` everywhere and `atop_cell` has one `vref` pin.
+
 **Analog_top_v4 (2026-10-10):** `VRLO` is no longer a pin. It is made inside
 the macro by `vrlo_ref` (ADR 0018, 0020); the `VRLO` row below and its count
 in the analog pin budget are historical. The rest of this list is as copied.
@@ -78,17 +87,17 @@ path.
 | --- | --- | --- | --- | --- | --- |
 | `EXT_RAMP` | A in | External ramp injected in place of `ramp_gen` | TG pair in front of the `vramp` bus, selected by `RAMP_SEL` | A series R into every S1 path. Size it against the ramp-lag figure in `switches.spice` (7.0 uV with today's S1) | External ramp input |
 | `RAMP_SEL` | D in | 0 = internal ramp, 1 = `EXT_RAMP` | Config bit from the digital macro | — | same |
-| `AMON` | A out | Buffered monitor: `vramp`, `vref`, `vbl`, or the replica cell's bottom plate | Unity-gain buffer behind an analog mux, selected by `AMON_SEL[1:0]` | The mux leakage and C must not sit on a signal cell's `bot` | Ramp monitor, VHOLD observation |
+| `AMON` | A out | Buffered monitor: `vramp`, `vref`, or the replica cell's bottom plate | Unity-gain buffer behind an analog mux, selected by `AMON_SEL[1:0]` | The mux leakage and C must not sit on a signal cell's `bot` | Ramp monitor, VHOLD observation |
 | `AMON_SEL[1:0]` | D in | Monitor select | Config bits | — | same |
 | `ATEST` | A io | Bias current in/out on `pbias_k` / `pbias_c` / `pbias_r`, replica MOS, MIM/MOM replica, standalone comparator input | Analog test mux, off by default | Any gate-connected path needs the CDM network | Replica structure, comparator standalone |
-| `CMP_SA_OUT` | D out | Output of a standalone replica `cmp` + TSPC with `inn` from `ATEST` and `inp` on `vbl` | A fifth comparator copy in the test zone. The four signal comparators stay untouched | Area only | Comparator standalone mode |
+| `CMP_SA_OUT` | D out | Output of a standalone replica `cmp` + TSPC with one input from `ATEST` and the other on `vref` | A fifth comparator copy in the test zone. The four signal comparators stay untouched | Area only | Comparator standalone mode |
 | `BIAS_EN` | D in | Enable for `bias_gen_K`, `bias_gen_C` and `bias_gen_R` (power-down) | Would need a disable path in the beta multiplier that keeps the start-up working | No block has one today. It changes `bias_gen`, which needs re-verification | Safe power-up (§9.1) |
-| `REP_*` | A io | Replica cell (S0/S1/S2 + MIM + cmp) with its bottom plate buffered to `AMON` | A fifth cell placed after cell 3, on the same buses | It adds 1 load to `vfe`, `vramp`, `vref`, `vbl` and `pbias_k`. The four signal cells keep their alpha | VHOLD observation |
+| `REP_*` | A io | Replica cell (S0/S1/S2 + MIM + cmp) with its bottom plate buffered to `AMON` | A fifth cell placed after cell 3, on the same buses | It adds 1 load to `vfe`, `vramp`, `vref` and `pbias_k`. The four signal cells keep their alpha | VHOLD observation |
 
-`VREF` and `VBL` are deliberately **not** pins. They are on-chip VDD/2
-buffers. To sweep them from the board, as TOPDOWN §3.3 planned, an override
-TG on each with its own pad would be needed. That costs two analog pads
-the ring does not have spare, so the proposal monitors them through `AMON`
+`VREF` is deliberately **not** a pin. It is an on-chip VDD/2
+buffer. To sweep them from the board, as TOPDOWN §3.3 planned, an override
+TG with its own pad would be needed. That costs an analog pad
+the ring does not have spare, so the proposal monitors it through `AMON`
 instead.
 
 ## 5. Internal nets, which are not pins
@@ -122,5 +131,5 @@ These are listed because the floorplan is drawn around them.
 
 At chip level, the analog pads this uses are `VIN`, `EXT_RAMP`, `AMON` and
 `ATEST`, plus `VRLO` if it comes from the board. That is 4 or 5 of the 6
-analog pads. Two analog pads freed by on-chip `VREF`/`VBL` are left for
+analog pads. Two analog pads freed by the on-chip `VREF` are left for
 the rest.

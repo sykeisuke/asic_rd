@@ -386,7 +386,7 @@ def main():
         f"*   135-cell requirement s_pvt {sel['s_pvt']:.3f} [M] x (1 + 3 sigma {100 * sel['sig_tot']:.2f} % [P])\n"
         f"*   decaps: pb {s['cpb']:g} pF to vdd, nb {s['cnb']:g} pF to vss (MIM over the rows)\n"
         "* Ports: vdd vss icmp0..3 (sinks, to each comparator's own pbias diode), iramp (sink,\n"
-        "* to the ramp's L=1u W=20u nf=10 diode), ivref ivbl (sources, to midref_buf ib).\n"
+        "* to the ramp's L=1u W=20u nf=10 diode), ivref ivref2 (sources, to midref_buf ib).\n"
         "* The simulators are the authority, not these lines.\n")
     os.makedirs(os.path.join(bg.BLOCK, "work"), exist_ok=True)
     with open(os.path.join(bg.BLOCK, "work", "bias_gen.spice"), "w") as h:

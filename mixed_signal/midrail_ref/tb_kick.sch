@@ -42,7 +42,7 @@ N 2700 -1030 2700 -1070 {}
 N 2700 -970 2700 -930 {}
 N 2150 -790 2150 -830 {}
 N 2150 -730 2150 -690 {}
-T {TB_KICK  -  S2 event of one cell on the one output (vref = vbl), both charge directions} 60 -1330 0 0 0.7 0.7 {}
+T {TB_KICK  -  S2 event of one cell on the one output (vref), both charge directions} 60 -1330 0 0 0.7 0.7 {}
 T {SUPPLY + BIAS} 60 -1260 0 0 0.4 0.4 {}
 T {I_B = 12.36 uA} 250 -1010 0 0 0.3 0.3 {layer=4}
 T {SWITCH CONTROLS} 60 -990 0 0 0.4 0.4 {}

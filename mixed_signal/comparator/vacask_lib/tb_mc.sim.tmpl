@@ -40,7 +40,7 @@ vclk (clk 0) vsource dc=@VDD@
 vinp (inp 0) vsource dc=@VCM@
 vinn (inn 0) vsource dc=@VCM@
 
-xdut (inp inn dout clk vdd 0 nbias pbias) cmp
+xdut (inn inp dout clk vdd 0 nbias pbias) comparator
 cload (dout 0) capacitor c=@CLOAD@
 
 control

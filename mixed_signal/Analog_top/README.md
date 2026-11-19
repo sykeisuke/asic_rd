@@ -1,4 +1,75 @@
-# Analog_top: the analog macro, v7 (switch controls made on chip)
+# Analog_top: the analog macro
+
+## Current design (since 2026-11-17): the comparator with the plate on inp
+
+`comparator_d` is `../comparator` (cell `comparator`) + the bias diode XREFP:
+the sized core's ten devices (`comparator_core`) plus one output inverter (XBUF5 / XBUF6,
+copies of XBUF3 / XBUF4) on the new internal node `outc`. In `atop_cell` the
+floating plate `bot` drives the comparator's `inp` and `vref` its
+`inn` (v7: the other way round), so `dout` still makes one FALL at the
+decision and the latch / Gray capture are unchanged. Everything else is v7's
+(ADR 0031 sequencer). The previous record ("v7" below) is archived in
+`../Analog_top_bkp/Analog_top_v7_adr0031`; its netlist and functional record are
+`data/prev_ref/`, the reference of `check_equiv.py` and `compare_prev.py`. The
+sections below keep the version labels v1-v8 as history.
+
+`check_equiv.py` (v7 -> v8): ports equal; 437 leaf devices = v7's 429 + the 8
+declared (xbuf5 / xbuf6 per cell, each a copy of xbuf3 / xbuf4 in model and
+every parameter); every v7 device and parameter kept; per cell xinp's gate on
+`bot` and xinn's on `vref` (swapped at the instance); one new net per cell,
+`xcmp.outc`; all 349 v7 nets matched one-to-one, no rename.
+
+Record: `runs/analog-top/20261117T213148Z` (89/89, typical, 27 C, 3.3 V;
+`./scripts/sim.sh analog-top JOBS=4` after `PHASES=schematic REGEN=1`,
+`runs/analog-top/20261117T213110Z`). Against v7 (`runs/analog-top/20261116T085301Z`, 86/86):
+
+| Quantity | v7 | v8 |
+| --- | --- | --- |
+| Codes for 16.5 / 80.5 / 160.5 / 240.5 LSB | 17 / 81 / 160 / 239 | **17 / 80 / 159 / 238** |
+| Transfer residual (gated <= 0.5 LSB) | 0.062 LSB | 0.053 LSB |
+| Trip-count gain error / offset | -0.951 % / +0.794 LSB | -1.535 % / +0.697 LSB |
+| Ramp slope (gain error vs ideal) | 0.13532 V/us (+0.957 %) | 0.13613 V/us (+1.564 %) |
+| Transfer gain the ramp alone predicts | -0.948 % | -1.540 % |
+| Analog crossing (from TR) vs v7, cells 0..3 | | -0.17 / -0.73 / -1.23 / -1.49 counts |
+| Comparator delay from the plate crossing (in the cell, 3.25 uA) | 6.50-6.58 ns | 10.43-10.46 ns (+3.9 ns = +0.08 count) |
+| dout fall 90-10 % | 5.36 ns (cell 0) | 0.29-0.47 ns |
+| alpha (plate / ramp, large signal), cells 0..3 | 0.415 / 0.647 / 0.685 / 0.697 | 0.813 / 0.851 / 0.866 / 0.871 |
+| Plate error spread (gated <= 0.25 LSB) | 0.036 LSB | 0.041 LSB |
+| Armed margin at TR (vref - bot, smallest) | 47.2 mV | 92.7 mV |
+| VREF peak in [TS0, TR] (vin steps, S2 kicks) / recovery | 64.4 mV / 34.7 ns | 79.8 mV / 33.9 ns |
+| Ramp step at each decision, cells 0..3 (`ramp_kick<k>_mv`) | -0.118 / -0.096 / -0.070 / -0.033 mV | +0.040 / +0.031 / -0.019 / -0.046 mV |
+| Bottom plate max (cell 0, over-voltage tail) | 3.003 V | 3.038 V |
+| Power over the ramp: AVDD + DVDD | 770.1 + 60.4 uW | 716.7 + 60.4 uW |
+| Cell 0 after its decision | 107.4 uW | 10.7 uW |
+| Sequencer gaps / four-inverter delay | 0.386 / 0.258 ns, 0.171 ns | unchanged (0.386 / 0.258, 0.171 ns) |
+
+Reading:
+
+- **Polarity matched:** every `q` falls exactly once and stays low; the latch
+  catches every `dout` at the first falling edge (clock-to-q 0.35 ns).
+- **The code shift is NOT the comparator's delay.** The delay grows by
+  3.9 ns (+0.08 count, the wrong sign and too small for a code). The analog
+  crossing itself moves earlier in proportion to the level: the ramp is
+  0.60 % steeper. With the plate on XINP's gate (drain on the diode node,
+  no Miller multiplication) the plate follows the ramp far better (alpha
+  0.81-0.87 instead of 0.41-0.70), so each connected cell draws less charge
+  from the ramp. The ramp-alone prediction (-1.540 %) equals the measured
+  trip gain (-1.535 %). Gain and offset are calibrated; the exact codes were
+  never gated in `check-func.awk` (order, residual, plate spread, single q
+  fall are, and pass), so no gate was changed. The spec's regression
+  sentence (§5.1, "expects codes 17 / 81 / 160 / 239") is now stale.
+- **Over-voltage:** the plate's higher alpha raises its post-decision tail
+  by 35 mV at typical (3.038 V). The v7 PVT worst was 3.294 V (6 mV under
+  3.3 V), so v8 over PVT may exceed the device limit; not run.
+- The ramp-window power falls 53 uW: after its decision a comparator now
+  turns its own tail off (cell 0 10.7 uW, v7 107 uW). Tracking power is
+  unchanged (1466 uW AVDD).
+
+Open for v8: PVT (`analog-top-pvt`), mismatch, the consumers (cell_trannoise, the comparator
+layouts and their PEX, whose LVS reference is this netlist's 11-device v7
+`comparator_d`).
+
+## v7 (2026-11-01)
 
 Date: 2026-11-01. v6 with the sampling sequencer `../sample_seq` inside
 (ADR 0027): the twelve switch controls `s2_k` / `s0_k` / `s1_k` are no longer
@@ -7,7 +78,17 @@ the count clock and the new port `acq` (the controller's `acquire` level).
 Cell k's S2 opens ~0.7 ns after the k-th clock edge after `acq` falls, S0
 one stage delay later, S1 closes one stage delay after that, each stage
 >= 5 ns at every PVT cell (the block's record). v6 is archived in
-`../Analog_top_bkp/Analog_top_v6` (local) and `data/v6_ref/`.
+`../Analog_top_bkp/Analog_top_v6` (local) and `../Analog_top_bkp/data_refs/v6_ref/`.
+
+**Current sequencer (2026-11-15, ADR 0029 structure + ADR 0031 gaps):** 128
+standard cells (shift register + one EE628 clock generator per cell, 4 x
+`inv_2` delay stages); S0 opens 0.386 ns after S2 and S1 closes 0.258 ns
+after S0 (>= 1.51 x the cell's four-inverter delay, no 10/90 overlap); the
+`sequencer` gate checks exactly that. Codes unchanged, 17 / 81 / 160 / 239:
+`runs/analog-top/20261116T085301Z` (86/86, `./scripts/sim.sh analog-top
+REGEN=1`). The table below is the v7 record of 2026-11-01 (ADR 0027
+sequencer). The macro before
+ADR 0031 is in `../Analog_top_bkp/Analog_top_v7/` (local).
 
 ## v7: what changed against v6
 
@@ -61,7 +142,7 @@ Date: 2026-10-30. v5 with the ramp of ADR 0025: `../ramp_simple` (73 unit MIMs
 7/55 AVDD = 0.420 V (the pre-roll reset level), the 6.70 mV grid, T0 = 60 us,
 the ramp ending at count 259. Decision record:
 [ADR 0026](../../docs/decisions/0026-analog-top-ic-ramp.md). v5 is archived in
-`../Analog_top_bkp/Analog_top_v5` (local) and `data/v5_ref/` (its netlist and
+`../Analog_top_bkp/Analog_top_v5` (local) and `../Analog_top_bkp/data_refs/v5_ref/` (its netlist and
 functional / power record); the v5 text of this README follows below s.v6.
 
 ## v6: what changed against v5
@@ -220,8 +301,9 @@ and order do not change.
 | xtb | `check-xtb.awk` | the xschem testbench reproduces all 258 hand-bench measures |
 | pwr | `pwr_reduce.py` | ammeters add up to the supply, branches add up to each ammeter |
 
-The `vbl_*` measure names are kept so that the reducer, checker and xtb still
-read them. In v5 they measure `v(xdut.vref)`.
+In v5 the old comparator-reference measure names were kept so that the reducer,
+checker and xtb still read them; since 2026-11-18 they are `vref_*` and measure
+`v(xdut.vref)`.
 
 ## Not done
 
@@ -248,10 +330,10 @@ read them. In v5 they measure `v(xdut.vref)`.
 | --- | --- |
 | `analog_top_sch.py` | draws `comparator_d`, `ramp_simple_d`, `bias_gen_s` (each derived from its block's drawing), `atop_cell`, `analog_top` and their symbols |
 | `make_refs.py` | the expected subcircuits of the three derived cells, from the block decks |
-| `check_equiv.py`, `data/v4_ref/` | v5 against the frozen v4 netlist and functional record |
+| `check_equiv.py`, `compare_prev.py`, `data/prev_ref/` | the netlist and functional record against the previous record (flattened device / net match; reported comparison) |
 | `tb_analog_top.spice`, `tb_params.inc`, `tb_measure.inc`, `tb_sch.py` | the bench (v4's timeline) and its drawing |
-| `func.sh`, `func_reduce.py`, `check-func.awk`, `compare_v4.py`, `plot_func.py` | func phase |
+| `func.sh`, `func_reduce.py`, `check-func.awk`, `compare_prev.py`, `plot_func.py` | func phase |
 | `op.sh`, `op_devices.py`, `op_bench.py`, `op_reduce.py` | op phase |
 | `pwr.sh`, `pwr_bench.py`, `pwr_reduce.py` | pwr phase |
 | `schematic.sh`, `sw_*`, `render.sh`, `xtb.sh` | schematic and xtb phases |
-| `symbols.py` | function-shaped sub-block symbols (`bias_gen_s` without `ivbl`) |
+| `symbols.py` | function-shaped sub-block symbols (`bias_gen_s` without `ivref2`) |

@@ -12,7 +12,7 @@ The circuit (both engines):
   iramp               IRAMP from avdd into vramp: ic_source's design current,
                       ideal (as every bias current here; ic_source's own noise
                       record holds its share)
-  xc  atop_cell     (vin vramp s0 s1 s2 vref vref ibc q clk avdd 0 dvdd 0)
+  xc  atop_cell     (vin vramp s0 s1 s2 vref ibc q clk avdd 0 dvdd 0)
                     IREF_CMP sunk from the comparator's diode node ibc;
                     vref is both the S2 level and the comparator's inp (v5: one node)
   cq  CQ on q
@@ -40,7 +40,29 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 D = "/foss/designs/mixed_signal"
 STDLIB = "/foss/pdk_libs/gf180mcuD/libs.ref/gf180mcu_as_sc_mcu7t3v3/spice/gf180mcu_as_sc_mcu7t3v3.spice"
 MACRO = D + "/Analog_top/analog_top.spice"
-MODELS = D + "/cell_trannoise/work/models.inc"
+#- CT_HOME (work/, data/, assets/) and CT_CMP (comparator_d's netlist): see ct.sh.
+#- Both unset: this block and the macro's comparator, every deck as before.
+HOME = os.environ.get("CT_HOME") or (D + "/cell_trannoise")
+MODELS = HOME + "/work/models.inc"
+CMP = os.environ.get("CT_CMP") or ""
+
+
+def macro_include():
+    """The .include line(s) for ngspice: the macro, or with CT_CMP the macro
+    without its comparator_d (a copy in work/) plus CT_CMP's."""
+    if not CMP:
+        return [".include " + MACRO]
+    out, skip = [], False
+    for s in open(MACRO).read().splitlines():
+        if s.lower().startswith(".subckt comparator_d "):
+            skip = True
+        if not skip:
+            out.append(s)
+        elif s.lower().startswith(".ends"):
+            skip = False
+    path = HOME + "/work/macro_no_cmp.spice"
+    open(path, "w").write("\n".join(out) + "\n")
+    return [".include " + path, ".include " + CMP]
 
 
 def sources(P):
@@ -113,7 +135,7 @@ def vacask(P, net, seed, scale, fmax, reltol, maxstep):
             lines.append('%s (%s %s) vsource type="pulse" val0=%.9g val1=%.9g delay=%.12g rise=%.6g fall=%.6g '
                          "width=%.12g period=%.12g" % ((name, a, b) + tuple(v)))
     lines += ["xr (vramp rst vrlo 0) ramp_simple",
-              "xc (vin vramp s0 s1 s2 vref vref ibc q clk avdd 0 dvdd 0) atop_cell",
+              "xc (vin vramp s0 s1 s2 vref ibc q clk avdd 0 dvdd 0) atop_cell",
               "cq (q 0) capacitor c=%.6g" % P["CQ"], "",
               "control", "  var mm=0",
               "  options temp=27 tnom=27 gmin=1e-15 tran_extraoct=0 tran_noiselte=10%s"
@@ -131,7 +153,7 @@ def ngspice(P):
              ".include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice",
              ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical",
              ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical",
-             ".include " + STDLIB, ".include " + MACRO,
+             ".include " + STDLIB] + macro_include() + [
              ".temp 27", ".options rshunt=1e15 gmin=1e-15"]
     for name, a, b, kind, v in sources(P):
         if kind == "dc":
@@ -150,7 +172,7 @@ def ngspice(P):
     # the clocked inverter X_M1/X_M12 whose output is a_853_68#; a_1315_24# is the
     # master output) are saved for the `kick` step (ct_kick.py)
     lines += ["XR vramp rst vrlo 0 ramp_simple",
-              "XC vin vramp s0 s1 s2 vref vref ibc q clk avdd 0 dvdd 0 " + cell,
+              "XC vin vramp s0 s1 s2 vref ibc q clk avdd 0 dvdd 0 " + cell,
               "CQ q 0 %.6g" % P["CQ"],
               ".control", "set filetype=binary",
               "tran 0.1n %.9g" % P["TSTOP"],

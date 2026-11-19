@@ -1,9 +1,12 @@
-"""Write the xschem views of the analog macro, v7 (v6 + the sampling
-sequencer ../sample_seq, ADR 0027). They are the SOURCE of the
+"""Write the xschem views of the analog macro: four cells whose comparator
+(comparator_d = ../comparator, the sized core's ten devices + one output
+inverter, plus its bias diode) senses the floating plate bot on inp and vref
+on inn, so dout FALLS at the decision; the sampling sequencer ../sample_seq
+(ADR 0027) makes the switch controls. These views are the SOURCE of the
 macro netlist: schematic.sh netlists analog_top.sch hierarchically and writes
 analog_top.spice from it (GENERATED, never hand-edited).
 
-v6 (ADR 0026) is v5 with the ramp of ADR 0025: ../ramp_simple (73 unit MIMs +
+The ramp is that of ADR 0025 (ADR 0026): ../ramp_simple (73 unit MIMs +
 the reset switch to vrlo) fed by the I/C current source ../ic_source (one unit
 MIM switched at the count clock against 5/33 AVDD; its bias input on
 bias_gen_s's ramp sink, the net pbias_r; AVDD through the ammeter VMRAMP, its
@@ -12,11 +15,11 @@ xschemrc like vrlo_ref; ramp_simple_d (the PMOS-mirror ramp + its diode XRD)
 is gone. vrlo_ref (../vrlo_ref) now makes 7/55 AVDD = 0.420 V, the ramp's
 pre-roll reset level. v5 was Analog_top_v4 with ONE VDD/2 buffer
 (../midrail_ref, ADR 0021): the output of XVREF is the net vref, wired to
-every cell's vref (S2 level) AND vbl (comparator inp) pin. The cells, the
+every cell's vref pin (S2 level and comparator reference). The cells, the
 bias and the references are v5's (every analog block inside, no block behind
 a wrapper):
 
-  comparator_d.sch / .sym  the comparator WITH its pbias diode, flat: the ten
+  comparator_d.sch / .sym  the comparator WITH its pbias diode, flat: the twelve
                            devices of ../comparator/comparator.sch
                            (copied from that drawing, positions and S/D
                            geometry as drawn) plus XREFP (pfet 1 / 0.28 um
@@ -24,10 +27,10 @@ a wrapper):
                            no-connect ports clk / nbias are gone; pbias is the
                            current input ibias. Pins inp inn ibias dout vdd vss;
                            a comparator-triangle symbol
-  bias_gen_s.sch / .sym  ../bias_gen/bias_gen.sch WITHOUT the ivbl source
+  bias_gen_s.sch / .sym  ../bias_gen/bias_gen.sch WITHOUT the ivref2 source
                            XOB (and its port), plus ONE source output XOL (6
                            fingers of the 4 um / 0.9 um PMOS on pb) -> ivrlo, the
-                           bias of vrlo_ref; ports bias_gen's - ivbl + ivrlo
+                           bias of vrlo_ref; ports bias_gen's - ivref2 + ivrlo
   atop_cell.sch / .sym     one cell: S0/S1/S2 complement inverters, the three
                            switches (sw_s0/1/2.sch, drawn by sw_sch.py), the 5 x
                            5 um MIM, comparator_d, the latch ../latch/latch
@@ -43,7 +46,7 @@ provenance belong in README.md / REPORT.md and the run records, not on the
 drawings (CLAUDE.md, "Schematic drawings"); text copied from a block's own
 drawing is filtered the same way.
 
-check_equiv.py proves what changed against v5 (data/v5_ref/analog_top.spice):
+check_equiv.py proves what changed against the previous record (data/prev_ref/analog_top.spice):
 both macros flattened to devices, nets matched by their pin sets.
 
     ./container.sh 'python3 analog_top_sch.py'
@@ -63,8 +66,8 @@ SYMDIR = {  # bare symbol name -> the directory xschemrc puts on the path
     "vrlo_ref.sym": "Analog_top", "latch.sym": "Analog_top",
     "sw_s0.sym": "Analog_top", "sw_s1.sym": "Analog_top", "sw_s2.sym": "Analog_top",
     "comparator_d.sym": "Analog_top",
-    "ramp_simple.sym": "ramp_simple", "ic_source.sym": "ic_source",   # the blocks' own (v6)
-    "sample_seq.sym": "sample_seq",                                     # the block's own (v7)
+    "ramp_simple.sym": "ramp_simple", "ic_source.sym": "ic_source",   # the blocks' own
+    "sample_seq.sym": "sample_seq",                                     # the block's own
     "bias_gen_s.sym": "Analog_top",
     "atop_cell.sym": "Analog_top", "analog_top.sym": "Analog_top",
 }
@@ -104,7 +107,7 @@ XOL = dict(L="0.9u", W="%gu" % (4 * XOL_NF), nf=str(XOL_NF), m="1",
 # What the drawings draw at the macro and cell level (v5). The derived cells'
 # contents are checked by schematic.sh against their source decks.
 TOPOLOGY = """
-.subckt atop_cell vfe vramp s0 s1 s2 vref vbl ibias q clk vdd vss dvdd dvss
+.subckt atop_cell vfe vramp s0 s1 s2 vref ibias q clk vdd vss dvdd dvss
 XI0N s0b s0 vss vss nfet_03v3 L=0.28u W=0.44u nf=1 m=1
 XI0P s0b s0 vdd vdd pfet_03v3 L=0.28u W=0.88u nf=1 m=1
 XI1N s1b s1 vss vss nfet_03v3 L=0.28u W=0.44u nf=1 m=1
@@ -115,7 +118,7 @@ XS2 vref bot s2 s2b vdd vss sw_s2
 XS0 vfe top s0 s0b vdd vss sw_s0
 XS1 vramp top s1 s1b vdd vss sw_s1
 XCS bot top cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
-XCMP vbl bot ibias dout vdd vss comparator_d
+XCMP bot vref ibias dout vdd vss comparator_d
 XFF dout clk q dvdd dvss latch
 .ends atop_cell
 .subckt analog_top vin ramp_rst cnt_clk acq q0 q1 q2 q3 avdd avss dvdd dvss
@@ -133,10 +136,10 @@ XVREF vref vmid ivref avdd_ref avss midref_buf
 XVRLO vrlo ivrlo avdd_vrlo avss vrlo_ref
 XIC vramp pbias_r cnt_clk avdd_ramp avss dvdd dvss ic_source
 XRAMP vramp ramp_rst vrlo avss ramp_simple
-XC0 vin vramp s0_0 s1_0 s2_0 vref vref pbias0 q0 cnt_clk avdd_c0 avss dvdd dvss atop_cell
-XC1 vin vramp s0_1 s1_1 s2_1 vref vref pbias1 q1 cnt_clk avdd_c1 avss dvdd dvss atop_cell
-XC2 vin vramp s0_2 s1_2 s2_2 vref vref pbias2 q2 cnt_clk avdd_c2 avss dvdd dvss atop_cell
-XC3 vin vramp s0_3 s1_3 s2_3 vref vref pbias3 q3 cnt_clk avdd_c3 avss dvdd dvss atop_cell
+XC0 vin vramp s0_0 s1_0 s2_0 vref pbias0 q0 cnt_clk avdd_c0 avss dvdd dvss atop_cell
+XC1 vin vramp s0_1 s1_1 s2_1 vref pbias1 q1 cnt_clk avdd_c1 avss dvdd dvss atop_cell
+XC2 vin vramp s0_2 s1_2 s2_2 vref pbias2 q2 cnt_clk avdd_c2 avss dvdd dvss atop_cell
+XC3 vin vramp s0_3 s1_3 s2_3 vref pbias3 q3 cnt_clk avdd_c3 avss dvdd dvss atop_cell
 XSEQ acq cnt_clk s2_0 s2_1 s2_2 s2_3 s0_0 s0_1 s0_2 s0_3 s1_0 s1_1 s1_2 s1_3 dvdd dvss sample_seq
 .ends analog_top
 """
@@ -373,7 +376,7 @@ def box_symbol(path, desc, left, right, top, bottom, order, label, w=100, pitch=
         f.write("\n".join(L) + "\n")
 
 
-CELL_PORTS = ["vfe", "vramp", "s0", "s1", "s2", "vref", "vbl", "ibias", "q", "clk", "vdd", "vss", "dvdd", "dvss"]
+CELL_PORTS = ["vfe", "vramp", "s0", "s1", "s2", "vref", "ibias", "q", "clk", "vdd", "vss", "dvdd", "dvss"]
 TOP_PORTS = ["vin", "ramp_rst", "cnt_clk", "acq"] + [f"q{k}" for k in range(4)] + ["avdd", "avss", "dvdd", "dvss"]
 SEQ_PORTS = (["acq", "clk"] + [f"s{j}_{k}" for j in (2, 0, 1) for k in range(4)] + ["vdd", "vss"])
 BG_PORTS = ["vdd", "vss", "icmp0", "icmp1", "icmp2", "icmp3", "iramp", "ivref", "ivrlo"]
@@ -383,11 +386,11 @@ def write_symbols():
     """Every sub-block symbol is drawn by symbols.py (function-shaped symbols);
     only the macro's own analog_top.sym stays a rectangle."""
     symbols.write_all()
-    symbols.atop_cell(CELL_PORTS, left=["vfe", "vramp", "s0", "s1", "s2", "vref", "vbl", "ibias", "clk"],
+    symbols.atop_cell(CELL_PORTS, left=["vfe", "vramp", "s0", "s1", "s2", "vref", "ibias", "clk"],
                       right=["q"], top=["vdd", "dvdd"], bottom=["vss", "dvss"])
     box_symbol(os.path.join(BLOCK, "analog_top.sym"),
                "analog_top: the analog macro of the 8-bit bottom-plate ADC (v6: every analog block inside, "
-               "one VDD/2 buffer for vref = vbl, the I/C-fed ramp); xschem descends into analog_top.sch "
+               "one VDD/2 buffer for vref, the I/C-fed ramp); xschem descends into analog_top.sch "
                "(analog_top.spice is generated from it by schematic.sh)",
                left=TOP_PORTS[:4], right=TOP_PORTS[4:8], top=["avdd", "dvdd"], bottom=["avss", "dvss"],
                order=TOP_PORTS, label="analog_top", w=130, pitch=30)
@@ -432,7 +435,7 @@ def text_of(ch):
 
 # the source drawings' text kept on the derived sheets: section headings and
 # role labels; everything else there (bench notes, op tables) is dropped
-CMP_KEEP = {"PMOS 5T OTA", "starved inverter", "output inverter"}
+CMP_KEEP = set(INT.CMP.HEADINGS) | set(INT.CMP.NOTES)   # the comparator's headings + the inp / inn net notes
 BG_KEEP = {"STARTUP", "CORE", "SINKS (nb)  /  SOURCES (pb)"}
 # bias_gen.sch's output current tags by position -> the design output (intent.py);
 # (1348, -820) was XOB's (removed in v5)
@@ -441,13 +444,15 @@ BG_OUT_TAG = {(1028, -262): "icmp", (1188, -262): "icmp", (1348, -262): "icmp", 
 
 
 def cmp_sheet():
-    """comparator_d.sch from ../comparator/comparator.sch: every device and wire
-    as drawn there, the device current markers at the macro's bias (intent.py);
-    pbias -> ibias (port); the no-connect ports clk / nbias removed; XREFP added
-    in the PDK symbol format the other ten devices use (so it carries the same
-    S/D geometry template)."""
+    """comparator_d.sch from ../comparator/comparator.sch: every device
+    and wire as drawn there, the device current markers at the macro's bias
+    (intent.py -> ../comparator/intent.py); pbias -> ibias (port); the
+    no-connect ports clk / nbias removed; XREFP added in the PDK symbol format
+    the other twelve devices use (so it carries the same S/D geometry
+    template)."""
     out, ndrop, nmark = [], 0, 0
-    xy2dev = {xy: d for d, xy in INT.CMP.MARKER_XY.items()}
+    # only the devices comparator.sch draws a marker for (XBUF6: none, 0 uA)
+    xy2dev = {xy: d for d, xy in INT.CMP.MARKER_XY.items() if INT.CMP.drawn(d)}
     for ch in chunks(SRC_CMP):
         if ch.startswith("C {devices/ipin.sym}") and re.search(r"lab=(clk|nbias)\}", ch):
             ndrop += 1
@@ -464,7 +469,8 @@ def cmp_sheet():
         ch = ch.replace("lab=pbias", "lab=ibias").replace("name=ppbias", "name=pibias")
         out.append(ch)
     assert ndrop == 2, "clk / nbias pins not found in " + SRC_CMP
-    assert nmark == len(INT.CMP.MARKER_XY), "expected the device current markers in %s, found %d" % (SRC_CMP, nmark)
+    assert nmark == len(xy2dev), "expected %d device current markers in %s, found %d" % (len(xy2dev), SRC_CMP, nmark)
+    assert all(h in "\n".join(out) for h in INT.CMP.HEADINGS), "a comparator heading was not kept"
     # XREFP: drain = gate = ibias, source = bulk = vdd; labels on its pins
     x, y = 20, -760
     out.append("C {symbols/pfet_03v3.sym} %d %d 0 0 {name=REFP\nL=0.28u W=1u nf=1 m=1\n"
@@ -473,7 +479,8 @@ def cmp_sheet():
                "nrd=\"'0.18u / W'\" nrs=\"'0.18u / W'\"\nsa=0 sb=0 sd=0 model=pfet_03v3 spiceprefix=X}" % (x, y))
     out += diode_wiring(x, y, "ibias")
     out.append(T("%g uA" % INT.BIAS_UA["icmp"], -120, -800, 0.28, layer=4))
-    out.append(T("COMPARATOR_D  -  comparator + pbias diode XREFP (current input ibias)", 140, -1000, T_SUB * 1.2))
+    out.append(T("COMPARATOR_D  -  comparator + pbias diode XREFP (plate on inp, current input ibias)",
+                 140, -1000, T_SUB * 1.2))
     with open(os.path.join(BLOCK, "comparator_d.sch"), "w", newline="\n") as f:
         f.write("\n".join(out) + "\n")
 
@@ -497,19 +504,19 @@ def bg_text(ch):
 
 
 def bg_sheet():
-    """bias_gen_s.sch = ../bias_gen/bias_gen.sch - the source XOB (ivbl)
+    """bias_gen_s.sch = ../bias_gen/bias_gen.sch - the source XOB (ivref2)
     + the source XOL -> ivrlo."""
     out = chunks(SRC_BG)
     assert any("name=XOB" in c for c in out) and not any("ivrlo" in c for c in out)
-    # v5: XOB (the ivbl source), its pin, wires and labels go; the vdd rail stays
-    drop = {"N 1340 -830 1340 -720 {lab=ivbl}", "N 1260 -860 1300 -860 {lab=pb}",
+    # v5: XOB (the ivref2 source), its pin, wires and labels go; the vdd rail stays
+    drop = {"N 1340 -830 1340 -720 {lab=ivref2}", "N 1260 -860 1300 -860 {lab=pb}",
             "N 1340 -980 1340 -890 {lab=vdd}", "N 1340 -860 1380 -860 {lab=vdd}"}
     n0 = len(out)
-    out = [c for c in out if c not in drop and "name=XOB" not in c and "name=pivbl " not in c
+    out = [c for c in out if c not in drop and "name=XOB" not in c and "name=pivref2 " not in c
            and not c.startswith("C {devices/lab_pin.sym} 1260 -860 ")
            and not c.startswith("C {devices/lab_pin.sym} 1380 -860 ")]
     assert n0 - len(out) == 8, n0 - len(out)
-    assert not any("lab=ivbl" in c for c in out)
+    assert not any("lab=ivref2" in c for c in out)
     nt = sum(1 for c in out if text_of(c))
     out = [c for c in out if not c.startswith("B 4 ")]          # the bench sheet's note box
     out = [bg_text(c) if text_of(c) else c for c in out]
@@ -579,15 +586,17 @@ def cell_sheet(sc):
     s.wire("top", sw["XS0"]["b"], (PX, sw["XS0"]["b"][1]), cs["B"])
     s.wire("top", sw["XS1"]["b"], (PX, sw["XS1"]["b"][1]))
     s.wire("bot", cs["G"], (PX, sw["XS2"]["b"][1]), sw["XS2"]["b"])
-    # comparator with its bias diode inside (comparator_d.sym, descended): inn on the bot line
+    # comparator with its bias diode inside (comparator_d.sym, descended): the
+    # floating plate bot on inp and vref on inn
     d = dv["XCMP"]
     inp, inn, ibias, dout, vdd, vss = d["nodes"]
+    assert (inp, inn) == ("bot", "vref"), (inp, inn)
     BY = -500
-    cx, cy = 1620, BY - 40                            # inn pin (-120, 40) lands on BY
+    cx, cy = 1620, BY + 40                            # inp pin (-120, -40) lands on BY
     cp = s.block_inst(d["model"] + ".sym", "XCMP", cx, cy)
-    assert cp["inn"][1] == BY
-    s.wire(inn, (PX, BY), cp["inn"])
-    s.stub(cp["inp"], inp, dx=-60)
+    assert cp["inp"][1] == BY
+    s.wire(inp, (PX, BY), cp["inp"])
+    s.stub(cp["inn"], inn, dx=-60)
     s.stub(cp["ibias"], ibias, dx=0, dy=-60)
     s.stub(cp["vdd"], vdd, dx=0, dy=-30)
     s.stub(cp["vss"], vss, dx=0, dy=30)
@@ -653,7 +662,7 @@ def top_sheet(sc):
     vmid, dvdd_, dvss_ = d["nodes"]
     s.stub(pv["vdd"], dvdd_, dx=0, dy=-40)
     s.stub(pv["vss"], dvss_, dx=0, dy=40)
-    # v5: ONE buffer; its output net vref goes to every cell's vref AND vbl pin
+    # v5: ONE buffer; its output net vref goes to every cell's vref pin
     d = dv["XVREF"]
     out, vin, ib, vdd, vss = d["nodes"]
     pb = s.block_inst("midref_buf.sym", "XVREF", 1200, -1000)
@@ -723,7 +732,7 @@ def top_sheet(sc):
             s.stub(ps[pin], net, dx=60)
     s.frame(2480, -380, 4880, 420, "SAMPLING SEQUENCER (DVDD)")
     s.frame(320, -1300, 760, -480, "BIAS")
-    s.frame(800, -1300, 1440, -480, "REF (VDD/2): vref = vbl")
+    s.frame(800, -1300, 1440, -480, "REF (VDD/2): vref")
     s.frame(1480, -1300, 2440, -480, "RAMP (I/C source) + VR_LO")
     s.frame(2480, -1300, 4880, -480, "FOUR CELLS")
     s.text("ANALOG_TOP  -  analog macro: four bottom-plate cells on one shared ramp", 40, -1560, T_TITLE)

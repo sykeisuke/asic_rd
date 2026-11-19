@@ -1,5 +1,5 @@
 # xschemrc for mixed_signal/sample_seq: the PDK rc, then this folder (the
-# sheets, their symbols and the four library primitive symbols written by
+# sheets, their symbols, the library primitive and gate symbols written by
 # sample_seq_sch.py). Without the path entry xschem cannot find a symbol and
 # SILENTLY drops the instance (the trap recorded in ../Analog_top/xschemrc);
 # check_sch.py counts the instances.

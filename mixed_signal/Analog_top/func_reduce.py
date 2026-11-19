@@ -48,12 +48,16 @@ import numpy as np
 import pandas as pd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-WAVE = os.path.join(HERE, "work", "func", "wave.csv")
-NPZ = os.path.join(HERE, "work", "func", "wave.npz")
-MEAS = os.path.join(HERE, "data", "func_measures.txt")
-OUT = os.path.join(HERE, "data", "func_reduce.txt")
-CELLS = os.path.join(HERE, "data", "func_cells.csv")
-TIMELINE = os.path.join(HERE, "data", "func_timeline.csv")
+# FUNC_WORK / FUNC_DATA: the pvt phase (pvt.sh) points the reducer at one PVT
+# cell's folder; unset, the functional record's own paths as always
+WORK_DIR = os.environ.get("FUNC_WORK") or os.path.join(HERE, "work", "func")
+DATA_DIR = os.environ.get("FUNC_DATA") or os.path.join(HERE, "data")
+WAVE = os.path.join(WORK_DIR, "wave.csv")
+NPZ = os.path.join(WORK_DIR, "wave.npz")
+MEAS = os.path.join(DATA_DIR, "func_measures.txt")
+OUT = os.path.join(DATA_DIR, "func_reduce.txt")
+CELLS = os.path.join(DATA_DIR, "func_cells.csv")
+TIMELINE = os.path.join(DATA_DIR, "func_timeline.csv")
 
 NAN = float("nan")
 TCQ_MAX = 20e-9        # cmp_tspc SPEC S4: clock-to-q <= 20 ns
@@ -115,14 +119,13 @@ def main():
     for k in ["avdd", "dvdd", "vin", "ramp_rst", "cnt_clk", "xdut.pbias0", "xdut.pbias1", "xdut.pbias2",
               "xdut.pbias3", "xdut.pbias_r", "xdut.vmid", "xdut.vref", "xdut.vramp", "xdut.vrlo"]:
         S[k.replace("xdut.", "")] = sig(k)
-    S["vbl"] = S["vref"]            # v5: one buffer, vbl IS the vref net (kept as a name for the reports)
     for c in range(4):
         S["bot%d" % c] = sig("xdut.xc%d.bot" % c)
         S["top%d" % c] = sig("xdut.xc%d.top" % c)
         S["dout%d" % c] = sig("xdut.xc%d.dout" % c)
         S["q%d" % c] = sig("q%d" % c)
         for sw in ("s0", "s1", "s2"):
-            # v7: the controls are internal nets of the macro, made by sample_seq
+            # the controls are internal nets of the macro, made by sample_seq
             S["%s_%d" % (sw, c)] = sig("xdut.%s_%d" % (sw, c))
     for k in ["vavdd", "vdvdd", "v.xdut.vmbg", "v.xdut.vmref", "v.xdut.vmvrlo", "v.xdut.vmramp",
               "v.xdut.vmc0", "v.xdut.vmc1", "v.xdut.vmc2", "v.xdut.vmc3"]:
@@ -152,7 +155,7 @@ def main():
     put("n_timepoints", len(t))
 
     # ------------------------------------------------------------ power-up
-    nodes = ["pbias0", "pbias1", "pbias2", "pbias3", "pbias_r", "vmid", "vref", "vbl", "vrlo", "vramp"]
+    nodes = ["pbias0", "pbias1", "pbias2", "pbias3", "pbias_r", "vmid", "vref", "vrlo", "vramp"]
     for n in nodes:
         x = S[n]
         v0 = at(x, TS0)
@@ -168,10 +171,10 @@ def main():
     # ------------------------------------------- references in the sampling
     # window: the vin step at TS_k + TSTEP lands on the top plates of the
     # cells still tracking, whose bottom plates hang on VREF through S2; the
-    # shared divider tap carries it to VBL. Deviation from the final value
+    # shared divider tap carries it to VREF. Deviation from the final value
     # at each sample instant, the peak, and when the tap is back within
     # 0.1 LSB after the last step.
-    for n in ("vref", "vbl", "vmid"):
+    for n in ("vref", "vmid"):
         fin = at(S[n], TE)
         for c in range(4):
             put("%s_dev_ts%d_mv" % (n, c), (at(S[n], TS[c]) - fin) * 1e3)
@@ -279,7 +282,7 @@ def main():
         post = resr[(ttr > td + 30e-9) & (ttr < td + 150e-9)]
         put("ramp_kick%d_mv" % c, (np.mean(post) - np.mean(pre)) * 1e3 if len(pre) and len(post) else NAN)
 
-    # VBL - VREF as the comparator sees it, per cell
+    # VREF at the decision minus VREF at the sample, per cell
     refd = [m.get("refd%d" % c, NAN) for c in range(4)]
     put("refd_spread_mv", (max(refd) - min(refd)) * 1e3)
     put("refd_mean_mv", float(np.mean(refd)) * 1e3)
@@ -341,7 +344,7 @@ def main():
         ev.append(("S1_%d closes" % c, m.get("seq_t1_%d" % c, NAN), m.get("vbot_con%d" % c, NAN), "bot_%d at TS + TSEQ + 10 ns" % c))
     ev.append(("TR: ramp_rst falls, count 0", TR, m.get("vramp_at_tr", NAN), "vramp"))
     for c in range(4):
-        ev.append(("cell %d: bot crosses vbl" % c, m.get("t_bot%d" % c, NAN), m.get("vtop_bot%d" % c, NAN), "vramp (= top)"))
+        ev.append(("cell %d: bot crosses vref" % c, m.get("t_bot%d" % c, NAN), m.get("vtop_bot%d" % c, NAN), "vramp (= top)"))
         ev.append(("cell %d: dout falls" % c, m.get("t_dout%d" % c, NAN), m.get("cmp_delay%d" % c, NAN), "comparator delay"))
         ev.append(("cell %d: q falls" % c, m.get("t_q%d" % c, NAN), m.get("code%d" % c, NAN), "code"))
     ev.append(("vramp reaches VR_HI", m.get("t_ramp_hi", NAN), m.get("n_ramp_hi", NAN), "counts after TR"))

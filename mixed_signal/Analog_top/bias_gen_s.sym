@@ -3,7 +3,7 @@ G {}
 K {type=subcircuit
 format="@name @pinlist @symname"
 template="name=X1"
-description="bias_gen_s: constant-gm beta-multiplier bias generator (bias_gen, ADR 0017) without the ivbl source XOB (ADR 0021), plus the source output ivrlo for vrlo_ref (XOL, ADR 0020); every output is a CURRENT: icmp0..3 and iramp SINK (arrow into the block), ivref, ivrlo SOURCE (arrow out). xschem descends into bias_gen_s.sch"
+description="bias_gen_s: constant-gm beta-multiplier bias generator (bias_gen, ADR 0017) without the ivref2 source XOB (ADR 0021), plus the source output ivrlo for vrlo_ref (XOL, ADR 0020); every output is a CURRENT: icmp0..3 and iramp SINK (arrow into the block), ivref, ivrlo SOURCE (arrow out). xschem descends into bias_gen_s.sch"
 }
 V {}
 S {}

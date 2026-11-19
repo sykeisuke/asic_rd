@@ -221,7 +221,7 @@ def tb_kick():
     header(s, "TB_KICK  -  comparator + latch on the cell's charge path, count clock running")
     s.T("SUPPLIES / BIAS / CLOCK", 40, -1292, 0.45, 4)
     for i, (name, val, net) in enumerate([("VDD_SOURCE", "{VDD}", "vdd"), ("VDVDD", "{VDD}", "dvdd"),
-                                          ("VVBL", "{VDD/2}", "vbl"), ("VVREF", "{VDD/2}", "vref")]):
+                                          ("VVREF", "{VDD/2}", "vref")]):
         s.vsrc(name, 120 + 170 * i, -1180, val, net)
     s.vsrc("VCLK", 800, -1180, "PULSE(0 {VDD} {TCOUNT-TCE/2} {TCE} {TCE} {TCOUNT/2-TCE} {TCOUNT})", "clk")
     s.T(CLK_T1090_TXT, 760, -1010, 0.3, 4)
@@ -238,7 +238,7 @@ def tb_kick():
     s.T("C_S 54.52 fF", 1440, -840, 0.3, 4)
     s.part("res", 1560, -1010, "name=RLKT value=1e15 footprint=1206 device=resistor m=1", {"p": "top", "m": "0"})
     s.T("COMPARATOR + LATCH", 1760, -1292, 0.45, 4)
-    s.part("cmp", 1900, -1000, "name=XDUT", {"inp": "vbl", "inn": "top", "clk": "0", "nbias": "0",
+    s.part("cmp", 1900, -1000, "name=XDUT", {"inp": "top", "inn": "vref", "clk": "0", "nbias": "0",
                                              "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
     s.part("latch", 2300, -1045, "name=XL", {"d": "dout", "clk": "clk", "q": "q", "vdd": "dvdd", "vss": "0"})
     s.part("capa", 2540, -1065, "name=CQ value=%s m=1" % CQ, {"p": "q", "m": "0"})
@@ -274,7 +274,7 @@ run
 let half = $&cs_vdd / 2
 let hi90 = 0.9 * $&cs_vdd
 let lo10 = 0.1 * $&cs_vdd
-meas tran t_cross when v(top)=v(vbl) rise=1 td=$&cs_tr
+meas tran t_cross when v(top)=v(vref) rise=1 td=$&cs_tr
 meas tran t_dout when v(dout)=$&half fall=1 td=$&cs_tr
 meas tran t_f90 when v(dout)=$&hi90 fall=1 td=$&cs_tr
 meas tran t_f10 when v(dout)=$&lo10 fall=1 td=$&cs_tr

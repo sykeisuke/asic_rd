@@ -1,0 +1,31 @@
+v {xschem version=3.4.8RC file_version=1.2}
+G {}
+K {type=subcircuit
+format="@name @pinlist @symname"
+template="name=X1"
+}
+V {}
+S {}
+E {}
+B 5 -102.5 -2.5 -97.5 2.5 {name=clkin dir=in}
+B 5 97.5 -42.5 102.5 -37.5 {name=p1e dir=out}
+B 5 97.5 -2.5 102.5 2.5 {name=p1 dir=out}
+B 5 97.5 37.5 102.5 42.5 {name=p2e dir=out}
+B 5 -2.5 -102.5 2.5 -97.5 {name=vdd dir=inout}
+B 5 -2.5 97.5 2.5 102.5 {name=vss dir=inout}
+L 4 -80 -80 80 -80 {}
+L 4 80 -80 80 80 {}
+L 4 80 80 -80 80 {}
+L 4 -80 80 -80 -80 {}
+L 4 -100 0 -80 0 {}
+T {clkin} -74 -8 0 0 0.28 0.28 {}
+L 4 80 -40 100 -40 {}
+T {p1e} 74 -48 0 1 0.28 0.28 {}
+L 4 80 0 100 0 {}
+T {p1} 74 -8 0 1 0.28 0.28 {}
+L 4 80 40 100 40 {}
+T {p2e} 74 32 0 1 0.28 0.28 {}
+L 4 0 -80 0 -100 {}
+L 4 0 80 0 100 {}
+T {@name} -80 -126 0 0 0.3 0.3 {}
+T {CLKGEN} -50 46 0 0 0.3 0.3 {layer=13}

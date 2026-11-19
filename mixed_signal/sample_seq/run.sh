@@ -1,14 +1,16 @@
 #!/bin/sh
 # sample_seq: the on-chip sampling sequencer (SPEC.md). One 20 MHz clock and
 # the controller's acquire level in; S2 / S0 / S1 of the four bottom-plate
-# cells out, S2 -> S0 -> S1 at least 5 ns apart, the cells 50 ns apart.
+# cells out, S2 -> S0 -> S1 non-overlapping by at least a four-inverter delay
+# (a few hundred ps, ADR 0031), the cells 50 ns apart.
 #
 #   ./run.sh                               phases size schematic typ pvt duty check
 #   PHASES='typ check' ./run.sh            a subset
 #
 # Phases:
-#   size       bench.py size: 45 PVT cells at N = 8 and 24 delay cells per stage,
-#              each gap fitted to a + b N; the smallest N with every gap >= 5.25 ns
+#   size       bench.py size: 45 PVT cells at N = 2 and 6 inv_2 per stage, each gap
+#              fitted to a + b N; the smallest even N with every gap >= 1.15 x that
+#              cell's four-inverter delay
 #              -> data/sizing.json, data/size_fit.csv, sample_seq.spice
 #   schematic  schematic.sh: the sheets drawn from the record, sample_seq.sch netlists
 #              back to the deck (check_sch.py), renders
@@ -16,6 +18,8 @@
 #   pvt        bench.py pvt: 5 corners x 0/27/85 C x 3.0/3.3/3.6 V -> data/pvt.csv
 #   duty       bench.py duty: clock duty 30 / 70 % at typ, ff/0/3.6, ss/85/3.0 -> data/duty.csv
 #   check      check-seq.awk on each table
+#   wave       wave.py: typical waveforms + the PVT gap figure -> assets/wave_*.png,
+#              gaps_pvt.png (DESIGN.md); not in the default phases
 #
 # Writes runs/$TARGET/<stamp>/metrics.json (scripts/summarize-metrics.awk).
 set -eu
@@ -46,6 +50,7 @@ JOBS=${JOBS:-16} sh "$BLOCK_DIR/container.sh" "
     has typ && step typ
     has pvt && step pvt
     has duty && step duty
+    if has wave; then python3 wave.py || printf 'FAIL: wave.py aborted\n'; fi
     if has check; then
         for t in typ pvt duty; do
             [ -s data/\$t.csv ] && { awk -v set=\$t -f check-seq.awk data/\$t.csv || true; }

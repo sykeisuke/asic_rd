@@ -1,62 +1,71 @@
-# comparator: short-channel re-size of the bottom-plate comparator
+# comparator: the Wilkinson cell's comparator
 
-The 10-transistor continuous comparator of the 8-bit true bottom-plate cell
-(PMOS 5T OTA, starved inverter, output inverter; the topology of
-[`../comparator_bkp/comparator_updt_v2`](../comparator_bkp/comparator_updt_v2/README.md)), re-sized on
-2026-10-06 with these requirements from the user:
+The comparator of the 8-bit true bottom-plate cell: a PMOS-input 5T OTA, a
+current-starved inverter and two inverters, 12 devices, every L <= 0.36 um.
+It senses the floating plate on **inp** against VREF = VDD/2 on **inn**; dout
+**falls once** at the decision, which is the latch / Gray capture convention
+of spec s.5.3. Analog_top uses its macro form `comparator_d`.
 
-- every channel length at most 0.36 um, to cut area (v2 used L = 1 um);
-- delay from the comparator's own static trip point to dout at most
-  1/4 count = 12.5 ns at the 20 MHz count clock;
-- dout drives 10 fF (the TSPC latch plus wire);
-- input-referred noise at the comparator pins below 1.2 mV rms, thermal
-  plus 1/f from 1 kHz over the comparator's own band;
-- pbias from an ideal current into one diode-connected tail finger (the
-  bias generator is redesigned later); the bias current density is a
-  design variable;
-- power and area minimised, with v2's finger and width conventions kept.
+## Folder layout
 
-`../comparator_bkp/comparator_updt_v2` is untouched.
+| Part | Files |
+| --- | --- |
+| cell `comparator` | `comparator.spice` (`.subckt comparator inp inn dout clk vdd vss nbias pbias`), `comparator.sch` / `.sym` |
+| macro form `comparator_d` | `comparator_d.spice` (`.subckt comparator_d inp inn ibias dout vdd vss`: the cell + its bias diode XREFP) |
+| sized core `comparator_core` | `comparator_core.spice`: the 10 devices (OTA, starved inverter, inverter), written by `size.py` |
+| core sizing | `size.py` (gm/Id search over the block's own short-L tables, `lut/`), `size_p5t.py`, `tb_sel.spice`, `tb_sel_dc.spice`, `data/sizing.json`, `DESIGN_RECIPE.md` |
+| cell from the core | `derive.py`: the core's 10 devices line for line (its output node renamed `outc`) + XBUF5 / XBUF6, copies of XBUF3 / XBUF4 |
 
-The final report, with every plot, is [`REPORT.md`](REPORT.md). The full sizing argument is in
-[`DESIGN_RECIPE.md`](DESIGN_RECIPE.md).
+Two steps make the netlist: `size.py` sizes the core (the search is recorded;
+`PHASES='size'` re-selects it and checks the file), `derive.py` adds the
+inverter. Neither output is hand-edited.
+
+Why the plate is on inp: there the plate drives XINP, whose drain is the
+mirror's diode node, and no longer sees the Miller capacitance of the gain
+node (alpha at the trip 0.38 -> 0.84); the cell's transient noise drops
+(x0.74 / x0.83, `../cell_trannoise_swap/COMPARISON.md`). The added inverter
+keeps dout falling.
+
+History: until 2026-11-18 this folder held the 10-device comparator (cell
+`cmp`, plate on inn); that folder, its benches, REPORT and layout PEX are
+frozen in `../comparator_bkp/comparator_10dev/`. The plate-on-inp version
+was developed as `comparator_sw/` (now `../comparator_bkp/comparator_sw/`).
 
 ## Run it
 
 ```sh
-./scripts/sim.sh comparator                               # tables + ngspice verification of the selected design
-./scripts/sim.sh comparator PHASES='lut size verify'      # also re-run the search (about 1 h)
-./scripts/sim.sh comparator-schematic                     # xschem schematic + symbol + 4 testbenches, netlist-back, renders, testbench-vs-bench check
-./scripts/sim.sh comparator-pvt                           # 45-cell PVT, MC at 7 corners (ngspice + VACASK), VACASK transient noise
-./scripts/sim.sh comparator-pvt DUT_GEOM=1 PHASES='bench plot'   # PVT with the drawn S/D geometry
-./container.sh 'USE_CAL=0 PHASE=CAL python3 -u size_v3.py'        # re-calibrate the table transient against ngspice
-./container.sh 'python3 report_data.py'                           # figures and data/report_data.json
+./scripts/sim.sh comparator                          # derive check, typical gates, offset_lin, bias requirement (~1 h)
+./scripts/sim.sh comparator PHASES='derive verify'   # netlist check + typical gates only (minutes)
+./scripts/sim.sh comparator PHASES='lut size'        # rebuild the gm/Id tables, re-select the core from the record
+./scripts/sim.sh comparator-schematic                # xschem views: generate, netlist back, testbenches, renders
+./scripts/sim.sh comparator-pvt                      # 45 PVT cells, MC, offset_lin, VACASK MC + noise (hours, detached)
+./container.sh 'python3 derive.py'                   # regenerate the cell netlists after a change of the core
 ```
 
-Every ngspice run directory carries a `.spiceinit` with
-`set num_threads=1` (see `../comparator_bkp/comparator_updt_v2/DESIGN_RECIPE.md` s.4).
+## What is measured
+
+Three variants through the same benches (ideal bias, 10 fF on dout, ADR 0025
+grid):
+
+| variant | netlist | hookup | dout at the decision |
+| --- | --- | --- | --- |
+| `sw` | `comparator.spice` (`comparator`) | plate on inp | falls (the gated cell) |
+| `base` | `comparator_core.spice` (`comparator_core`) | plate on inn (the macro before 2026-11-17) | falls |
+| `sw_noinv` | `comparator_core` | plate on inp | rises (no inverter) |
+
+Gates (ADR 0015 plus polarity) and what is only reported:
+`check-comparator.awk`.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
-| `REPORT.md` | **the final report**: verdict, sizing, Pareto fronts, the design, typical / schematic / PVT / Monte Carlo / noise results, offset signal-independence, bias requirement, decisions, with every figure |
-| `DESIGN_RECIPE.md` | the full design argument: requirements, assumptions, model, calibration, Pareto fronts, selection, verification |
-| `offset_lin.py`, `bias_req.py` | offset signal-independence (MC samples x 4 levels in the charge path) and the bias-generator requirement (run-pvt.sh phases `lin`, `bias`) |
-| `figures_v3.py` | the REPORT.md figures report_data.py does not draw (gm/Id sizing, device noise, delay vs power, waveforms, Monte Carlo, offset vs level, bias requirement) |
-| `comparator.spice` | the netlist (`.subckt cmp`), generated by `size_v3.py`; do not hand-edit |
-| `size_v3.py` | short-L gm/Id random search (tables + a table-driven transient), Pareto, ngspice timing of the front |
-| `verify_v3.py` | ngspice verification of the selected design |
-| `report_data.py` | figures (`assets/`) and `data/report_data.json` |
-| `lut/` | short-L pygmid techsweep (L 0.28-0.36 um), `build_lut.py`, device noise deck, `build.sh` |
-| `tb_sel.spice`, `tb_sel_dc.spice` | the cell's charge path with ideal parts around the comparator; static trip |
-| `tb_nz.spice` | input-referred noise at the decision point |
-| `tb_mc.spice` | ngspice Monte Carlo of the trip point |
-| `data/` | device noise, calibration, stage-A clouds and front, stage-B timing, sizing record |
-| `comparator.sch`, `comparator.sym`, `comparator_sch.py`, `comparator_schematic.py`, `check-schematic.awk`, `schematic.sh` | the xschem schematic generated from the deck, its symbol, renders, and the netlist-back check |
-| `tb_delay.sch`, `tb_trip.sch`, `tb_noise.sch`, `tb_mc.sch`, `tb_sch.py`, `xtb.py` | xschem testbenches of the four benches (the comparator through its symbol) and the check that each reproduces its hand-written bench |
-| `pvt_v3.py`, `run-pvt.sh` | 45-cell PVT and ngspice Monte Carlo at 7 corner cells |
-| `vacask.sh`, `vacask_lib/`, `trannoise.py`, `check-trannoise.awk`, `tb_vacask_devcheck.spice` | VACASK: model conversion and its drain-current gate, Monte Carlo, transient noise (ported from `../comparator_bkp/comparator_updt_v2`) |
-| `report/pareto_page.html`, `assets/comparator_pareto.html` | the report page template and the built page (`report_data.py`) |
-| `results/` | copies of every metrics.json the recipe cites |
-| `assets/` | Pareto, model-vs-ngspice, PVT figures; xschem and schemdraw renders |
+| `bench.py` | phases `verify`, `lin`, `bias`; writes `data/values_<phase>.txt`, `data/offset_lin.csv`, `data/bias_req.csv` |
+| `pvt.py` | PVT, MC and offset_lin over corners (`run-pvt.sh`) |
+| `tb_tran.spice` / `tb_dc.spice` / `tb_nz.spice` / `tb_mc.spice` | charge path (54.52 fF MIM, ramp at the ADR 0025 slope), static trip, noise, Monte Carlo |
+| `check-comparator.awk` | the gates: one PASS / FAIL line each |
+| `stage_vacask.py`, `vacask.sh`, `trannoise.py`, `vacask_lib/` | VACASK MC and transient noise, staged in `work/va` |
+| `comparator_sch.py`, `tb_sch.py` | generate `comparator.sch` / `.sym` and the four `tb_*.sch` |
+| `intent.py`, `intent_core.py`, `intent_op.py` | the currents on the drawings (core allocation + output inverters) and their check |
+| `xtb.py`, `check-schematic.awk` | drawn testbenches against their decks; the drawing against `comparator.spice` |
+| `run.sh`, `run-pvt.sh`, `schematic.sh`, `container.sh` | the flows (`make comparator`, `comparator-pvt`, `comparator-schematic`) |

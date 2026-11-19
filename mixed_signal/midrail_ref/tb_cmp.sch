@@ -193,8 +193,8 @@ C {devices/res.sym} 2150 -650 0 0 {name=RLKT value="1e15" footprint=1206 device=
 C {devices/lab_pin.sym} 2150 -720 0 0 {name=l61 sig_type=std_logic lab=top}
 C {devices/lab_pin.sym} 2150 -580 0 0 {name=l62 sig_type=std_logic lab=0}
 C {comparator.sym} 2500 -600 0 0 {name=XCMP}
-C {devices/lab_pin.sym} 2360 -660 0 0 {name=l63 sig_type=std_logic lab=vref}
-C {devices/lab_pin.sym} 2360 -630 0 0 {name=l64 sig_type=std_logic lab=top}
+C {devices/lab_pin.sym} 2360 -660 0 0 {name=l63 sig_type=std_logic lab=top}
+C {devices/lab_pin.sym} 2360 -630 0 0 {name=l64 sig_type=std_logic lab=vref}
 C {devices/lab_pin.sym} 2360 -600 0 0 {name=l65 sig_type=std_logic lab=clk}
 C {devices/lab_pin.sym} 2360 -570 0 0 {name=l66 sig_type=std_logic lab=nbias}
 C {devices/lab_pin.sym} 2360 -540 0 0 {name=l67 sig_type=std_logic lab=pbias}
@@ -230,7 +230,6 @@ C {devices/code_shown.sym} 3000 -1330 0 0 {name=CTL only_toplevel=false value=".
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice res_typical
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
-.include /foss/designs/mixed_signal/comparator/comparator.spice
 .temp 27
 .param IF=1.23557e-05
 .param VDD=3.3

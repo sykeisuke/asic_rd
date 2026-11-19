@@ -23,7 +23,7 @@ MEAS = os.path.join(HERE, "data", "func_measures.txt")
 ASSETS = os.path.join(HERE, "assets")
 
 CELL = ["#1f5fa8", "#d1495b", "#2a9d5c", "#8a5cc2"]     # cells 0..3
-C_REF, C_VBL, C_MID = "#e07b00", "#00838f", "#7a7a7a"
+C_REF, C_MID = "#e07b00", "#7a7a7a"
 C_RAMP, C_VIN, C_CLK = "#222222", "#b8860b", "#9e9e9e"
 C_SUP = ["#222222", "#9e9e9e"]
 
@@ -81,7 +81,6 @@ def overview(d, m):
     ax[1].set_ylim(2.2, 2.6)
     legend(ax[1], loc="lower right", ncol=5)
     ax[2].plot(t, (d["vref"] - 1.65) * 1e3, color=C_REF, label="vref")
-    ax[2].plot(t, (d["vbl"] - 1.65) * 1e3, color=C_VBL, label="vbl")
     ax[2].plot(t, (d["vmid"] - 1.65) * 1e3, color=C_MID, ls=":", label="tap vmid")
     ax[2].set_ylabel("ref - 1.65 V (mV)")
     ax[2].set_ylim(-15, 15)
@@ -97,8 +96,8 @@ def overview(d, m):
     for k in range(4):
         ax[4].plot(t, d["bot%d" % k], color=CELL[k], label="bot%d" % k)
         if ("t_bot%d" % k) in m:
-            ax[4].plot(m["t_bot%d" % k] * 1e6, m["vbl_bot%d" % k], "o", ms=4, color=CELL[k])
-    ax[4].plot(t, d["vbl"], color=C_VBL, lw=0.8, label="vbl")
+            ax[4].plot(m["t_bot%d" % k] * 1e6, m["vref_bot%d" % k], "o", ms=4, color=CELL[k])
+    ax[4].plot(t, d["vref"], color=C_REF, lw=0.8, label="vref")
     ax[4].set_ylabel("bottom plates (V)")
     ax[4].set_ylim(0.4, 2.2)
     legend(ax[4], loc="lower right", ncol=5)
@@ -131,7 +130,6 @@ def powerup(d, m):
     ax[1].set_ylabel("bias (V)")
     legend(ax[1], loc="lower right", ncol=5)
     ax[2].plot(t, d["vref"][w], color=C_REF, label="vref")
-    ax[2].plot(t, d["vbl"][w], color=C_VBL, ls="--", label="vbl")
     ax[2].plot(t, d["vmid"][w], color=C_MID, ls=":", label="tap vmid")
     ax[2].set_ylabel("references (V)")
     legend(ax[2], loc="lower right", ncol=3)
@@ -177,7 +175,7 @@ def sampling(d, m):
     ax[0].set_ylabel("switch controls (high = closed)")
     for k in range(4):
         ax[1].plot(t, d["bot%d" % k][w], color=CELL[k], label="bot%d" % k)
-    ax[1].plot(t, d["vbl"][w], color=C_VBL, lw=0.8, ls="--", label="vbl")
+    ax[1].plot(t, d["vref"][w], color=C_REF, lw=0.8, ls="--", label="vref")
     ax[1].set_ylabel("bottom plates (V)")
     legend(ax[1], loc="lower left", ncol=5)
     for k in range(4):
@@ -187,7 +185,6 @@ def sampling(d, m):
     ax[2].set_ylabel("top plates (V)")
     legend(ax[2], loc="center right", ncol=3)
     ax[3].plot(t, (d["vref"][w] - 1.65) * 1e3, color=C_REF, label="vref")
-    ax[3].plot(t, (d["vbl"][w] - 1.65) * 1e3, color=C_VBL, label="vbl")
     ax[3].plot(t, (d["vmid"][w] - 1.65) * 1e3, color=C_MID, ls=":", label="tap vmid")
     ax[3].set_ylabel("ref - 1.65 V (mV)")
     legend(ax[3], loc="upper right", ncol=3)
@@ -219,13 +216,13 @@ def trips(d, m):
         w = (d["t"] >= tc - 150e-9) & (d["t"] <= tc + 150e-9)
         t = (d["t"][w] - tc) * 1e9
         a = ax[0, k]
-        a.plot(t, (d["bot%d" % k][w] - d["vbl"][w]) * 1e3, color=CELL[k], label="bot - vbl")
-        a.axhline(0, color=C_VBL, lw=0.8)
+        a.plot(t, (d["bot%d" % k][w] - d["vref"][w]) * 1e3, color=CELL[k], label="bot - vref")
+        a.axhline(0, color=C_REF, lw=0.8)
         a.set_ylim(-25, 25)
         a.set_title("cell %d: vin %.1f LSB -> code %d (ideal %d)" % (k, m["p_pos%d" % k], m["code%d" % k],
                                                                    m["code_ideal%d" % k]), loc="left")
         if k == 0:
-            a.set_ylabel("bot - vbl (mV)")
+            a.set_ylabel("bot - vref (mV)")
         a = ax[1, k]
         a.plot(t, d["cnt_clk"][w], color=C_CLK, lw=0.8, label="cnt_clk")
         a.plot(t, d["dout%d" % k][w], color=CELL[k], label="dout")
@@ -237,7 +234,7 @@ def trips(d, m):
         a.plot(t, d["q%d" % k][w], color=CELL[k], label="q")
         if k == 0:
             a.set_ylabel("q, cnt_clk (V)")
-        a.set_xlabel("time from bot = vbl (ns)")
+        a.set_xlabel("time from bot = vref (ns)")
         for r, key in ((1, "t_dout%d" % k), (2, "t_q%d" % k)):
             if key in m:
                 x = (m[key] - tc) * 1e9
@@ -245,7 +242,7 @@ def trips(d, m):
                 ax[r, k].text(x, 1.6, " %.2f ns" % x, fontsize=7, color=CELL[k])
         ax[0, k].text(0.02, 0.92, "comparator delay %.2f ns" % (m["cmp_delay%d" % k] * 1e9), transform=ax[0, k].transAxes,
                       fontsize=7)
-    fig.suptitle("the four trips: bot crosses vbl, dout falls, q falls at the next cnt_clk falling edge",
+    fig.suptitle("the four trips: bot crosses vref, dout falls, q falls at the next cnt_clk falling edge",
                  x=0.01, ha="left", fontsize=10)
     fig.tight_layout()
     fig.savefig(os.path.join(ASSETS, "func_trips.png"))

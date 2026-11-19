@@ -127,7 +127,7 @@ this bench. Their own records are `../bias_gen`, `../midrail_ref` and
 | Comparator | `comparator` deck, no S/D geometry | `comparator_d`, drawn S/D geometry (as the macro) |
 | Latch | `tspc_dff` (TSPC + keeper) | `dfxtn_2` standard cell (ADR 0019) |
 | Control inverters | absent (complementary ideal controls) | the cell's own three inverters |
-| VREF and VBL | two ideal sources | one node (ADR 0021) |
+| VREF (S2 level and comparator reference) | two ideal sources | one node (ADR 0021) |
 | Sample to ramp start | 100 ns | 300 ns (the macro's TS3 -> TR, ADR 0018) |
 | Clock | phase walks 6.25 ns per record (S-curve) | synchronous: every record sees the clock at the macro's phase, TR on a rising edge |
 | Input | mid-code 16.5 / 240.5 | moved by +0.18 / +0.21 LSB so that the noiseless decision sits on a falling clock edge |
