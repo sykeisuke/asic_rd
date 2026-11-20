@@ -135,8 +135,8 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 | --- | --- | --- |
 | `VIN` | Analog voltage | 4 cell へ共通に配る連続入力 |
 | `s0[i]` | macro 内部の制御、HIGH = 閉 | 入力 transmission gate `VIN` → `VTOP[i]`（Analog_top の `S0`） |
-| `s2[i]` | macro 内部の制御、HIGH = 閉 | `VBOT[i]` → `VREF` の switch。**立下がりがサンプル時刻。`s0[i]` より 5 ns 以上先に開く**（Analog_top の `S2`） |
-| `s1[i]` | macro 内部の制御、HIGH = 閉 | `VTOP[i]` → `VRAMP` の switch。`s0[i]` が開いてから 5 ns 以上後に閉じ、変換中は閉じたまま（Analog_top の `S1`） |
+| `s2[i]` | macro 内部の制御、HIGH = 閉 | `VBOT[i]` → `VREF` の switch。**立下がりがサンプル時刻。`s0[i]` より先に開く（間隔は数百 ps = sequencer 自身の inverter 4 段分の遅延、10/90 の重なりなし。ADR 0031）**（Analog_top の `S2`） |
+| `s1[i]` | macro 内部の制御、HIGH = 閉 | `VTOP[i]` → `VRAMP` の switch。`s0[i]` が開いた後（同じ規則）に閉じ、変換中は閉じたまま（Analog_top の `S1`） |
 | `acq` | Digital control、HIGH = track | デジタル macro から渡る唯一の制御。macro 内の sequencer（`mixed_signal/sample_seq`、ADR 0027）がこれと `cnt_clk` から 4 cell の `s2`/`s0`/`s1` を作る |
 | `VREF` | Analog 基準 | 基準極板の固定電位。comparator の判定基準でもある |
 | `VRAMP` | Analog voltage | 全 cell 共通の ramp。0 V から開始 |
@@ -153,7 +153,7 @@ Tape-out 1で凍結する詳細構成は次の通りである。
 必須要求:
 
 - 4 個の cell が、異なる入力値を意図した順番で保存する。
-- `s2` → `s0` → `s1` の順序は Analog_top macro 内の sequencer が `acq` から生成する（各 phase 間 5 ns 以上、全 PVT。2026-11-03、ADR 0027）。デジタル側の self-test は `acq` と ramp のタイミングをそれに照らして検査する。
+- `s2` → `s0` → `s1` の順序は Analog_top macro 内の sequencer が `acq` から生成する（各 phase 間は inverter 4 段分以上で 10/90 の重なりなし、全 PVT で 0.20–0.96 ns。ADR 0031、2026-11-15。ADR 0027 の 5 ns 規則は廃止）。デジタル側の self-test は `acq` と ramp のタイミングをそれに照らして検査する。
 - Acquisition error、pedestal（平均と入力依存性）、hold droop、寄生ゲインの測定方法を定義する。
 - 選択されていない cell を意図せず上書きしない。
 
@@ -198,7 +198,7 @@ IDLE（track）→ acq を下げる → SAMPLE（edge k で cell k が標本化�
 
 ### 5.5 Sampling timingとconversion timing
 
-4 cell は変換クロック 1 周期ずつ（TS_k = TS_0 + k × 50 ns、合計 20 MSa/s）標本化する。基板からの `start` でデジタル top が `acq` を下げ、macro 内の sequencer が `acq` の LOW を最初に見た edge から k 番目の edge で cell k の基準側 switch を開く。各 cell 内では基準側 switch が入力 gate より 5 ns 以上先に開き、ramp gate はさらに 5 ns 以上後に閉じる（Analog_top `tb_params.inc`、`sample_seq`）。ramp は TR = TS_3 + 300 ns（6 clock）で解放する。
+4 cell は変換クロック 1 周期ずつ（TS_k = TS_0 + k × 50 ns、合計 20 MSa/s）標本化する。基板からの `start` でデジタル top が `acq` を下げ、macro 内の sequencer が `acq` の LOW を最初に見た edge から k 番目の edge で cell k の基準側 switch を開く。各 cell 内では基準側 switch が入力 gate より先に開き、ramp gate はその後に閉じる（間隔は数百 ps）（Analog_top `tb_params.inc`、`sample_seq`）。ramp は TR = TS_3 + 300 ns（6 clock）で解放する。
 
 Conversion clock は独立したパラメータ。20 MHz 基準で `TCOUNT = 50 ns`、4 cell の並列 8-bit 変換は 256 count = 12.8 µs に接続・整定のオーバーヘッドを加えた時間で完了する。Tape-out 1 は短い 4 sample 記録を取得後に変換する構成であり、dead-time-free の連続サンプラではない。
 
