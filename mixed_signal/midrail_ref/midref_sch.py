@@ -8,7 +8,7 @@ from the netlist, so the drawing cannot drift from it):
   midref_div.sch / .sym   the VDD/2 divider and its tap capacitor
 
 The text (title, section headings, per-device Id, R and C values) is read
-from data/op_devices.csv / op_passives.csv (verify_v3.py phase opdev) and
+from data/op_devices.csv / op_passives.csv (verify.py phase opdev) and
 changes no instance, wire or label.
 
 schematic.sh netlists both headless and compares them with the subcircuits of
@@ -137,7 +137,7 @@ class Sheet:
 # The sheets carry a title, section headings, labels, the device currents and the
 # R / C values only (CLAUDE.md, "Schematic drawings"); descriptions and the
 # operating-point table live in README.md and data/op_devices.csv. The numbers come from
-#   data/op_devices.csv, data/op_passives.csv   verify_v3.py phase opdev (ngspice,
+#   data/op_devices.csv, data/op_passives.csv   verify.py phase opdev (ngspice,
 #       one midref2 at typical / 27 C / 3.3 V, the ideal i_f into ib, PDK-model
 #       replicas of the divider resistors and the MIM capacitors)
 # A missing record prints "not recorded" instead of a number. Text only: no
@@ -179,7 +179,7 @@ def tag(s, x, y, lines, size=TXT_TAG, prop=TAG):
 
 def annotate_buf(s, dv):
     D, P = records()
-    s.text(f"T {{MIDREF_BUF  -  FVF class-AB VDD/2 buffer (out = vref = vbl)}} 40 -1100 0 0 "
+    s.text(f"T {{MIDREF_BUF  -  FVF class-AB VDD/2 buffer (out = vref)}} 40 -1100 0 0 "
            f"{TXT_TITLE} {TXT_TITLE} {{}}")
     for dev, x, y in (("xmbn", 172, -400), ("xmbn2", 392, -112), ("xmbp", 392, -722), ("xm1", 752, -800),
                       ("xmib", 752, -532), ("xmit", 752, -312), ("xm4", 752, -205), ("xm3", 1300, -805),

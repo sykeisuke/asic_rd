@@ -4,7 +4,7 @@ K {}
 V {}
 S {}
 E {}
-T {MIDREF_BUF  -  FVF class-AB VDD/2 buffer (out = vref = vbl)} 40 -1100 0 0 0.6 0.6 {}
+T {MIDREF_BUF  -  FVF class-AB VDD/2 buffer (out = vref)} 40 -1100 0 0 0.6 0.6 {}
 T {12.36 uA} 172 -400 0 0 0.36 0.36 {layer=4}
 T {13.96 uA} 392 -112 0 0 0.36 0.36 {layer=4}
 T {13.96 uA} 392 -722 0 0 0.36 0.36 {layer=4}

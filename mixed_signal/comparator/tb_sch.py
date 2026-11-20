@@ -1,35 +1,47 @@
 #!/usr/bin/env python3
 """Emit the xschem testbench schematics of comparator's benches.
 
-    python3 tb_sch.py     -> tb_delay.sch, tb_trip.sch, tb_noise.sch, tb_mc.sch
+    python3 tb_sch.py     -> tb_tran.sch, tb_dc.sch, tb_nz.sch, tb_mc.sch
 
-Each testbench draws one bench of the block at its nominal point (typical,
-27 C, 3.3 V, the ideal bias of data/sizing.json): the sources, the
-comparator as comparator.sym (xschem netlists comparator.sch into it, so
-the testbench exercises the drawing, not the deck), the 10 fF load, and a
-code block with the model lines and the analysis. xtb.py netlists every
-drawing with xschem, runs ngspice on it and compares its figures with the
-hand-written bench's (data/xtb.csv, check-xtb.awk).
+Each testbench draws one bench template of bench.py (tb_<name>.spice) filled
+for the `sw` variant at the nominal point (typical, 27 C, 3.3 V, the ideal
+bias 1.93077 uA into one tail finger, 10 fF on dout, ADR 0025 grid): the
+sources, the comparator as comparator.sym (xschem netlists
+comparator.sch into it, so the testbench exercises the drawing, not the
+deck) and a code block with the model lines and the analysis. The values are
+written with bench.py's own formats. xtb.py netlists every drawing, runs
+ngspice on it and compares its figures with the bench's record
+(data/values_verify.txt).
 
-| Testbench     | Bench it draws                    | Fixed at                                    |
-| tb_delay.sch  | tb_sel.spice (size_v3 / verify)   | plateau level 40.5 LSB, typical bias        |
-| tb_trip.sch   | tb_sel_dc.spice                   | inn swept VBL +- 50 mV                      |
-| tb_noise.sch  | tb_nz.spice                       | parked at the trip through 1 TH from dout   |
-| tb_mc.sch     | tb_mc.spice                       | 200 samples                                 |
+| Testbench   | Template      | Fixed at                                          |
+| tb_tran.sch | tb_tran.spice | 40.5 LSB, the whole conversion (TR .. count 260)  |
+| tb_dc.sch   | tb_dc.spice   | the plate pin inp swept VDD/2 +- 50 mV            |
+| tb_nz.sch   | tb_nz.spice   | parked at the trip through 1 TH from dout to inp  |
+| tb_mc.sch   | tb_mc.spice   | 200 samples, seed 20261117                        |
 
-Placement is hand-authored; device sizes of the bias reference and the
-ideal current come from data/sizing.json.
+Parts are placed in the template's line order (ngspice Monte Carlo draws
+follow the device order). Placement is hand-authored.
 """
-import json
 import sys
 from pathlib import Path
 
 BLOCK = Path(__file__).resolve().parent
-SEL = json.loads((BLOCK / "data" / "sizing.json").read_text())
 sys.path.insert(0, str(BLOCK))
 import intent as I  # noqa: E402  design-intent currents (the one source)
-REF_L, REF_W, REF_NF = "%gu" % SEL["l_b"], "%gu" % (SEL["w_fp"] * 1e6), "1"
-IREF = "%.6g" % SEL["iref"]
+
+# the nominal `sw` point, in bench.py's formats (bench.py: I_F, LSB_GRID, C_LOAD, REFP, cell_subs, level)
+VDD = 3.3
+I_F = 1.93077e-6
+LSB = 6.701613e-3 * VDD / 3.3
+VRLO = 7.0 / 55.0 * VDD
+LEVEL = 40.5
+TCOUNT = 50e-9
+IREF = "%.6g" % I_F
+VCM = "%.6g" % (VDD / 2)
+TSTOP = "%.6g" % (400e-9 + 260 * TCOUNT)
+VTRIP0 = 1.65039                       # replaced by xtb.py with tb_dc's result
+N_MC, SEED = 200, 20261117
+
 MOS_ATTR = ('ad="\'int((nf+1)/2) * W/nf * 0.18u\'"\n'
             'pd="\'2*int((nf+1)/2) * (W/nf + 0.18u)\'"\n'
             'as="\'int((nf+2)/2) * W/nf * 0.18u\'"\n'
@@ -38,7 +50,7 @@ MOS_ATTR = ('ad="\'int((nf+1)/2) * W/nf * 0.18u\'"\n'
             'sa=0 sb=0 sd=0')
 MODELS = (".include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice\n"
           ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical")
-COMMON = ".param VDD=3.3\n.param IREF=%s   $ data/sizing.json iref: ideal current into one tail finger\n.temp 27" % IREF
+COMMON = ".param VDD=%g\n.temp 27\n.param IREF=%s" % (VDD, IREF)
 
 
 def esc(s):
@@ -91,6 +103,9 @@ class Sch:
     def vsrc(self, name, x, y, value, p, m="0"):
         self.part("vsource", x, y, 'name=%s value="%s" savecurrent=false' % (name, esc(value)), {"p": p, "m": m})
 
+    def cmp(self, name, x, y, nets):
+        self.part("cmp", x, y, "name=%s" % name, nets)
+
     def code(self, x, y, name, text):
         self.inst.append('C {devices/code_shown.sym} %d %d 0 0 {name=%s only_toplevel=false value="%s"}'
                          % (x, y, name, esc(text)))
@@ -103,52 +118,51 @@ class Sch:
         body += ["N %d %d %d %d {}" % w for w in self.wires]
         body += self.texts + self.inst
         path.write_text("\n".join(body) + "\n")
-        print("REPORT: wrote %s: %d symbols, %d wires" % (path.name, len(self.inst) - self.n, len(self.wires)))
+        print("REPORT: wrote %s: %d symbols, %d wires, %d texts"
+              % (path.name, len(self.inst) - self.n, len(self.wires), len(self.texts)))
 
 
 def header(s, title):
-    """The sheet's one-line title (with the bias current), above the source row
-    (CLAUDE.md, "Schematic drawings": the bench's description lives in the README)."""
+    """The sheet's one-line title (with the bias current) above the source rows."""
     s.T("%s, I_B = %.2f uA" % (title, I.I_B_UA), 60, -1330, 0.7)
 
 
-def supplies_and_bias(s, y=-1180, extra=()):
-    """Row 1: supplies and the decision level; row 2: the bias reference (one
-    tail finger, ideal current) and the unused nbias leg the benches keep."""
-    rows = [("VDD_SOURCE", "{VDD}", "vdd"), ("VDD_BIAS", "{VDD}", "vddb")] + list(extra)
-    for i, (name, val, net) in enumerate(rows):
-        s.vsrc(name, 120 + 170 * i, y, val, net)
+def supplies_and_bias(s, extra=(), y=-1180):
+    """The templates' first lines: the supplies, the bias reference (one tail
+    finger, ideal current) and the unused nbias leg; then `extra` sources in
+    row 1 after the supplies (the template's next lines)."""
+    s.vsrc("VDD_SOURCE", 120, y, "{VDD}", "vdd")
+    s.vsrc("VDD_BIAS", 290, y, "{VDD}", "vddb")
     s.part("isource", 120, y + 280, 'name=IREFN value="%s"' % esc("{IREF}"), {"p": "vddb", "m": "nbias"})
     s.mos("nfet", "REFN", 320, y + 280, "1u", "20u", "10", {"G": "nbias", "D": "nbias", "S": "0", "B": "0"})
     s.part("isource", 480, y + 280, 'name=IREFP value="%s"' % esc("{IREF}"), {"p": "pbias", "m": "0"})
-    s.mos("pfet", "REFP", 680, y + 280, REF_L, REF_W, REF_NF, {"G": "pbias", "D": "pbias", "S": "vddb", "B": "vddb"})
+    s.mos("pfet", "REFP", 680, y + 280, "0.28u", "1u", "1", {"G": "pbias", "D": "pbias", "S": "vddb", "B": "vddb"})
+    for i, (name, val, net) in enumerate(extra):
+        s.vsrc(name, 460 + 170 * i, y, val, net)
 
 
-def tb_delay():
+def tb_tran():
     s = Sch()
-    header(s, "TB_DELAY  -  comparator delay on the cell's charge path, dout into 10 fF")
-    supplies_and_bias(s, extra=[("VVBL", "{VDD/2}", "vbl"), ("VVREF", "{VDD/2}", "vref"), ("VCLK", "0", "clk")])
-    for i, (name, val, net) in enumerate([
-            ("VBOT", "PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+14u} {VR_LO+14u*SLOPE})", "bot"),
-            ("VS2", "PWL(0 1 {TS} 1 {TS+TEDGE} 0)", "s2")]):
-        y = -620 + 170 * i
-        s.vsrc(name, 120, y, val, net)
-    s.part("switch", 1400, -1140, "name=S2 model=swideal", {"P": "vref", "M": "top", "CP": "s2", "CM": "0"})
+    header(s, "TB_TRAN  -  delay and polarity of comparator on the cell's charge path")
+    supplies_and_bias(s, extra=[("VCLK", "0", "clk"), ("VVREF", "{VDD/2}", "vref")])
+    s.vsrc("VDRV", 120, -620, "PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+20u} "
+                              "{VR_LO+20u*SLOPE})", "drv")
+    s.vsrc("VS2", 120, -450, "PWL(0 1 {TS} 1 {TS+TEDGE} 0)", "s2")
+    s.part("switch", 1400, -1140, "name=S2 model=swideal", {"P": "vref", "M": "plate", "CP": "s2", "CM": "0"})
     s.part("mim", 1400, -900, "name=XCS W=5u L=5u model=cap_mim_2f0_m4m5_noshield spiceprefix=\"\" m=1",
-           {"B": "top", "G": "bot"})
+           {"G": "plate", "B": "drv"})          # xschem lists G first: XCS plate drv, as the deck
     s.T("C_S 54.52 fF", 1440, -840, 0.3, 4)
-    s.part("res", 1560, -1010, "name=RLKT value=1e15 footprint=1206 device=resistor m=1", {"p": "top", "m": "0"})
-    s.part("cmp", 1900, -1000, "name=XDUT", {"inp": "vbl", "inn": "top", "clk": "clk", "nbias": "nbias",
-                                             "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
-    s.part("capa", 2140, -1000, "name=CLOAD value=10f m=1", {"p": "dout", "m": "0"})
+    s.part("res", 1560, -1010, "name=RLKT value=1e15 footprint=1206 device=resistor m=1", {"p": "plate", "m": "0"})
+    s.cmp("XDUT", 1900, -1000, {"inp": "plate", "inn": "vref", "clk": "clk", "nbias": "nbias",
+                                "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
+    s.part("capa", 2140, -1000, "name=CLOAD value=%.4g m=1" % 10e-15, {"p": "dout", "m": "0"})
     code = MODELS + """
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical
 .model swideal sw vt=0.5 vh=0.1 ron=100 roff=1e16
 """ + COMMON + """
-.param VTRIP=1.649611   $ replaced by xtb.py with tb_trip's result
-.param VIN='VR_LO+40.5*LSB'
-.param VR_LO=0.5
-.param LSB=0.005859375
+.param VIN=%.9g
+.param VR_LO=%.9g
+.param LSB=%.9g
 .param TCOUNT=50n
 .param SLOPE='LSB/TCOUNT'
 .param TS=300n
@@ -157,113 +171,143 @@ def tb_delay():
 .param TEDGE=100p
 .csparam cs_vdd={VDD}
 .csparam cs_tr={TR}
-.csparam cs_vtrip={VTRIP}
+.csparam cs_tconn={TCONN}
+.csparam cs_tideal={TR+(VIN-VR_LO)/SLOPE}
 .options savecurrents reltol=1e-4 gmin=1e-15
 .control
-tran 0.25n 2.825u 0 0.5n
 let half = $&cs_vdd / 2
 let hi90 = 0.9 * $&cs_vdd
 let lo10 = 0.1 * $&cs_vdd
-meas tran t_cross when v(top)=1.65 rise=1 td=$&cs_tr
-meas tran t_cs when v(top)=$&cs_vtrip rise=1 td=$&cs_tr
+let lvla = hi90
+let lvlb = lo10
+set vtrip_s = "%.6f"
+tran 0.25n %s 0 0.5n
+meas tran t_cross when v(plate)=%s rise=1 td=$&cs_tr
+meas tran t_cs when v(plate)=$vtrip_s rise=1 td=$&cs_tr
 meas tran t_dout when v(dout)=$&half fall=1 td=$&cs_tr
-meas tran t_f90 when v(dout)=$&hi90 fall=1 td=$&cs_tr
-meas tran t_f10 when v(dout)=$&lo10 fall=1 td=$&cs_tr
-let delay_vbl = t_dout - t_cross
+meas tran t_ea when v(dout)=$&lvla fall=1 td=$&cs_tr
+meas tran t_eb when v(dout)=$&lvlb fall=1 td=$&cs_tr
+meas tran armed find v(dout) at=$&cs_tr
+meas tran vplate_tr find v(plate) at=$&cs_tr
+meas tran i_avg avg i(vdd_source) from=$&cs_tconn to=$&t_cross
+let delay_vref = t_dout - t_cross
 let delay_dyn = t_dout - t_cs
-let fall = t_f10 - t_f90
+let edge = t_eb - t_ea
+let ped_counts = (t_dout - $&cs_tideal) / 50e-9
+let p_avg = -$&cs_vdd * i_avg
 echo "RESULT_BEGIN"
-print delay_vbl delay_dyn fall
+print delay_vref
+print delay_dyn
+print edge
+print ped_counts
+print armed
+print p_avg
+print vplate_tr
+print t_dout
 echo "RESULT_END"
 quit
-.endc"""
+.endc""" % (VRLO + LEVEL * LSB, VRLO, LSB, VTRIP0, TSTOP, VCM)
     s.code(1300, -700, "CTL", code)
-    s.write(BLOCK / "tb_delay.sch")
+    s.write(BLOCK / "tb_tran.sch")
 
 
-def tb_trip():
+def tb_dc():
     s = Sch()
-    header(s, "TB_TRIP  -  static trip of comparator, inp = VBL = VDD/2")
-    supplies_and_bias(s, extra=[("VVBL", "{VDD/2}", "vbl"), ("VDC", "1.65", "vdc"), ("VCLK", "0", "clk")])
-    s.part("cmp", 1300, -1000, "name=XDC", {"inp": "vbl", "inn": "vdc", "clk": "clk", "nbias": "nbias",
-                                            "pbias": "pbias", "dout": "doutdc", "vdd": "vdd", "vss": "0"})
-    s.part("capa", 1540, -1000, "name=CLDC value=10f m=1", {"p": "doutdc", "m": "0"})
+    header(s, "TB_DC  -  static trip of comparator, inn = VREF = VDD/2")
+    supplies_and_bias(s, extra=[("VCLK", "0", "clk"), ("VVREF", "{VDD/2}", "vref"), ("VDC", VCM, "vdc")])
+    s.cmp("XDC", 1300, -1000, {"inp": "vdc", "inn": "vref", "clk": "clk", "nbias": "nbias",
+                               "pbias": "pbias", "dout": "doutdc", "vdd": "vdd", "vss": "0"})
+    s.part("capa", 1540, -1000, "name=CLDC value=%.4g m=1" % 10e-15, {"p": "doutdc", "m": "0"})
     code = MODELS + "\n" + COMMON + """
 .control
-dc VDC 1.60 1.70 25u
-meas dc vtrip when v(doutdc)=1.65 fall=1
+dc VDC %s %s 25u
+meas dc vtrip when v(doutdc)=%s fall=1
 echo "RESULT_BEGIN"
 print vtrip
 echo "RESULT_END"
 quit
-.endc"""
+.endc""" % ("%.6g" % (VDD / 2 - 0.05), "%.6g" % (VDD / 2 + 0.05), VCM)
     s.code(1000, -560, "CTL", code)
-    s.write(BLOCK / "tb_trip.sch")
+    s.write(BLOCK / "tb_dc.sch")
 
 
-def tb_noise():
+def tb_nz():
     s = Sch()
-    header(s, "TB_NOISE  -  input-referred noise of comparator at its trip")
-    supplies_and_bias(s, extra=[("VINP", "DC 1.65 AC 1", "inp"), ("VCLK", "{VDD}", "clk")])
-    s.part("capa", 1100, -760, "name=CINN value=1 m=1", {"p": "inn", "m": "0"})
-    s.part("ind", 1100, -1060, "name=LFB value=1T m=1", {"p": "dout", "m": "inn"})
-    s.part("cmp", 1400, -1000, "name=XDUT", {"inp": "inp", "inn": "inn", "clk": "clk", "nbias": "nbias",
-                                             "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
-    s.part("capa", 1640, -1000, "name=CLOAD value=10f m=1", {"p": "dout", "m": "0"})
+    header(s, "TB_NZ  -  input-referred noise of comparator at its trip")
+    supplies_and_bias(s, extra=[("VCLK", "{VDD}", "clk"), ("VSIG", "DC %s AC 1" % VCM, "inn")])
+    s.part("capa", 1100, -760, "name=CFB value=1 m=1", {"p": "inp", "m": "0"})
+    s.part("ind", 1100, -1060, "name=LFB value=1T m=1", {"p": "dout", "m": "inp"})
+    s.cmp("XDUT", 1400, -1000, {"inp": "inp", "inn": "inn", "clk": "clk", "nbias": "nbias",
+                                "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
+    s.part("capa", 1640, -1000, "name=CLOAD value=%.4g m=1" % 10e-15, {"p": "dout", "m": "0"})
     code = MODELS + "\n" + COMMON + """
 .options savecurrents
 .control
 op
+let op_i_vdd = -i(vdd_source)
+echo "RESULT_BEGIN"
+print op_i_vdd
 ac dec 20 10 100G
 meas ac ota_gain_vv find vm(xdut.outa) at=10
-echo "RESULT_BEGIN"
+let g3 = ota_gain_vv / sqrt(2)
+meas ac ota_pole_hz when vm(xdut.outa)=$&g3 fall=1
+meas ac ota_ugbw_hz when vm(xdut.outa)=1 fall=1
 print ota_gain_vv
+print ota_pole_hz
 set g = $&ota_gain_vv
-noise v(xdut.outa) vinp dec 20 1k 10G
+set ugb = $&ota_ugbw_hz
+noise v(xdut.outa) vsig dec 20 1k 10G
 let nz_own_vin = onoise_total / $g
 print nz_own_vin
+noise v(xdut.outa) vsig dec 20 1k 100k
+let nz_lo_vin = onoise_total / $g
+print nz_lo_vin
+noise v(xdut.outa) vsig dec 20 1k $ugb
+let nz_ugb_vin = inoise_total
+print nz_ugb_vin
 echo "RESULT_END"
 quit
 .endc"""
     s.code(1000, -560, "CTL", code)
-    s.write(BLOCK / "tb_noise.sch")
+    s.write(BLOCK / "tb_nz.sch")
 
 
 def tb_mc():
     s = Sch()
     header(s, "TB_MC  -  threshold spread of comparator, PDK mismatch")
-    supplies_and_bias(s, extra=[("VINP", "1.65", "inp"), ("VINN", "1.65", "inn"), ("VCLK", "{VDD}", "clk")])
-    s.part("cmp", 1300, -1000, "name=XDUT", {"inp": "inp", "inn": "inn", "clk": "clk", "nbias": "nbias",
-                                             "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
-    s.part("capa", 1540, -1000, "name=CLOAD value=10f m=1", {"p": "dout", "m": "0"})
+    supplies_and_bias(s, extra=[("VCLK", "{VDD}", "clk"), ("VREFX", VCM, "vrefx"), ("VSW", VCM, "vsw")])
+    s.cmp("XDUT", 1300, -1000, {"inp": "vsw", "inn": "vrefx", "clk": "clk", "nbias": "nbias",
+                                "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
+    s.part("capa", 1540, -1000, "name=CLOAD value=%.4g m=1" % 10e-15, {"p": "dout", "m": "0"})
+    lo, hi = "%.6g" % (VDD / 2 - 0.07), "%.6g" % (VDD / 2 + 0.07)
     code = MODELS + "\n.param sw_stat_mismatch=1\n" + COMMON + """
-.csparam cs_n=200
+.csparam cs_n=%d
 .control
-set rndseed=20261006
+set rndseed=%d
 let k = 0
 alterparam sw_stat_mismatch=0
 reset
-dc vinn 1.58 1.72 0.0002
-meas dc vtrip when v(dout)=1.65 fall=1
-let vos_nom = vtrip - 1.65
+dc vsw %s %s 0.0002
+meas dc vtrip when v(dout)=%s fall=1
+let vos_nom = vtrip - %s
 print vos_nom
 alterparam sw_stat_mismatch=1
 while k < $&cs_n
   reset
-  dc vinn 1.58 1.72 0.0002
-  meas dc vtrip when v(dout)=1.65 fall=1
-  let vos_k = vtrip - 1.65
+  dc vsw %s %s 0.0002
+  meas dc vtrip when v(dout)=%s fall=1
+  let vos_k = vtrip - %s
   print vos_k
   let k = k + 1
 end
 quit
-.endc"""
+.endc""" % (N_MC, SEED, lo, hi, VCM, VCM, lo, hi, VCM, VCM)
     s.code(1000, -560, "CTL", code)
     s.write(BLOCK / "tb_mc.sch")
 
 
 if __name__ == "__main__":
-    tb_delay()
-    tb_trip()
-    tb_noise()
+    tb_tran()
+    tb_dc()
+    tb_nz()
     tb_mc()

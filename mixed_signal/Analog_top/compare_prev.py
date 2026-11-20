@@ -4,13 +4,19 @@
 
     python3 compare_prev.py
 
-v7 (ADR 0027) against v6: the switch controls come from the sequencer; before that, v6 (ADR 0026) against v5: the ramp is ramp_simple fed by ic_source on the
+The previous record is data/prev_ref (runs/analog-top/20261116T085301Z, before the
+comparator swap); the comparator
+is ../comparator with the plate on inp; its delay from the plate crossing
+changes, the analog crossing should not. Per cell the comparator delay
+(t_dout - t_bot) of both records and its difference in counts are printed
+(cmp_prev_delay<k>_ns), so a code shift can be traced to it.
+Earlier comparisons (archived): the sequencer (ADR 0027) against the record before it; before that (ADR 0026) the ramp ramp_simple fed by ic_source on the
 ADR 0025 grid (LSB 6.70 mV instead of 5.86 mV, reset level 7/55 AVDD =
 0.420 V instead of 0.5 V, T0 60 us, the ramp ends 3 counts after count 256).
 The input POSITIONS (LSB above VR_LO) are v5's, so the codes are comparable;
 the input voltages and times are not. Times are compared relative to each
-record's own TR, in counts. Reads data/v6_ref/func_measures.txt +
-func_reduce.txt (the v6 functional record) and data/func_measures.txt +
+record's own TR, in counts. Reads data/prev_ref/func_measures.txt +
+func_reduce.txt (the previous functional record) and data/func_measures.txt +
 func_reduce.txt (this run). Prints REPORT lines and `cmp_prev_*` scalars.
 (Until v5 this was compare_v4.py.)
 """
@@ -33,14 +39,14 @@ def load(*paths):
 
 
 def main():
-    ref = os.path.join(HERE, "data", "v6_ref")
+    ref = os.path.join(HERE, "data", "prev_ref")
     a = load(os.path.join(ref, "func_measures.txt"), os.path.join(ref, "func_reduce.txt"))
     b = load(os.path.join(HERE, "data", "func_measures.txt"), os.path.join(HERE, "data", "func_reduce.txt"))
     nan = float("nan")
     g = lambda d, k: d.get(k, nan)
     codes4 = [int(g(a, "code%d" % k)) for k in range(4)]
     codes5 = [int(g(b, "code%d" % k)) if g(b, "code%d" % k) == g(b, "code%d" % k) else -1 for k in range(4)]
-    print("REPORT: prev compare: codes v7 %s / v6 %s (%s)" % ("/".join(map(str, codes5)), "/".join(map(str, codes4)),
+    print("REPORT: prev compare: codes current %s / previous %s (%s)" % ("/".join(map(str, codes5)), "/".join(map(str, codes4)),
                                                           "identical" if codes4 == codes5 else "DIFFERENT"))
     print("cmp_prev_codes_equal = %d" % int(codes4 == codes5))
     lsb = g(b, "p_lsb")
@@ -49,7 +55,13 @@ def main():
         dd = ((g(b, "t_dout%d" % k) - g(b, "p_tr")) - (g(a, "t_dout%d" % k) - g(a, "p_tr"))) / T
         dx = ((g(b, "t_bot%d" % k) - g(b, "p_tr")) - (g(a, "t_bot%d" % k) - g(a, "p_tr"))) / T
         print("cmp_prev_dout%d_lsb = %.6g" % (k, dd))
-        print("REPORT: prev compare: cell %d: dout (from TR) %+.4f counts, analog crossing %+.4f counts against v6; "
+        print("cmp_prev_xing%d_lsb = %.6g" % (k, dx))
+        da, db = g(a, "cmp_delay%d" % k), g(b, "cmp_delay%d" % k)
+        print("cmp_prev_delay%d_ns = %.6g" % (k, (db - da) * 1e9))
+        print("REPORT: prev compare: cell %d: comparator delay from the plate crossing previous %.3f ns -> current %.3f ns "
+              "(%+.3f ns = %+.4f counts); code previous %s -> current %s" % (k, da * 1e9, db * 1e9, (db - da) * 1e9, (db - da) / T,
+                                                                  codes4[k], codes5[k]))
+        print("REPORT: prev compare: cell %d: dout (from TR) %+.4f counts, analog crossing %+.4f counts against previous; "
               "plate error %+.4f -> %+.4f LSB" % (k, dd, dx, g(a, "bps_err%d" % k), g(b, "bps_err%d" % k)))
     rows = [("vramp at TR (V)", "vramp_at_tr", 1, "%.6f"), ("ramp slope (V/us)", "ramp_slope_vpus", 1, "%.6f"),
             ("ramp INL best fit (LSB)", "ramp_inl_bf_lsb", 1, "%.4f"),
@@ -63,8 +75,8 @@ def main():
     parts = []
     for label, k, _, f in rows:
         parts.append(("%s " + f + " -> " + f) % (label, g(a, k), g(b, k)))
-    print("REPORT: prev compare (v6 -> v7): " + "; ".join(parts))
-    print("REPORT: prev compare: plate pedestal VBL(decision) - VREF(TS_k): v6 %s mV, v7 %s mV"
+    print("REPORT: prev compare (previous -> current): " + "; ".join(parts))
+    print("REPORT: prev compare: VREF(decision) - VREF(TS_k): previous %s mV, current %s mV"
           % ("/".join("%+.3f" % (g(a, "refd%d" % k) * 1e3) for k in range(4)),
              "/".join("%+.3f" % (g(b, "refd%d" % k) * 1e3) for k in range(4))))
     print("cmp_prev_vramp_tr_mv = %.6g" % ((g(b, "vramp_at_tr") - g(a, "vramp_at_tr")) * 1e3))

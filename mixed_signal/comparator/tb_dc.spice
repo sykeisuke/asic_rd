@@ -1,0 +1,35 @@
+* Static trip of comparator (adapted from tb_sel_dc.spice):
+* the reference at VREF = VDD/2, the plate pin swept through it, dout's
+* crossing of VDD/2 in its decision direction (EDGE). XDC is the hookup
+* (bench.py): base sweeps inn (vdc on inn), sw / sw_noinv sweep inp.
+* tb_tran.spice measures the delay from the plate's crossing of THIS level.
+.include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
+.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
+.include @DUT@
+
+.param VDD=@VDD@
+.temp @TEMP@
+.param IREF=@IREF@
+
+VDD_SOURCE vdd 0 {VDD}
+VDD_BIAS vddb 0 {VDD}
+IREFN vddb nbias {IREF}
+XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
+IREFP pbias 0 {IREF}
+@REFP@
+VCLK clk 0 0
+VVREF vref 0 {VDD/2}
+VDC vdc 0 @VCM@
+@XDC@
+CLDC doutdc 0 @CLOAD@
+
+.control
+dc VDC @VLO50@ @VHI50@ 25u
+meas dc vtrip when v(doutdc)=@VCM@ @EDGE@=1
+echo "RESULT_BEGIN"
+print vtrip
+echo "RESULT_END"
+quit
+.endc
+
+.end

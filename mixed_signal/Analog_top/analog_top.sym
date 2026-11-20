@@ -3,7 +3,7 @@ G {}
 K {type=subcircuit
 format="@name @pinlist @symname"
 template="name=X1"
-description="analog_top: the analog macro of the 8-bit bottom-plate ADC (v6: every analog block inside, one VDD/2 buffer for vref = vbl, the I/C-fed ramp); xschem descends into analog_top.sch (analog_top.spice is generated from it by schematic.sh)"
+description="analog_top: the analog macro of the 8-bit bottom-plate ADC (v6: every analog block inside, one VDD/2 buffer for vref, the I/C-fed ramp); xschem descends into analog_top.sch (analog_top.spice is generated from it by schematic.sh)"
 }
 V {}
 S {}

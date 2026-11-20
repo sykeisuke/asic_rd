@@ -11,11 +11,12 @@
 *            24-28 us over PVT, MC tail to ~50 us; ADR 0025 / 0026)
 *   TACQ     acq falls, 2 ns after the clock edge TS0 - TSPACE (the controller's
 *            acquire flop); the twelve switch controls come from the sequencer
-*            inside the macro (v7, ADR 0027), not from sources:
+*            inside the macro (ADR 0027), not from sources:
 *   TS_k     a clock rising edge; S2_k opens first, ~0.6 ns after it (clock
 *            buffer + flop): cell k's sample (TS_k = TS0 + k TSPACE, 50 ns =
 *            20 MSa/s, one 20 MHz clock period)
-*   +D       S0_k opens (isolate), D >= 5 ns (sample_seq Q2)
+*   +D       S0_k opens (isolate), D >= a four-inverter delay, a few hundred ps
+*            (sample_seq Q2, ADR 0031)
 *   +2D      S1_k closes: top_k = vramp = vrlo; by TS_k + TSEQ at every PVT cell
 *   TS_k+TSTEP   vin steps to the next cell's level (after S0_k opened)
 *   TR       ramp_rst falls: ramp and count start (a cnt_clk rising edge);

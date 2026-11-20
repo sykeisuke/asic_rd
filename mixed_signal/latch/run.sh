@@ -22,6 +22,12 @@
 #              tb_drive/tb_aperture/tb_kick.sch, each netlisted, checked, rendered and
 #              simulated against its hand bench (xtb.py) -> data/xtb.csv
 #   check      check-*.awk on the tables
+#   pvt        opt-in, not in the default phases: bench_pvt.py, the drive and aperture
+#              benches at 45 PVT cells (5 corners x 0/27/85 C x 3.0/3.3/3.6 V)
+#                                                             -> data/pvt.csv, pvt_aperture.csv
+#              (PHASES='pvt check' runs it and check-pvt.awk; ~1.5 h at JOBS=3)
+#   pvtcheck   opt-in: check-pvt.awk on the existing data/pvt.csv alone (re-judges a
+#              pvt table without re-simulating it)
 set -eu
 
 BLOCK_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -51,6 +57,7 @@ JOBS=${JOBS:-20} sh "$BLOCK_DIR/container.sh" "
     has slew && step slew
     has aperture && step aperture
     has kick && step kick
+    if has pvt; then python3 bench_pvt.py pvt || printf 'FAIL: bench_pvt.py pvt aborted\n'; fi
     if has schematic; then sh schematic.sh || printf 'FAIL: schematic.sh\n'; fi
     if has check; then
         has explore && awk -f check-explore.awk data/explore.csv
@@ -58,8 +65,10 @@ JOBS=${JOBS:-20} sh "$BLOCK_DIR/container.sh" "
         has slew && awk -v req=$SLEW_REQ -f check-slew.awk data/slew.csv
         has aperture && awk -f check-aperture.awk data/aperture.csv
         has kick && awk -f check-kick.awk data/kick.csv
+        has pvt && awk -f check-pvt.awk data/pvt.csv
         true
     fi
+    if has pvtcheck; then awk -f check-pvt.awk data/pvt.csv || true; fi
 " >"$run_dir/console.log" 2>&1 || status=$?
 
 if grep -q '^FAIL' "$run_dir/console.log"; then status=1; fi

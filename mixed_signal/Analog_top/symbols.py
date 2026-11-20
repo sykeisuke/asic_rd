@@ -1,7 +1,7 @@
 """Symbols of Analog_top's sub-blocks, drawn so that a designer reads the
 function from the shape (the macro analog_top.sym itself stays a rectangle):
 
-  (ramp_simple_d.sym, a sawtooth, until v5; the v6 ramp is ../ramp_simple and
+  (ramp_simple_d.sym, a sawtooth, no longer used; the ramp is ../ramp_simple and
   ../ic_source with their own symbols, ADR 0026; the function stays here unused)
   bias_gen_s.sym   a reference current source + R (constant-gm core) and one
                      current-source glyph per output, the arrow giving the
@@ -170,7 +170,7 @@ BG_SINK = {"icmp0", "icmp1", "icmp2", "icmp3", "iramp"}
 
 
 def bias_gen_s():
-    s = Sym("bias_gen_s: constant-gm beta-multiplier bias generator (bias_gen, ADR 0017) without the ivbl source XOB (ADR 0021), plus the "
+    s = Sym("bias_gen_s: constant-gm beta-multiplier bias generator (bias_gen, ADR 0017) without the ivref2 source XOB (ADR 0021), plus the "
             "source output ivrlo for vrlo_ref (XOL, ADR 0020); every output is a CURRENT: icmp0..3 and iramp "
             "SINK (arrow into the block), ivref, ivrlo SOURCE (arrow out). xschem descends into "
             "bias_gen_s.sch", "X1")
@@ -331,9 +331,9 @@ def latch():
 
 # ------------------------------------------------------------- comparator
 def comparator_d():
-    s = Sym("comparator_d: comparator (10 devices) with its own pbias PMOS diode XREFP, drawn flat in "
+    s = Sym("comparator_d: comparator (12 devices) with its own pbias PMOS diode XREFP, drawn flat in "
             "comparator_d.sch; ibias is a CURRENT input (bias_gen_s sinks icmp_k from it). "
-            "Pins: inp inn ibias dout vdd vss. dout falls when inn rises through inp", "XCMP")
+            "Pins: inp inn ibias dout vdd vss. dout falls when inp rises through inn", "XCMP")
     s.poly([(-100, -100), (100, 0), (-100, 100), (-100, -100)])
     s.line(-120, -40, -100, -40); s.line(-120, 40, -100, 40); s.line(100, 0, 120, 0)
     s.line(-40, -120, -40, -70); s.line(20, -120, 20, -40); s.line(20, 40, 20, 120)
@@ -341,14 +341,15 @@ def comparator_d():
     for name, x, y, d in (("inp", -120, -40, "in"), ("inn", -120, 40, "in"), ("ibias", -40, -120, "in"),
                           ("dout", 120, 0, "out"), ("vdd", 20, -120, "inout"), ("vss", 20, 120, "inout")):
         s.pin(name, x, y, d)
-    s.text("+", -92, -62, 0.6); s.text("-", -90, 18, 0.6)
+    # dout falls as inp rises, so inp is the inverting input
+    s.text("-", -90, -62, 0.6); s.text("+", -92, 18, 0.6)
     s.text("inp", -170, -66, 0.25); s.text("inn", -170, 14, 0.25); s.text("dout", 104, -26, 0.25)
     s.text("ibias", -96, -150, 0.25); s.text("vdd", 26, -122, 0.25); s.text("vss", 26, 98, 0.25)
     s.text("@name", -160, 104, 0.4)
-    # the comparator's transfer: dout HIGH while inn < inp, a step down as inn rises through inp
+    # the comparator's transfer: dout HIGH while inp < inn, a step down as inp rises through inn
     s.poly([(-70, -30), (-38, -30), (-38, 14), (-6, 14)], attr="bus=true")
-    s.line(-70, 26, -2, 26, layer=8)                     # the inn axis under the step
-    s.text("inn", -4, 22, 0.14, layer=8)
+    s.line(-70, 26, -2, 26, layer=8)                     # the inp axis under the step
+    s.text("inp", -4, 22, 0.14, layer=8)
     s.text("comparator_d", -80, 54, 0.18, layer=13)
     s.write("comparator_d")
 
@@ -392,7 +393,7 @@ def atop_cell(ports, left, right, top, bottom):
     w, pitch = CELL_W, 40
     h = max(pitch * (max(len(left), len(right)) + 1), 120) // 2
     s = Sym("atop_cell: one sampling / conversion cell of analog_top: S0/S2 sample vfe onto C_S (54.52 fF "
-            "MIM), S1 puts vramp on the top plate, comparator_d compares the floating bot plate with vbl, the "
+            "MIM), S1 puts vramp on the top plate, comparator_d compares the floating bot plate with vref, the "
             "std-cell DFF latch captures dout on the falling clk; xschem descends into atop_cell.sch", "X1")
     s.poly([(-w, -h), (w, -h), (w, h), (-w, h), (-w, -h)])
     pos = {}
@@ -417,7 +418,7 @@ def atop_cell(ports, left, right, top, bottom):
         s.pin(p, x, y)
     # the cell, ideal and TRUE BOTTOM-PLATE: S0 (vin) and S1 (vramp) drive the TOP
     # plate of C_S; S2 ties the BOTTOM plate to vref and opens FIRST (that edge is
-    # the sample); the floating bottom plate is the comparator's - input, vbl its +;
+    # the sample); the floating bottom plate is the comparator's + input, vref its -;
     # the comparator feeds the DFF (falling-edge clock).
     def sw(x1, x2, y, lab, lx, ly):
         s.circle(x1, y, 2.5, fill=True); s.circle(x2, y, 2.5, fill=True)
@@ -445,12 +446,12 @@ def atop_cell(ports, left, right, top, bottom):
     s.line(X, -26, -36, -26); sw(-36, -56, -26, "S2", -54, -50)
     s.line(-56, -26, -66, -26)
     s.text("vref", -84, -34, 0.14, layer=8)
-    # comparator: - = bottom plate, + = vbl; a step inside
+    # comparator: + = bottom plate, - = vref; a step inside
     CX, CY = 30, -36
     s.line(X, -26, CX, -26)
-    s.line(CX - 14, -46, CX, -46); s.text("vbl", CX - 24, -58, 0.13, layer=8)
+    s.line(CX - 14, -46, CX, -46); s.text("vref", CX - 28, -58, 0.13, layer=8)
     s.poly([(CX, CY - 24), (CX + 44, CY), (CX, CY + 24), (CX, CY - 24)])
-    s.text("+", CX + 2, -56, 0.15); s.text("-", CX + 2, -34, 0.15)
+    s.text("-", CX + 2, -56, 0.15); s.text("+", CX + 2, -34, 0.15)
     s.poly([(CX + 10, CY - 6), (CX + 18, CY - 6), (CX + 18, CY + 6), (CX + 26, CY + 6)])
     # DFF, falling-edge clock
     s.line(CX + 44, CY, 84, CY)

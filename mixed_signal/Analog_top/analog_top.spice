@@ -1,11 +1,14 @@
-* analog_top (v7, mixed_signal/Analog_top) -- the analog macro of the 8-bit
+* analog_top (mixed_signal/Analog_top) -- the analog macro of the 8-bit
 * true bottom-plate single-slope ADC: four sampling/conversion cells on one
 * shared ramp (ramp_simple: 73 unit MIMs + reset, fed by the I/C current
 * source ic_source; ADR 0025 / 0026), bias_gen_s, vrlo_ref (7/55 AVDD), one
 * midref_div and ONE midref_buf whose output vref is both the S2 level and
-* every comparator's inp (midrail_ref, ADR 0021). Every analog block is inside,
-* and the sampling sequencer sample_seq (v7, ADR 0027): the twelve switch
-* controls are made inside from the count clock and acq.
+* every comparator's inn (midrail_ref, ADR 0021). Every analog block is inside,
+* and the sampling sequencer sample_seq (ADR 0027; shift register + one
+* non-overlapping clock generator per cell since ADR 0029): the twelve switch
+* controls are made inside from the count clock and acq. The comparator
+* is ../comparator (the sized core + one output inverter), the
+* floating plate on its inp, vref on its inn; dout falls at the decision.
 *
 * GENERATED from analog_top.sch by schematic.sh (xschem, hierarchical: every
 * block down to transistors, as drawn). DO NOT HAND-EDIT. Change the drawings
@@ -15,22 +18,22 @@
 * the drawings netlist to.
 *
 * Subcircuits: analog_top, atop_cell, comparator_d (comparator + its pbias
-* diode, flat), ramp_simple, ic_source, sample_seq, seq_dly, seq_cell,
-* bias_gen_s (bias_gen - XOB/ivbl + XOL -> ivrlo), vrlo_ref, midref_div,
+* diode, flat), ramp_simple, ic_source, sample_seq, seq_dly, seq_clkgen,
+* bias_gen_s (bias_gen - XOB/ivref2 + XOL -> ivrlo), vrlo_ref, midref_div,
 * midref_buf, latch, sw_s0, sw_s1, sw_s2. ic_source's phase generator and
 * sample_seq are standard cells (not defined here).
 * comparator_d and sw_s0/1/2 carry
 * drawn S/D junction geometry (the PDK MOS symbols' ad/as/pd/ps/nrd/nrs; the
 * switches' from their deck), bias_gen_s its deck's. latch is one
 * standard cell, gf180mcu_as_sc_mcu7t3v3__dfxtn_2 (not defined here).
-* Plates: bot = MIM terminal 1, S2 to vref, comparator inn (floats during the
+* Plates: bot = MIM terminal 1, S2 to vref, comparator inp (floats during the
 * conversion); top = MIM terminal 2, S0 from vfe, S1 from vramp.
 * No plate leak resistor: a bench that needs a DC path on the floating plate
 * adds it itself (tb_analog_top.spice: .options rshunt=1e15).
 * No model or parameter card and no parameter reference: the including deck
 * carries the PDK models (typical / res_typical / mimcap_typical) and the
 * standard-cell library gf180mcu_as_sc_mcu7t3v3.spice (make pdk-libs;
-* /foss/pdk_libs). Against v6 (data/v6_ref/analog_top.spice): check_equiv.py.
+* /foss/pdk_libs). Against the previous record (data/prev_ref/analog_top.spice): check_equiv.py.
 *
 ** sch_path: /foss/designs/mixed_signal/Analog_top/analog_top.sch
 .subckt analog_top vin ramp_rst cnt_clk acq q0 q1 q2 q3 avdd avss dvdd dvss
@@ -49,10 +52,10 @@ XVREF vref vmid ivref avdd_ref avss midref_buf
 XVRLO vrlo ivrlo avdd_vrlo avss vrlo_ref
 XIC vramp pbias_r cnt_clk avdd_ramp dvdd avss dvss ic_source
 XRAMP vramp ramp_rst vrlo avss ramp_simple
-XC0 vin vramp s0_0 s1_0 s2_0 vref vref pbias0 q0 cnt_clk avdd_c0 avss dvdd dvss atop_cell
-XC1 vin vramp s0_1 s1_1 s2_1 vref vref pbias1 q1 cnt_clk avdd_c1 avss dvdd dvss atop_cell
-XC2 vin vramp s0_2 s1_2 s2_2 vref vref pbias2 q2 cnt_clk avdd_c2 avss dvdd dvss atop_cell
-XC3 vin vramp s0_3 s1_3 s2_3 vref vref pbias3 q3 cnt_clk avdd_c3 avss dvdd dvss atop_cell
+XC0 vin vramp s0_0 s1_0 s2_0 vref pbias0 q0 cnt_clk avdd_c0 avss dvdd dvss atop_cell
+XC1 vin vramp s0_1 s1_1 s2_1 vref pbias1 q1 cnt_clk avdd_c1 avss dvdd dvss atop_cell
+XC2 vin vramp s0_2 s1_2 s2_2 vref pbias2 q2 cnt_clk avdd_c2 avss dvdd dvss atop_cell
+XC3 vin vramp s0_3 s1_3 s2_3 vref pbias3 q3 cnt_clk avdd_c3 avss dvdd dvss atop_cell
 XSEQ acq cnt_clk s2_0 s2_1 s2_2 s2_3 s0_0 s0_1 s0_2 s0_3 s1_0 s1_1 s1_2 s1_3 dvdd dvss sample_seq
 .ends
 
@@ -301,11 +304,11 @@ XCR vramp vss cap_mim_2f0_m4m5_noshield c_width=5.000u c_length=5.000u m=73
 .ends
 
 
-* expanding   symbol:  atop_cell.sym # of pins=14
+* expanding   symbol:  atop_cell.sym # of pins=13
 ** sym_path: /foss/designs/mixed_signal/Analog_top/atop_cell.sym
 ** sch_path: /foss/designs/mixed_signal/Analog_top/atop_cell.sch
-.subckt atop_cell vfe vramp s0 s1 s2 vref vbl ibias q clk vdd vss dvdd dvss
-*.PININFO vfe:I vramp:I s0:I s1:I s2:I vref:I vbl:I ibias:I q:O clk:I vdd:B vss:B dvdd:B dvss:B
+.subckt atop_cell vfe vramp s0 s1 s2 vref ibias q clk vdd vss dvdd dvss
+*.PININFO vfe:I vramp:I s0:I s1:I s2:I vref:I ibias:I q:O clk:I vdd:B vss:B dvdd:B dvss:B
 XI0P s0b s0 vdd vdd pfet_03v3 L=0.28u W=0.88u nf=1
 XI0N s0b s0 vss vss nfet_03v3 L=0.28u W=0.44u nf=1
 XI1P s1b s1 vdd vdd pfet_03v3 L=0.28u W=0.88u nf=1
@@ -316,7 +319,7 @@ XS2 vref bot s2 s2b vdd vss sw_s2
 XS0 vfe top s0 s0b vdd vss sw_s0
 XS1 vramp top s1 s1b vdd vss sw_s1
 XCS bot top cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
-XCMP vbl bot ibias dout vdd vss comparator_d
+XCMP bot vref ibias dout vdd vss comparator_d
 XFF dout clk q dvdd dvss latch
 .ends
 
@@ -326,18 +329,14 @@ XFF dout clk q dvdd dvss latch
 ** sch_path: /foss/designs/mixed_signal/sample_seq/sample_seq.sch
 .subckt sample_seq acq clk s2_0 s2_1 s2_2 s2_3 s0_0 s0_1 s0_2 s0_3 s1_0 s1_1 s1_2 s1_3 vdd vss
 *.PININFO acq:I clk:I s2_0:O s2_1:O s2_2:O s2_3:O s0_0:O s0_1:O s0_2:O s0_3:O s1_0:O s1_1:O s1_2:O s1_3:O vdd:B vss:B
-XEN vdd vdd vss vss done_0 done_1 done_2 done_3 en gf180mcu_as_sc_mcu7t3v3__nand4_2
-XLG vdd vdd vss vss clk en en_l gf180mcu_as_sc_mcu7t3v3__dlxtn_2
-XAG vdd vdd vss vss en_l clk gclk gf180mcu_as_sc_mcu7t3v3__and2_2
-XB0 vdd vdd vss vss gclk c0 gf180mcu_as_sc_mcu7t3v3__clkbuff_4
-XL1 c0 c5r vdd vss seq_dly
-XB5 vdd vdd vss vss c5r c5 gf180mcu_as_sc_mcu7t3v3__clkbuff_4
-XL2 c5 c10r vdd vss seq_dly
-XB10 vdd vdd vss vss c10r c10 gf180mcu_as_sc_mcu7t3v3__clkbuff_4
-XC0 acq c0 c5 c10 s2_0 s0_0 s1_0 done_0 vdd vss seq_cell
-XC1 s2_0 c0 c5 c10 s2_1 s0_1 s1_1 done_1 vdd vss seq_cell
-XC2 s2_1 c0 c5 c10 s2_2 s0_2 s1_2 done_2 vdd vss seq_cell
-XC3 s2_2 c0 c5 c10 s2_3 s0_3 s1_3 done_3 vdd vss seq_cell
+XF0 vdd vdd vss vss clk acq t0 gf180mcu_as_sc_mcu7t3v3__dfxtp_2
+XF1 vdd vdd vss vss clk t0 t1 gf180mcu_as_sc_mcu7t3v3__dfxtp_2
+XF2 vdd vdd vss vss clk t1 t2 gf180mcu_as_sc_mcu7t3v3__dfxtp_2
+XF3 vdd vdd vss vss clk t2 t3 gf180mcu_as_sc_mcu7t3v3__dfxtp_2
+XG0 t0 s2_0 s0_0 s1_0 vdd vss seq_clkgen
+XG1 t1 s2_1 s0_1 s1_1 vdd vss seq_clkgen
+XG2 t2 s2_2 s0_2 s1_2 vdd vss seq_clkgen
+XG3 t3 s2_3 s0_3 s1_3 vdd vss seq_clkgen
 .ends
 
 
@@ -375,28 +374,32 @@ XP b ctlb a vdd pfet_03v3 L=0.28u W=1.00u nf=1 m=1 ad=0.4400p as=0.4400p pd=2.88
 ** sch_path: /foss/designs/mixed_signal/Analog_top/comparator_d.sch
 .subckt comparator_d inp inn ibias dout vdd vss
 *.PININFO vdd:B vss:B ibias:I inp:I inn:I dout:O
-XTAIL tail ibias vdd vdd pfet_03v3 L=0.28u W=11u nf=11 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
 XINP left inp tail vdd pfet_03v3 L=0.32u W=12u nf=12 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
 XINN outa inn tail vdd pfet_03v3 L=0.32u W=12u nf=12 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
 XLOADD left left vss vss nfet_03v3 L=0.36u W=0.5u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
 XLOADM outa left vss vss nfet_03v3 L=0.36u W=0.5u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
+XTAIL tail ibias vdd vdd pfet_03v3 L=0.28u W=11u nf=11 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
 XBST bst ibias vdd vdd pfet_03v3 L=0.28u W=5u nf=5 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
-XBUF2 outb outa bst vdd pfet_03v3 L=0.36u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
 XBUF1 outb outa vss vss nfet_03v3 L=0.36u W=0.5u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
-XBUF4 dout outb vdd vdd pfet_03v3 L=0.36u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
-XBUF3 dout outb vss vss nfet_03v3 L=0.36u W=0.5u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
+XBUF2 outb outa bst vdd pfet_03v3 L=0.36u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
+XBUF3 outc outb vss vss nfet_03v3 L=0.36u W=0.5u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
+XBUF4 outc outb vdd vdd pfet_03v3 L=0.36u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
+XBUF5 dout outc vss vss nfet_03v3 L=0.36u W=0.5u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
+XBUF6 dout outc vdd vdd pfet_03v3 L=0.36u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
 XREFP ibias ibias vdd vdd pfet_03v3 L=0.28u W=1u nf=1 ad='int((nf+1)/2) * W/nf * 0.18u' as='int((nf+2)/2) * W/nf * 0.18u' pd='2*int((nf+1)/2) * (W/nf + 0.18u)'
-+ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0
++ ps='2*int((nf+2)/2) * (W/nf + 0.18u)' nrd='0.18u / W' nrs='0.18u / W' sa=0 sb=0 sd=0 m=1 par=1
 .ends
 
 
@@ -409,48 +412,44 @@ XFF vdd vdd vss vss clk d q gf180mcu_as_sc_mcu7t3v3__dfxtn_2
 .ends
 
 
+* expanding   symbol:  seq_clkgen.sym # of pins=6
+** sym_path: /foss/designs/mixed_signal/sample_seq/seq_clkgen.sym
+** sch_path: /foss/designs/mixed_signal/sample_seq/seq_clkgen.sch
+.subckt seq_clkgen clkin p1e p1 p2e vdd vss
+*.PININFO clkin:I p1e:O p1:O p2e:O vdd:B vss:B
+XI1 vdd vdd vss vss clkinb clkin gf180mcu_as_sc_mcu7t3v3__inv_2
+XI2 vdd vdd vss vss clkinbb clkinb gf180mcu_as_sc_mcu7t3v3__inv_2
+XN1 vdd vdd vss vss n1 b2 clkinbb gf180mcu_as_sc_mcu7t3v3__nand2_2
+XI3 vdd vdd vss vss m1 n1 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI5 vdd vdd vss vss m2 m1 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI7 vdd vdd vss vss m3 m2 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI9 vdd vdd vss vss a1 m3 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI11 vdd vdd vss vss p1e a1 gf180mcu_as_sc_mcu7t3v3__inv_4
+XL1 p1e x1 vdd vss seq_dly
+XI13 vdd vdd vss vss b1 x1 gf180mcu_as_sc_mcu7t3v3__inv_4
+XN3 vdd vdd vss vss y1 b1 a1 gf180mcu_as_sc_mcu7t3v3__nand2_2
+XI15 vdd vdd vss vss y1b y1 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI17 vdd vdd vss vss p1 y1b gf180mcu_as_sc_mcu7t3v3__inv_8
+XN2 vdd vdd vss vss n2 b1 clkinb gf180mcu_as_sc_mcu7t3v3__nand2_2
+XL2 n2 n2d vdd vss seq_dly
+XI4 vdd vdd vss vss k1 n2d gf180mcu_as_sc_mcu7t3v3__inv_4
+XI6 vdd vdd vss vss k2 k1 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI8 vdd vdd vss vss k3 k2 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI10 vdd vdd vss vss a2 k3 gf180mcu_as_sc_mcu7t3v3__inv_4
+XI12 vdd vdd vss vss p2e a2 gf180mcu_as_sc_mcu7t3v3__inv_4
+XL3 p2e x2 vdd vss seq_dly
+XI14 vdd vdd vss vss b2 x2 gf180mcu_as_sc_mcu7t3v3__inv_4
+.ends
+
+
 * expanding   symbol:  seq_dly.sym # of pins=4
 ** sym_path: /foss/designs/mixed_signal/sample_seq/seq_dly.sym
 ** sch_path: /foss/designs/mixed_signal/sample_seq/seq_dly.sch
 .subckt seq_dly a y vdd vss
 *.PININFO a:I y:O vdd:B vss:B
-XD1 vdd vdd vss vss d1 a gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD2 vdd vdd vss vss d2 d1 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD3 vdd vdd vss vss d3 d2 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD4 vdd vdd vss vss d4 d3 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD5 vdd vdd vss vss d5 d4 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD6 vdd vdd vss vss d6 d5 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD7 vdd vdd vss vss d7 d6 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD8 vdd vdd vss vss d8 d7 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD9 vdd vdd vss vss d9 d8 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD10 vdd vdd vss vss d10 d9 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD11 vdd vdd vss vss d11 d10 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD12 vdd vdd vss vss d12 d11 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD13 vdd vdd vss vss d13 d12 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD14 vdd vdd vss vss d14 d13 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD15 vdd vdd vss vss d15 d14 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD16 vdd vdd vss vss d16 d15 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD17 vdd vdd vss vss d17 d16 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD18 vdd vdd vss vss d18 d17 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD19 vdd vdd vss vss d19 d18 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD20 vdd vdd vss vss d20 d19 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD21 vdd vdd vss vss d21 d20 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-XD22 vdd vdd vss vss y d21 gf180mcu_as_sc_mcu7t3v3__dlybuff_2
-.ends
-
-
-* expanding   symbol:  seq_cell.sym # of pins=10
-** sym_path: /foss/designs/mixed_signal/sample_seq/seq_cell.sym
-** sch_path: /foss/designs/mixed_signal/sample_seq/seq_cell.sch
-.subckt seq_cell tin c0 c5 c10 s2 s0 s1 done vdd vss
-*.PININFO tin:I c0:I c5:I c10:I s2:O s0:O s1:O done:B vdd:B vss:B
-XFA vdd vdd vss vss c0 tin s2 gf180mcu_as_sc_mcu7t3v3__dfxtp_2
-XFB vdd vdd vss vss c5 s2 s0 gf180mcu_as_sc_mcu7t3v3__dfxtp_2
-XFC vdd vdd vss vss c10 s0 qc gf180mcu_as_sc_mcu7t3v3__dfxtp_2
-XNR vdd vdd vss vss s1 qc s2 gf180mcu_as_sc_mcu7t3v3__nor2_2
-XX1 vdd vdd vss vss s2 tin x1 gf180mcu_as_sc_mcu7t3v3__xor2_2
-XX2 vdd vdd vss vss s0 s2 x2 gf180mcu_as_sc_mcu7t3v3__xor2_2
-XX3 vdd vdd vss vss qc s0 x3 gf180mcu_as_sc_mcu7t3v3__xor2_2
-XND vdd vdd vss vss x1 x2 x3 done gf180mcu_as_sc_mcu7t3v3__nor3_2
+XD1 vdd vdd vss vss d1 a gf180mcu_as_sc_mcu7t3v3__inv_2
+XD2 vdd vdd vss vss d2 d1 gf180mcu_as_sc_mcu7t3v3__inv_2
+XD3 vdd vdd vss vss d3 d2 gf180mcu_as_sc_mcu7t3v3__inv_2
+XD4 vdd vdd vss vss y d3 gf180mcu_as_sc_mcu7t3v3__inv_2
 .ends
 

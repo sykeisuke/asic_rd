@@ -32,20 +32,19 @@ N 1880 -900 1940 -900 {}
 N 1600 -900 1540 -900 {}
 N 1600 -820 1540 -820 {}
 N 1740 -740 1740 -700 {}
-N 2410 -720 2350 -720 {}
-N 2410 -680 2350 -680 {}
-N 2410 -640 2350 -640 {}
-N 2410 -600 2350 -600 {}
-N 2410 -560 2350 -560 {}
-N 2410 -520 2350 -520 {}
-N 2410 -480 2350 -480 {}
-N 2410 -440 2350 -440 {}
-N 2790 -720 2850 -720 {}
-N 2410 -400 2350 -400 {}
-N 2515 -780 2455 -780 {}
-N 2515 -340 2455 -340 {}
-N 2685 -780 2745 -780 {}
-N 2685 -340 2745 -340 {}
+N 2410 -700 2350 -700 {}
+N 2410 -660 2350 -660 {}
+N 2410 -620 2350 -620 {}
+N 2410 -580 2350 -580 {}
+N 2410 -540 2350 -540 {}
+N 2410 -500 2350 -500 {}
+N 2410 -460 2350 -460 {}
+N 2790 -700 2850 -700 {}
+N 2410 -420 2350 -420 {}
+N 2515 -760 2455 -760 {}
+N 2515 -360 2455 -360 {}
+N 2685 -760 2745 -760 {}
+N 2685 -360 2745 -360 {}
 N 3000 -670 3000 -710 {}
 N 3000 -610 3000 -570 {}
 T {TB_CELL_TN  -  one bottom-plate cell on ramp_simple, transient noise of a conversion} 40 -1200 0 0 0.7 0.7 {}
@@ -95,23 +94,22 @@ C {devices/lab_pin.sym} 1540 -900 0 0 {name=l26 sig_type=std_logic lab=rst}
 C {devices/lab_pin.sym} 1540 -820 0 0 {name=l27 sig_type=std_logic lab=vrlo}
 C {devices/lab_pin.sym} 1740 -700 0 0 {name=l28 sig_type=std_logic lab=0}
 C {atop_cell.sym} 2600 -560 0 0 {name=XC}
-C {devices/lab_pin.sym} 2350 -720 0 0 {name=l29 sig_type=std_logic lab=vin}
-C {devices/lab_pin.sym} 2350 -680 0 0 {name=l30 sig_type=std_logic lab=vramp}
-C {devices/lab_pin.sym} 2350 -640 0 0 {name=l31 sig_type=std_logic lab=s0}
-C {devices/lab_pin.sym} 2350 -600 0 0 {name=l32 sig_type=std_logic lab=s1}
-C {devices/lab_pin.sym} 2350 -560 0 0 {name=l33 sig_type=std_logic lab=s2}
-C {devices/lab_pin.sym} 2350 -520 0 0 {name=l34 sig_type=std_logic lab=vref}
-C {devices/lab_pin.sym} 2350 -480 0 0 {name=l35 sig_type=std_logic lab=vref}
-C {devices/lab_pin.sym} 2350 -440 0 0 {name=l36 sig_type=std_logic lab=ibc}
-C {devices/lab_pin.sym} 2850 -720 0 1 {name=l37 sig_type=std_logic lab=q}
-C {devices/lab_pin.sym} 2350 -400 0 0 {name=l38 sig_type=std_logic lab=clk}
-C {devices/lab_pin.sym} 2455 -780 0 0 {name=l39 sig_type=std_logic lab=avdd}
-C {devices/lab_pin.sym} 2455 -340 0 0 {name=l40 sig_type=std_logic lab=0}
-C {devices/lab_pin.sym} 2745 -780 0 1 {name=l41 sig_type=std_logic lab=dvdd}
-C {devices/lab_pin.sym} 2745 -340 0 1 {name=l42 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 2350 -700 0 0 {name=l29 sig_type=std_logic lab=vin}
+C {devices/lab_pin.sym} 2350 -660 0 0 {name=l30 sig_type=std_logic lab=vramp}
+C {devices/lab_pin.sym} 2350 -620 0 0 {name=l31 sig_type=std_logic lab=s0}
+C {devices/lab_pin.sym} 2350 -580 0 0 {name=l32 sig_type=std_logic lab=s1}
+C {devices/lab_pin.sym} 2350 -540 0 0 {name=l33 sig_type=std_logic lab=s2}
+C {devices/lab_pin.sym} 2350 -500 0 0 {name=l34 sig_type=std_logic lab=vref}
+C {devices/lab_pin.sym} 2350 -460 0 0 {name=l35 sig_type=std_logic lab=ibc}
+C {devices/lab_pin.sym} 2850 -700 0 1 {name=l36 sig_type=std_logic lab=q}
+C {devices/lab_pin.sym} 2350 -420 0 0 {name=l37 sig_type=std_logic lab=clk}
+C {devices/lab_pin.sym} 2455 -760 0 0 {name=l38 sig_type=std_logic lab=avdd}
+C {devices/lab_pin.sym} 2455 -360 0 0 {name=l39 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 2745 -760 0 1 {name=l40 sig_type=std_logic lab=dvdd}
+C {devices/lab_pin.sym} 2745 -360 0 1 {name=l41 sig_type=std_logic lab=0}
 C {devices/capa.sym} 3000 -640 0 0 {name=CQ value="\{CQ\}" m=1}
-C {devices/lab_pin.sym} 3000 -710 0 0 {name=l43 sig_type=std_logic lab=q}
-C {devices/lab_pin.sym} 3000 -570 0 0 {name=l44 sig_type=std_logic lab=0}
+C {devices/lab_pin.sym} 3000 -710 0 0 {name=l42 sig_type=std_logic lab=q}
+C {devices/lab_pin.sym} 3000 -570 0 0 {name=l43 sig_type=std_logic lab=0}
 C {devices/code_shown.sym} 1000 -150 0 0 {name=CTL only_toplevel=false value=".include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice mimcap_typical

@@ -1,23 +1,23 @@
-"""intent_op.py -- the drawing against its design intent (run by schematic.sh,
-in the container, after xschem has netlisted comparator.sch).
+"""intent_op.py -- comparator's drawing against its design intent (run by
+schematic.sh, in the container, after xschem has netlisted comparator.sch).
 
 The netlist xschem writes from the drawing (work/comparator_sch.spice, S/D
-junction geometry as drawn) on the bench bias: I_B = data/sizing.json iref into
-the 1 um / 0.28 um diode XREFP, inp = VBL = VDD/2, typical 27 C.
+junction geometry as drawn), typical 27 C, its bias diode XREFP (one tail
+finger) fed with I_B (1.93 uA) and with the macro's 3.25 uA, the plate pin inp
+= the reference pin inn = VDD/2: the state every cell's comparator sits in
+while it tracks (plate on VREF).
 
-  op   inn = inp (the trip point: the state every cell's comparator sits in while
-       tracking). Each device current against intent.py's design value (the
-       sizing record's, drawn on the sheets): the deviation is reported; FAIL
-       only beyond the sanity bound intent.TOL (a marker no longer describing
-       the circuit). Channel-length modulation puts the tail ~10-15 % low.
-  dc   inn swept through the static trip in 1 uV steps, at I_B and again at
-       the Analog_top bias (intent.MACRO_I_B_UA). Peak small-signal
-       gain of each stage, recorded (REPORT, not judged): the OTA (outa / inn),
-       the starved inverter (outb / outa), the output inverter (dout / outb)
-       and the whole comparator (dout / inn). A high-gain chain cannot be
-       biased for an AC run, so the slopes of the DC transfer are used.
+  op   each device current against intent.py (the numbers drawn on the sheet):
+       FAIL only beyond the sanity bound intent.TOL; a crowbar drawn as 0 uA
+       (not drawn) must stay below 1 uA. Converting (diode + tail, inp 50 mV
+       above / below inn) against intent.CONVERTING_UA.
+  dc   inp swept through the static trip in 1 uV steps at the macro bias:
+       peak DC slope of each stage (REPORT, not judged): OTA outa / inp,
+       starved inverter outb / outa, inverter outc / outb, output inverter
+       dout / outc, and inp -> dout.
 
     python3 intent_op.py        (cwd = this block)
+Writes data/intent_op.json; prints PASS / FAIL / REPORT and name = value lines.
 """
 import json
 import os
@@ -31,179 +31,140 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import intent as I  # noqa: E402
 
-BLOCK_ABS = "/foss/designs/mixed_signal/comparator"
 W = os.path.join(HERE, "work", "intent")
 NET = os.path.join(HERE, "work", "comparator_sch.spice")
-DEVS = ["xtail", "xinp", "xinn", "xloadd", "xloadm", "xbst", "xbuf4"]
-GATED = [d for d in DEVS if d in I.INTENT_UA]
-SIGMA_V = 9.38e-3                                   # sigma(Vos) at the pins, runs/comparator-updt-v3/20261007T001140Z
-PATHS = {"xrefp": "@m.xrefp.m0[id]", **{d: "@m.xdut.%s.m0[id]" % d for d in DEVS}}
+DEVS = ["xtail", "xinp", "xinn", "xloadd", "xloadm", "xbst", "xbuf4", "xbuf6"]
 VCM = 1.65
+REF_L, REF_W = I.BASE.SZ["l_b"], I.BASE.SZ["w_fp"] * 1e6
+CROWBAR_ZERO_UA = 1.0          # a marker drawn as 0 (not drawn) must be below this
+
+
+def dut_from_netlist():
+    txt = open(NET).read().splitlines()
+    i0 = next((i for i, ln in enumerate(txt) if re.match(r"^\*{0,2}\.subckt\s", ln, re.I)), None)
+    i1 = next((i for i, ln in enumerate(txt) if re.match(r"^\*{0,2}\.ends", ln, re.I)), None)
+    if i0 is None or i1 is None or i1 < i0:
+        return None
+    head = txt[i0].lstrip("*").split()
+    body = []
+    for ln in txt[i0 + 1:i1]:
+        if ln.startswith("+") and body:
+            body[-1] += " " + ln[1:]
+        elif ln.strip() and not ln.startswith("*") and not ln.startswith("."):
+            body.append(ln)
+    return head[1], [".subckt " + " ".join(head[1:])] + body + [".ends"]
 
 
 def main():
     os.makedirs(W, exist_ok=True)
     open(os.path.join(W, ".spiceinit"), "w").write("set num_threads=1\n")
-    # xschem writes the top cell as "**.subckt <name> <ports>" ... "**.ends"
-    # (commented); the devices between them become the DUT subcircuit here
-    txt = open(NET).read().splitlines()
-    i0 = next((i for i, ln in enumerate(txt) if re.match(r"^\*{0,2}\.subckt\s", ln, re.I)), None)
-    i1 = next((i for i, ln in enumerate(txt) if re.match(r"^\*{0,2}\.ends", ln, re.I)), None)
-    if i0 is None or i1 is None or i1 < i0:
+    got = dut_from_netlist()
+    if got is None:
         print("FAIL: intent: no .subckt / .ends pair in work/comparator_sch.spice")
         return 1
-    head = txt[i0].lstrip("*").split()
-    sub = head[1]
-    body = [ln for ln in txt[i0 + 1:i1] if ln.strip() and not ln.startswith("*") and not ln.startswith(".")]
-    dut = [".subckt " + " ".join(head[1:])] + body + [".ends"]
+    sub, dut = got
     open(os.path.join(W, "dut.spice"), "w", newline="\n").write("\n".join(dut) + "\n")
+    states = (("ib", I.I_B_UA, VCM), ("mtrip", I.MACRO_I_B_UA, VCM),
+              ("mbelow", I.MACRO_I_B_UA, VCM - 0.05), ("mabove", I.MACRO_I_B_UA, VCM + 0.05))
     lines = [
-        "* intent_op -- GENERATED by intent_op.py: the drawing's netlist on the bench bias",
+        "* intent_op -- GENERATED by intent_op.py: comparator's drawing in its tracking state",
         ".include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice",
         ".lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical",
-        ".include %s/work/intent/dut.spice" % BLOCK_ABS,
+        ".include dut.spice",
         ".param VDD=3.3",
-        ".param IREF=%.6g" % I.SZ["iref"],
         ".temp 27",
         ".options reltol=1e-6 vntol=1e-9 abstol=1e-15",
         "VDD_SOURCE vdd 0 {VDD}",
         "VDD_BIAS vddb 0 {VDD}",
-        "IREFN vddb nbias {IREF}",
+        "IREFN vddb nbias 1.93077u",
         "XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1",
-        "IREFP pbias 0 {IREF}",
-        "XREFP pbias pbias vddb vddb pfet_03v3 L=%gu W=%gu nf=1 m=1" % (I.SZ["l_b"], I.SZ["w_fp"] * 1e6),
+        "IREFP pbias 0 1.93077u",
+        "XREFP pbias pbias vddb vddb pfet_03v3 L=%gu W=%gu nf=1 m=1" % (REF_L, REF_W),
         "VCLK clk 0 0",
-        "VVBL vbl 0 %g" % VCM,
-        "VINN inn 0 %g" % VCM,
-        "XDUT vbl inn dout clk vdd 0 nbias pbias %s" % sub,
+        "VVREF vref 0 %g" % VCM,
+        "VINP inp 0 %g" % VCM,
+        "XDUT inp vref dout clk vdd 0 nbias pbias %s" % sub,
         "CL dout 0 10f",
         ".control",
-        "op",
-        "let i_xrefp = abs(@m.xrefp.m0[id]) * 1e6",
-        "set v = $&i_xrefp",
-        'echo "intent_xrefp_ua = $v"',
     ]
-    for d in DEVS:
-        lines += ["let i_%s = abs(@m.xdut.%s.m0[id]) * 1e6" % (d, d),
-                  "set v = $&i_%s" % d,
-                  'echo "intent_%s_ua = $v"' % d,
-                  "let g_%s = @m.xdut.%s.m0[gm] / abs(@m.xdut.%s.m0[id])" % (d, d, d),
-                  "set v = $&g_%s" % d,
-                  'echo "intent_%s_gmid = $v"' % d]
-    # static power from AVDD (comparator + its reference diode) in three DC states
-    for st_name, v in (("trip", VCM), ("below", VCM - 0.05), ("above", VCM + 0.05)):
-        lines += ["alter VINN dc = %g" % v, "op",
-                  "let p_%s = (abs(i(vdd_source)) + abs(@m.xrefp.m0[id])) * 3.3 * 1e6" % st_name,
-                  "set v = $&p_%s" % st_name,
-                  'echo "intent_p_%s_uw = $v"' % st_name]
-    # the same at the Analog_top bias, also with inn one offset sigma off the trip
-    # (a cell's offset moves its tracking state off the trip point)
-    lines.append("alter IREFP dc = %.6g" % (I.MACRO_I_B_UA * 1e-6))
-    for st_name, v in (("mtrip", VCM), ("mlo", VCM - SIGMA_V), ("mhi", VCM + SIGMA_V),
-                       ("mbelow", VCM - 0.05), ("mabove", VCM + 0.05)):
-        lines += ["alter VINN dc = %g" % v, "op",
-                  "let p_%s = (abs(i(vdd_source)) + abs(@m.xrefp.m0[id])) * 3.3 * 1e6" % st_name,
-                  "set v = $&p_%s" % st_name,
-                  'echo "intent_p_%s_uw = $v"' % st_name]
-        for d, path in PATHS.items():
+    for st, ib, vin in states:
+        lines += ["alter IREFP dc = %.6g" % (ib * 1e-6), "alter VINP dc = %g" % vin, "op",
+                  "let p_%s = (abs(i(vdd_source)) + abs(@m.xrefp.m0[id])) * 3.3 * 1e6" % st,
+                  "set v = $&p_%s" % st, 'echo "intent_p_%s_uw = $v"' % st]
+        for d in ["xrefp"] + DEVS:
+            path = "@m.xrefp.m0[id]" if d == "xrefp" else "@m.xdut.%s.m0[id]" % d
             lines += ["let c_%s = abs(%s) * 1e6" % (d, path), "set v = $&c_%s" % d,
-                      'echo "intent_c_%s_%s = $v"' % (st_name, d)]
-            if st_name == "mtrip" and d != "xrefp":
-                lines += ["let q_%s = %s / abs(%s)" % (d, path.replace("[id]", "[gm]"), path),
-                          "set v = $&q_%s" % d, 'echo "intent_q_%s = $v"' % d]
-    lines.append("alter IREFP dc = %.6g" % I.SZ["iref"])
-    lines += [
-        "dc VINN %g %g 1u" % (VCM - 0.004, VCM + 0.004),
-        "wrdata dc.txt v(inn) v(xdut.outa) v(xdut.outb) v(dout)",
-        "alter IREFP dc = %.6g" % (I.MACRO_I_B_UA * 1e-6),
-        "dc VINN %g %g 1u" % (VCM - 0.004, VCM + 0.004),
-        "wrdata dc_macro.txt v(inn) v(xdut.outa) v(xdut.outb) v(dout)",
-        "quit",
-        ".endc",
-        ".end",
-    ]
+                      'echo "intent_c_%s_%s = $v"' % (st, d)]
+    lines += ["alter IREFP dc = %.6g" % (I.MACRO_I_B_UA * 1e-6),
+              "dc VINP %g %g 1u" % (VCM - 0.004, VCM + 0.004),
+              "wrdata dc_macro.txt v(inp) v(xdut.outa) v(xdut.outb) v(xdut.outc) v(dout)",
+              "quit", ".endc", ".end"]
     open(os.path.join(W, "tb_intent.spice"), "w", newline="\n").write("\n".join(lines) + "\n")
-    r = subprocess.run(["ngspice", "-b", "tb_intent.spice"], cwd=W, capture_output=True, text=True)
+    r = subprocess.run(["ngspice", "-b", "tb_intent.spice"], cwd=W, capture_output=True, text=True,
+                       env=dict(os.environ, OMP_NUM_THREADS="1"))
     out = r.stdout + r.stderr
     open(os.path.join(W, "ngspice.out"), "w").write(out)
-    got = {k: float(v) for k, v in re.findall(r"^intent_(\w+)_ua = ([-+0-9.eE]+)", out, re.M)}
-    if r.returncode or not all(d in got for d in DEVS + ["xrefp"]):
-        print("FAIL: intent: ngspice status %d, %d of %d currents" % (r.returncode, len(got), len(DEVS) + 1))
+    cur = {}
+    for st, d, v in re.findall(r"^intent_c_(\w+?)_(x\w+) = ([-+0-9.eE]+)", out, re.M):
+        cur.setdefault(st, {})[d] = float(v)
+    pw = {k: float(v) for k, v in re.findall(r"^intent_p_(\w+)_uw = ([-+0-9.eE]+)", out, re.M)}
+    if r.returncode or any(len(cur.get(s[0], {})) != len(DEVS) + 1 for s in states):
+        print("FAIL: intent: ngspice status %d, currents missing" % r.returncode)
         return 1
 
     st = 0
-    print("intent_i_b_ua = %.4f" % got["xrefp"])
-    pw = {k: float(v) for k, v in re.findall(r"^intent_p_(\w+)_uw = ([-+0-9.eE]+)", out, re.M)}
-    for k, v in pw.items():
-        print("static_power_%s_uw = %.2f" % (k, v))
-    mst = {}
-    for stn, d, v in re.findall(r"^intent_c_(m\w+?)_(x\w+) = ([-+0-9.eE]+)", out, re.M):
-        mst.setdefault(stn, {})[d] = float(v)
-    # the drawn design allocation (intent.MACRO_UA, at the trip point) against ngspice at the macro bias
-    for d, want in I.MACRO_UA.items():
-        sim = mst.get("mtrip", {}).get(d, float("nan"))
-        err = sim / want - 1
-        ok = abs(err) <= I.TOL
-        st |= not ok
-        print("%s: intent: macro bias %g uA: %s %.2f uA ngspice vs %s design (%+.1f %%, sanity %d %%)"
-              % ("PASS" if ok else "FAIL", I.MACRO_I_B_UA, d.upper(), sim, I.ua(want), 100 * err, round(100 * I.TOL)))
-    conv = [mst.get(k, {}).get("xrefp", 0) + mst.get(k, {}).get("xtail", 0) for k in ("mbelow", "mabove")]
-    ok = all(abs(c / I.CONVERTING_UA - 1) <= I.TOL for c in conv)
+    for state, want_tab, ib in (("ib", I.INTENT_UA, I.I_B_UA), ("mtrip", I.MACRO_UA, I.MACRO_I_B_UA)):
+        for d in DEVS:
+            want, sim = want_tab[d], cur[state][d]
+            print("intent_%s_%s_ua = %.4f" % (state, d, sim))
+            if want == 0:
+                ok = sim < CROWBAR_ZERO_UA
+                print("%s: intent: bias %g uA, inp = inn: %s %.3f uA ngspice, drawn without a current "
+                      "(< %g uA)" % ("PASS" if ok else "FAIL", ib, d.upper(), sim, CROWBAR_ZERO_UA))
+            else:
+                err = sim / want - 1
+                ok = abs(err) <= I.TOL
+                print("%s: intent: bias %g uA, inp = inn: %s %.2f uA ngspice vs %s design (%+.1f %%, sanity %d %%)"
+                      % ("PASS" if ok else "FAIL", ib, d.upper(), sim, I.ua(want), 100 * err, round(100 * I.TOL)))
+            st |= not ok
+    conv = [cur[k]["xrefp"] + cur[k]["xtail"] for k in ("mbelow", "mabove")]
+    worst = max(conv, key=lambda c: abs(c / I.CONVERTING_UA - 1))
+    ok = abs(worst / I.CONVERTING_UA - 1) <= I.TOL
     st |= not ok
     print("%s: intent: converting (diode + tail) %.2f / %.2f uA ngspice vs %g uA design (%+.1f %%, sanity %d %%)"
           % ("PASS" if ok else "FAIL", conv[0], conv[1], I.CONVERTING_UA,
-             100 * (max(conv, key=lambda c: abs(c / I.CONVERTING_UA - 1)) / I.CONVERTING_UA - 1), round(100 * I.TOL)))
-    for stn in ("mtrip", "mlo", "mhi", "mbelow", "mabove"):
-        c = mst.get(stn, {})
-        print("REPORT: at the macro bias %g uA, %s: XREFP %.2f + XTAIL %.2f + XBST %.2f + XBUF4 %.2f uA, %.1f uW"
-              % (I.MACRO_I_B_UA, {"mtrip": "trip point", "mlo": "inn 1 sigma below", "mhi": "inn 1 sigma above",
-                                  "mbelow": "inn 50 mV below", "mabove": "inn 50 mV above"}[stn],
-                 c.get("xrefp", 0), c.get("xtail", 0), c.get("xbst", 0), c.get("xbuf4", 0), pw.get(stn, 0)))
-    print("REPORT: static AVDD power at I_B (diode included): %.1f uW at the trip point (both inverters"
-          " conduct), %.1f uW with inn 50 mV below (dout high), %.1f uW 50 mV above (dout low)"
-          % (pw.get("trip", 0), pw.get("below", 0), pw.get("above", 0)))
-    for d in GATED:
-        want, sim = I.INTENT_UA[d], got[d]
-        err = sim / want - 1
-        print("intent_%s_ua = %.4f" % (d, sim))
-        ok = abs(err) <= I.TOL
-        st |= not ok
-        print("%s: intent: I_B %g uA: %s %.2f uA ngspice vs %s design (%+.1f %%, sanity %d %%)"
-              % ("PASS" if ok else "FAIL", I.I_B_UA, d.upper(), sim, I.ua(want), 100 * err, round(100 * I.TOL)))
-    print("REPORT: intent: XTAIL / XREFP = %.2f (11 fingers; < 11 by channel-length modulation)"
-          % (got["xtail"] / got["xrefp"]))
+             100 * (worst / I.CONVERTING_UA - 1), round(100 * I.TOL)))
+    for k, v in pw.items():
+        print("static_power_%s_uw = %.2f" % (k, v))
+    c = cur["mtrip"]
+    print("REPORT: at the macro bias %g uA, inp = inn (tracking): XREFP %.2f + XTAIL %.2f + XBST %.2f + XBUF4 %.2f"
+          " + XBUF6 %.3f uA, %.1f uW from AVDD" % (I.MACRO_I_B_UA, c["xrefp"], c["xtail"], c["xbst"],
+                                                   c["xbuf4"], c["xbuf6"], pw["mtrip"]))
 
-    def gains(fn):
-        dc = np.loadtxt(os.path.join(W, fn))
-        vin, oa, ob, do = dc[:, 1], dc[:, 3], dc[:, 5], dc[:, 7]
-        g = lambda y, x: np.max(np.abs(np.gradient(y, x)))
-        return g(oa, vin), g(ob, oa), g(do, ob), g(do, vin)
+    dc = np.loadtxt(os.path.join(W, "dc_macro.txt"))
+    vin, oa, ob, oc, do = dc[:, 1], dc[:, 3], dc[:, 5], dc[:, 7], dc[:, 9]
+    def g(y, x):
+        """dy/dx by the chain rule through inp, where y moves fastest (x may be flat elsewhere)."""
+        dy, dx = np.gradient(y, vin), np.gradient(x, vin)
+        i = int(np.argmax(np.abs(dy)))
+        return float(abs(dy[i] / dx[i])) if dx[i] != 0 else float("nan")
 
-    a_ota, a_st, a_out, a_tot = gains("dc.txt")
-    m_ota, m_st, m_out, m_tot = gains("dc_macro.txt")
-    gmid = {k: float(v) for k, v in re.findall(r"^intent_(\w+)_gmid = ([-+0-9.eE]+)", out, re.M)}
+    gains = {"ota": g(oa, vin), "starved": g(ob, oa), "inv": g(oc, ob), "outinv": g(do, oc), "total": g(do, vin)}
+    for k, a in gains.items():
+        print("gain_macro_%s_vv = %.4g" % (k, a))
+    print("REPORT: gain at the macro bias (peak DC slope, typical): OTA %.1f x starved %.1f x inverter %.1f"
+          " x output inverter %.1f; inp -> dout %.4g V/V (%.1f dB)"
+          % (gains["ota"], gains["starved"], gains["inv"], gains["outinv"], gains["total"],
+             20 * np.log10(gains["total"])))
+    i_half = int(np.argmin(np.abs(do - VCM)))
+    print("REPORT: at the macro bias dout falls as inp rises: dout %.3f V at inp - 4 mV, %.3f V at inp + 4 mV;"
+          " outc %.3f V where dout = VDD/2" % (do[0], do[-1], oc[i_half]))
     rec = {"source": "intent_op.py: ngspice op of the drawing (work/comparator_sch.spice), typical 27 C, "
-                     "I_B %.6g A, inn = inp = %g V" % (I.SZ["iref"], VCM),
-           "id_ua": {d: got[d] for d in DEVS}, "gm_id": gmid, "i_b_ua": got["xrefp"],
-           "gain_vv": {"ota": a_ota, "starved": a_st, "outinv": a_out, "total": a_tot},
-           "macro_i_b_ua": I.MACRO_I_B_UA,
-           "gain_vv_macro": {"ota": m_ota, "starved": m_st, "outinv": m_out, "total": m_tot},
-           "static_power_uw": pw, "macro_states_ua": mst,
-           "macro_gm_id": {k: float(v) for k, v in re.findall(r"^intent_q_(\w+) = ([-+0-9.eE]+)", out, re.M)}}
+                     "inp = inn = %g V (tracking)" % VCM,
+           "currents_ua": cur, "static_power_uw": pw, "gain_vv_macro": gains,
+           "i_b_ua": I.I_B_UA, "macro_i_b_ua": I.MACRO_I_B_UA}
     with open(os.path.join(HERE, "data", "intent_op.json"), "w") as f:
         json.dump(rec, f, indent=1)
-    for k, a in (("ota", a_ota), ("starved", a_st), ("outinv", a_out), ("total", a_tot)):
-        print("gain_%s_vv = %.4g" % (k, a))
-        print("gain_%s_db = %.2f" % (k, 20 * np.log10(a)))
-    print("REPORT: gain (peak DC slope, typical): OTA %.1f V/V (%.1f dB) x starved inverter %.1f (%.1f dB)"
-          " x output inverter %.1f (%.1f dB); inn -> dout %.4g V/V (%.1f dB)"
-          % (a_ota, 20 * np.log10(a_ota), a_st, 20 * np.log10(a_st), a_out, 20 * np.log10(a_out),
-             a_tot, 20 * np.log10(a_tot)))
-    for k, a in (("ota", m_ota), ("starved", m_st), ("outinv", m_out), ("total", m_tot)):
-        print("gain_macro_%s_vv = %.4g" % (k, a))
-    print("REPORT: gain at the Analog_top bias (I_B %g uA): OTA %.1f V/V (%.1f dB) x starved inverter %.1f"
-          " x output inverter %.1f; inn -> dout %.4g V/V (%.1f dB)"
-          % (I.MACRO_I_B_UA, m_ota, 20 * np.log10(m_ota), m_st, m_out, m_tot, 20 * np.log10(m_tot)))
     return st
 
 

@@ -19,7 +19,7 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-WORK = os.path.join(HERE, "work")
+WORK = os.path.join(os.environ.get("CT_HOME") or HERE, "work")   # CT_HOME: see ct.sh
 CONV = os.path.join(HERE, "gf180_vacask.py")
 
 

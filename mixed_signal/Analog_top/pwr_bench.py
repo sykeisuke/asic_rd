@@ -26,7 +26,7 @@ BLOCK_ABS = "/foss/designs/mixed_signal/Analog_top"
 # block key -> (ammeter vector, label)
 BLOCKS = [
     ("bg", "i(v.xdut.vmbg)", "bias_gen_s"),
-    ("ref", "i(v.xdut.vmref)", "midref_div + XVREF (vref = vbl)"),
+    ("ref", "i(v.xdut.vmref)", "midref_div + XVREF (vref)"),
     ("vrlo", "i(v.xdut.vmvrlo)", "vrlo_ref"),
     ("ramp", "i(v.xdut.vmramp)", "ic_source (ramp_simple has no AVDD pin)"),
     ("c0", "i(v.xdut.vmc0)", "cell 0"),
@@ -86,7 +86,8 @@ for k in range(4):
         (c, "xrefp", _m("x%s.xcmp.xrefp" % c), "icmp diode (sunk by bias_gen XOC%d)" % k),
         (c, "xtail", _m("x%s.xcmp.xtail" % c), "comparator tail -> XINP/XINN -> NMOS loads"),
         (c, "xbst", _m("x%s.xcmp.xbst" % c), "starved inverter source -> XBUF2 / XBUF1"),
-        (c, "xbuf4", _m("x%s.xcmp.xbuf4" % c), "output inverter PMOS -> dout / XBUF3"),
+        (c, "xbuf4", _m("x%s.xcmp.xbuf4" % c), "first output inverter PMOS -> outc / XBUF3"),
+        (c, "xbuf6", _m("x%s.xcmp.xbuf6" % c), "added output inverter PMOS -> dout / XBUF5"),
         (c, "xi0p", _m("x%s.xi0p" % c), "s0 control inverter PMOS (S0 PMOS gate)"),
         (c, "xi1p", _m("x%s.xi1p" % c), "s1 control inverter PMOS (S1 PMOS gate)"),
         (c, "xi2p", _m("x%s.xi2p" % c), "s2 control inverter PMOS (s2b, unused load)"),
@@ -97,10 +98,11 @@ SPLITS = []
 for k in range(4):
     c = "c%d" % k
     SPLITS += [
-        (c, "xinp", _m("x%s.xcmp.xinp" % c), "tail -> inp leg (gate vbl)"),
-        (c, "xinn", _m("x%s.xcmp.xinn" % c), "tail -> inn leg (gate bot)"),
+        (c, "xinp", _m("x%s.xcmp.xinp" % c), "tail -> inp leg (gate bot)"),
+        (c, "xinn", _m("x%s.xcmp.xinn" % c), "tail -> inn leg (gate vref)"),
         (c, "xbuf1", _m("x%s.xcmp.xbuf1" % c), "starved inverter NMOS (crowbar when it equals xbst)"),
-        (c, "xbuf3", _m("x%s.xcmp.xbuf3" % c), "output inverter NMOS (crowbar when it equals xbuf4)"),
+        (c, "xbuf3", _m("x%s.xcmp.xbuf3" % c), "first output inverter NMOS (crowbar when it equals xbuf4)"),
+        (c, "xbuf5", _m("x%s.xcmp.xbuf5" % c), "added output inverter NMOS (crowbar when it equals xbuf6)"),
     ]
 
 SUPPLIES = [("avdd", "i(vavdd)"), ("dvdd", "i(vdvdd)")]

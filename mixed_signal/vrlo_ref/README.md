@@ -23,7 +23,7 @@ assumed (an allocation chosen here), **[M]** measured by this block's runs,
 
 | # | Requirement | Value | Source |
 | --- | --- | --- | --- |
-| R1 | Level | 0.420 V at AVDD 3.3 V, ratiometric: 7/55 AVDD (was 0.5 V, 5/33) | [D] user decision 2026-10-09 (AVDD divider tap, like VREF/VBL); ADR 0025 (2026-10-29): the ramp starts 11.7 LSB below the window |
+| R1 | Level | 0.420 V at AVDD 3.3 V, ratiometric: 7/55 AVDD (was 0.5 V, 5/33) | [D] user decision 2026-10-09 (AVDD divider tap, like VREF); ADR 0025 (2026-10-29): the ramp starts 11.7 LSB below the window |
 | R2 | Sink the ramp current while `ramp_rst` is high | 0.487 uA typical (0.469 uA x 1.038), 0.36-0.79 uA over PVT | [D] `runs/analog-top/20261009T020546Z`; ramp current 0.74-1.62x untrimmed (ADR 0017) |
 | R3 | Absorb the end-of-ramp dump | 4 pF x (2.162 - 0.5) V = 6.65 pC each time `ramp_rst` rises | [D] `vramp_at_tovr` 2.1618 V in the same record |
 | R4 | Back to the reset level after the dump | within 0.05 LSB (0.293 mV) 1 us after `ramp_rst` rises | [A] TREC = 1 us (7 % of a 13.8 us conversion); 0.05 LSB as R5 |

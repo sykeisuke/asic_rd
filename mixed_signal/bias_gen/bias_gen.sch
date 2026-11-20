@@ -117,7 +117,7 @@ N 1100 -830 1100 -720 {lab=ivref}
 N 1020 -860 1060 -860 {lab=pb}
 N 1100 -980 1100 -890 {lab=vdd}
 N 1100 -860 1140 -860 {lab=vdd}
-N 1340 -830 1340 -720 {lab=ivbl}
+N 1340 -830 1340 -720 {lab=ivref2}
 N 1260 -860 1300 -860 {lab=pb}
 N 1340 -980 1340 -890 {lab=vdd}
 N 1340 -860 1380 -860 {lab=vdd}
@@ -459,7 +459,7 @@ C {devices/lab_pin.sym} 1700 -300 0 1 {name=l42 sig_type=std_logic lab=vss}
 C {devices/iopin.sym} 1100 -720 0 0 {name=pivref lab=ivref sim_pinnumber=8}
 C {devices/lab_pin.sym} 1020 -860 0 0 {name=l43 sig_type=std_logic lab=pb}
 C {devices/lab_pin.sym} 1140 -860 0 1 {name=l44 sig_type=std_logic lab=vdd}
-C {devices/iopin.sym} 1340 -720 0 0 {name=pivbl lab=ivbl sim_pinnumber=9}
+C {devices/iopin.sym} 1340 -720 0 0 {name=pivref2 lab=ivref2 sim_pinnumber=9}
 C {devices/lab_pin.sym} 1260 -860 0 0 {name=l45 sig_type=std_logic lab=pb}
 C {devices/lab_pin.sym} 1380 -860 0 1 {name=l46 sig_type=std_logic lab=vdd}
 C {devices/title.sym} 0 140 0 0 {name=l99 author="ASIC R&D - mixed_signal/bias_gen - bias_gen"}

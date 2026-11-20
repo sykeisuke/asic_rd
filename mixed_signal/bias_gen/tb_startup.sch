@@ -96,7 +96,7 @@ C {devices/lab_pin.sym} 820 -870 0 1 {name=l17 sig_type=std_logic lab=icmp2}
 C {devices/lab_pin.sym} 760 -845 0 1 {name=l18 sig_type=std_logic lab=icmp3}
 C {devices/lab_pin.sym} 820 -820 0 1 {name=l19 sig_type=std_logic lab=iramp}
 C {devices/lab_pin.sym} 760 -795 0 1 {name=l20 sig_type=std_logic lab=ivref}
-C {devices/lab_pin.sym} 820 -770 0 1 {name=l21 sig_type=std_logic lab=ivbl}
+C {devices/lab_pin.sym} 820 -770 0 1 {name=l21 sig_type=std_logic lab=ivref2}
 C {symbols/pfet_03v3.sym} 160 -440 0 0 {name=XLC0
 L=0.28u
 W=1u
@@ -242,7 +242,7 @@ C {devices/lab_pin.sym} 1660 -440 0 0 {name=l59 sig_type=std_logic lab=lb}
 C {devices/lab_pin.sym} 1740 -370 0 0 {name=l60 sig_type=std_logic lab=0}
 C {devices/lab_pin.sym} 1780 -440 0 1 {name=l61 sig_type=std_logic lab=0}
 C {devices/vsource.sym} 1820 -240 0 0 {name=VMB value="0" savecurrent=false}
-C {devices/lab_pin.sym} 1820 -310 0 0 {name=l62 sig_type=std_logic lab=ivbl}
+C {devices/lab_pin.sym} 1820 -310 0 0 {name=l62 sig_type=std_logic lab=ivref2}
 C {devices/lab_pin.sym} 1820 -170 0 0 {name=l63 sig_type=std_logic lab=lb}
 C {devices/code_shown.sym} 60 -80 0 0 {name=CTL only_toplevel=false value=".include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical

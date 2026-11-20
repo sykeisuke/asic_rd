@@ -1,6 +1,6 @@
-* The S2 event of the unit cell on the ONE output of midref (vref = vbl),
+* The S2 event of the unit cell on the ONE output of midref (vref),
 * any PVT cell. ../midrail_ref_bkp/midrail_ref_v2/tb_kick.spice with the second buffer
-* removed: VBL is the same node, so v2's VBL-crosstalk measures are gone
+* removed: the comparator reference is the same node, so v2's second-buffer crosstalk measures are gone
 * (what the kick does to a HELD cell's decision is tb_cmp.spice's job).
 * TEMPLATE: if p (measure prefix) corner mimcorner temp vdd top1 top2 (the
 * top plate's start, VDD/2 + 1.34 V and VDD/2 + 0.10 V). dut.spice is midref.spice.

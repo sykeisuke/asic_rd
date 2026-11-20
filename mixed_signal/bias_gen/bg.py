@@ -25,8 +25,8 @@ RCORNERS = ("res_typical", "res_ss", "res_ff")
 I_CMP_NOM = 1.931e-6
 CMP_DIODE = ("pfet_03v3", 0.28, 1.0, 1)              # L um, finger W um, nf
 N_CMP = 4
-# midref_v2 (x2: VREF, VBL): an ideal current into port ib, the NMOS diode XMBN
-# (L 0.34 W 0.5) inside midref_buf (midrail_ref_v2/midref_v2.spice header). The
+# midref_v2 (x2, ports ivref and ivref2): an ideal current into port ib, the NMOS diode XMBN
+# (L 0.34 W 0.5) inside midref_buf (ref/midref_prev/midref_prev.spice header). The
 # generator SOURCES into it.
 I_MR_NOM = 12.36e-6
 MR_DIODE = ("nfet_03v3", 0.34, 0.5, 1)
@@ -35,7 +35,8 @@ MR_DIODE = ("nfet_03v3", 0.34, 0.5, 1)
 # ramp's (consumer side); the generator SINKS from it.
 I_RAMP_NOM = 3.1314e-6
 RAMP_DIODE = ("pfet_03v3", 1.0, 2.0, 10)
-# comparator bias requirement per PVT cell (bias_req.py, drawn S/D geometry)
+# comparator bias requirement per PVT cell (../comparator bench.py PHASE=bias: the macro's
+# comparator, variant sw, drawn S/D geometry geom 1; it covers the PVT cells it lists only)
 BIAS_REQ_CSV = os.path.join(BLOCK, "..", "comparator", "data", "bias_req.csv")
 
 # ---------------------------------------------------------------- PDK [P]
@@ -83,7 +84,7 @@ def mos(name, d, g, s, b, kind, L, wf, nf):
             f" nrd={SD_EXT / w:.4g} nrs={SD_EXT / w:.4g}")
 
 
-PORTS = "vdd vss icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl"
+PORTS = "vdd vss icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2"
 
 
 def netlist(s, name="bias_gen", export=False, kick=True):
@@ -113,7 +114,7 @@ def netlist(s, name="bias_gen", export=False, kick=True):
         lines.append(mos(f"XOC{k}", f"icmp{k}", "nb", "vss", "vss", N, L, wf, s["nc"]))
     lines.append(mos("XOR", "iramp", "nb", "vss", "vss", N, L, wf, s["nr"]))
     lines.append(mos("XOV", "ivref", "pb", "vdd", "vdd", P, L, wf, s["nm"]))
-    lines.append(mos("XOB", "ivbl", "pb", "vdd", "vdd", P, L, wf, s["nm"]))
+    lines.append(mos("XOB", "ivref2", "pb", "vdd", "vdd", P, L, wf, s["nm"]))
     lines.append("* ---- startup: bleeder of PMOS diodes, disengage, kick")
     prev = "vdd"
     for k in range(s["nbl"]):
@@ -147,7 +148,7 @@ def consumer_loads(prefix="", vdd="vdd"):
     out.append(mos("XLR", "lr", "lr", vdd, vdd, kind, L, wf, nf))
     out.append("VMR lr iramp 0")
     kind, L, wf, nf = MR_DIODE
-    for tag, port in (("v", "ivref"), ("b", "ivbl")):
+    for tag, port in (("v", "ivref"), ("b", "ivref2")):
         out.append(f"VM{tag.upper()} {port} l{tag} 0")
         out.append(mos(f"XL{tag.upper()}", f"l{tag}", f"l{tag}", "0", "0", kind, L, wf, nf))
     return "\n".join(out) + "\n"
@@ -191,7 +192,7 @@ def op_deck(s, cell, rcorner, dut, loads=True, extra=""):
     lets = "\n".join(f"  let hr_{n} = abs(@m.xg.{n}.m0[vds]) - abs(@m.xg.{n}.m0[vdsat])" for n in devices(s))
     return (f"* bias_gen operating point\n" + NGSPICE_HEAD.format(corner=corner, rcorner=rcorner, mim=mimcorner(corner))
             + f".temp {temp:g}\n.include {dut}\nVDD vdd 0 3.3\n"
-            + f"XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl bias_gen\n"
+            + f"XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 bias_gen\n"
             + (consumer_loads() if loads else "") + extra
             + ".control\nset num_threads=1\n"
             + "foreach v " + " ".join("%g" % v for v in VDDS) + "\n"
@@ -222,15 +223,16 @@ def parse_op(txt, s):
 
 
 def bias_req():
-    """{(corner, temp, vdd): required comparator scale} from bias_req.csv (geom=1)."""
+    """{(corner, temp, vdd): required comparator scale} from bias_req.csv: the macro's
+    comparator (variant sw, plate on inp + output inverter), drawn S/D geometry (geom 1)."""
     req = {}
     with open(BIAS_REQ_CSV) as h:
         keys = h.readline().strip().split(",")
         for line in h:
             r = dict(zip(keys, line.strip().split(",")))
-            if r["geom"] != "1":
+            if r.get("variant") != "sw" or r["geom"] != "1":
                 continue
-            c, t, v = r["tag"].split("_")
+            c, t, v = r["cell"].split("_")
             req[(c, float(t), float(v))] = float(r["req_scale"])
     return req
 
@@ -251,17 +253,17 @@ def noise_new(d, gen_path):
     """rms voltage noise, 1 Hz .. NOISE_F_HI, on the ramp's mirror line (its diode) fed by iramp."""
     deck = ("* ramp line noise, this generator\n" + NGSPICE_HEAD.format(corner="typical", rcorner="res_typical", mim="typical")
             + f".include {gen_path}\n.temp 27\nVDD vdd 0 3.3 ac 1\n"
-            + "XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl bias_gen\n" + consumer_loads()
+            + "XG vdd 0 icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 bias_gen\n" + consumer_loads()
             + f".control\nset num_threads=1\nnoise v(lr) VDD dec 20 1 {NOISE_F_HI:g} 1\nsetplot noise2\nprint onoise_total\nquit\n.endc\n.end\n")
     return _line_noise(d, deck, "nz_new.spice")
 
 
 def noise_old(d):
     """The same figure on the old bias_gen pbias line (configuration S), which the ramp mirrored."""
-    old = os.path.join(BLOCK, "ref", "bias_gen_v1")
+    old = os.path.join(BLOCK, "ref", "bias_gen_prev")
     deck = ("* ramp line noise, old bias_gen\n" + NGSPICE_HEAD.format(corner="typical", rcorner="res_typical", mim="typical")
             + f".include {old}/data/bias_gen_params.spice\n.include {old}/bias_gen.spice\n.temp 27\n"
-            + "VDD vdd 0 3.3 ac 1\nXB vdd 0 pbias nbias bias_gen_v1\n"
+            + "VDD vdd 0 3.3 ac 1\nXB vdd 0 pbias nbias bias_gen_prev\n"
             + f".control\nset num_threads=1\nnoise v(pbias) VDD dec 20 1 {NOISE_F_HI:g} 1\nsetplot noise2\nprint onoise_total\nquit\n.endc\n.end\n")
     return _line_noise(d, deck, "nz_old.spice")
 

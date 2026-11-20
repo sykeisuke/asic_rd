@@ -1,4 +1,4 @@
-* Follower headroom under the PDK's local mismatch (verify_v3.py), one buffer
+* Follower headroom under the PDK's local mismatch (verify.py), one buffer
 * at one PVT cell (the extremes of the FVF window: ff/85 C/3.6 V and
 * ss/0 C/3.0 V). One draw per run with its own seed, as tb_mc.spice; draw 0
 * is mismatch-free.

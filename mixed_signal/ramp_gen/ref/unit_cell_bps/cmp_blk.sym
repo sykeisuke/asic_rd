@@ -4,7 +4,7 @@ K {type=primitive
 format="@name @pinlist @model"
 template="name=XCMP model=cmp"
 description="comparator_updt's bottom-plate comparator: subcircuit cmp of
-/foss/designs/mixed_signal/ramp_gen/ref/comparator_updt/cmp_updt.spice, reused by path
+/foss/designs/mixed_signal/ramp_gen/ref/comparator_prev/cmp_updt.spice, reused by path
 through .include. type=primitive: xschem netlists this line and never
 descends; the drawing of the inside is comparator_updt/cmp_updt.sch.
 Pins in the subcircuit order: inp inn dout clk vdd vss nbias pbias."

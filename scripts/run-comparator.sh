@@ -1,12 +1,12 @@
 #!/bin/sh
-# comparator, the comparator of the 8-bit true bottom-plate unit cell re-sized
-# with every L <= 0.36 um (mixed_signal/comparator, 2026-10-06):
-# short-L gm/Id tables, then ngspice verification of the selected design
-# (delay from the static trip over four levels, dout fall into 10 fF, noise at
-# the pins, Monte Carlo sigma(Vos)).
+# comparator: the cell comparator (mixed_signal/comparator) -- the sized core
+# comparator_core (10 devices) plus one output inverter (derive.py), used with
+# the floating plate on inp and VREF on inn; dout falls at the decision.
+# Typical delay / polarity / noise / MC, offset signal-independence and the bias
+# requirement, side by side with the core in its sizing hookup (plate on inn).
 #
 #   ./scripts/sim.sh comparator
-#   ./scripts/sim.sh comparator PHASES='lut size verify'
+#   ./scripts/sim.sh comparator PHASES='derive verify'
 set -eu
 
 . "$(dirname -- "$0")/eda-common.sh"

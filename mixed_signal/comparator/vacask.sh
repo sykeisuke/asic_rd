@@ -5,7 +5,7 @@
 #   vmodels  GF180 3.3 V models converted for VACASK (five corners), gated on
 #            reproducing ngspice's drain currents (vacask_lib/devcheck.py, 2 %)
 #   vmc      VACASK Monte Carlo (PDK fets_mm mismatch) at the 7 corner cells of
-#            pvt_v3.py, MC_VA_SAMPLES each: sigma(Vos) / alpha against 4/3 LSB
+#            pvt.py, MC_VA_SAMPLES each: sigma(Vos) / alpha against 4/3 LSB
 #   tn       VACASK transient noise at typical (trannoise.py): engine gates
 #            (PSD vs the noise analysis), numerical floor, generator bandwidth,
 #            and the crossing jitter of the 8-bit conversion
@@ -106,7 +106,7 @@ if has tnpvt && [ -s data/pvt.csv ]; then
     set -- $worst
     suffix=$(printf "%s" "$4" | tr . p)
     vcm=$(python3 -c "print('%g' % ($3 / 2))")
-    printf "REPORT: transient noise at the worst-noise PVT cell %s (VBL %s V)\n" "$4" "$vcm"
+    printf "REPORT: transient noise at the worst-noise PVT cell %s (VREF %s V)\n" "$4" "$vcm"
     [ -s "work/gf180_03v3_$1.inc" ] || python3 vacask_lib/gf180_vacask.py "$1" "work/gf180_03v3_$1.inc"
     export TN_SUFFIX="$suffix" TN_CORNER="$1" TN_TEMP="$2" TN_VDD="$3" VCM_DEC="$vcm"
     python3 trannoise.py gen 1 || { printf "FAIL: trannoise.py gen 1 (pvt)\n"; st=1; }

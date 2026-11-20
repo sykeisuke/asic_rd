@@ -8,5 +8,5 @@ v_nb,,0.626437,V,node
 v_pb,,2.51463,V,node
 i_icmp,,3.24529e-06,A,port icmp0 (each of icmp0..3) into its diode
 i_iramp,,3.25653e-06,A,port iramp into the ramp diode
-i_ivref,,1.11651e-05,A,port ivref (= ivbl) into the midref diode
+i_ivref,,1.11651e-05,A,port ivref (= ivref2) into the midref diode
 i_vdd,,4.55667e-05,A,supply current incl. the sourced midref currents

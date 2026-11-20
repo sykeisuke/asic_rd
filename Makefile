@@ -1,4 +1,4 @@
-.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep layout drc lvs gf-inverter top-placement comparator-pvt comparator-schematic latch midrail-ref bias-gen vrlo-ref ramp-gen ramp-simple ic-source sample-seq analog-top cell-trannoise chip-floorplan vnc stop
+.PHONY: check tools pdk analog-regression course-regression nmos-dc nmos-width sampling-cell four-cell four-cell-mux four-cell-wilkinson comparator comparator-range comparator-offset ramp-generator wilkinson-slice transfer counter gray-counter controller parallel-controller digital-top digital-physical cosim four-cell-cosim phase-sweep layout drc lvs gf-inverter top-placement comparator-pvt comparator-schematic latch midrail-ref bias-gen vrlo-ref ramp-gen ramp-simple ic-source sample-seq analog-top analog-top-pvt cell-trannoise chip-floorplan vnc stop
 
 check:
 	./scripts/eda-check.sh
@@ -143,6 +143,9 @@ sample-seq:
 # bias, VDD/2 and VR_LO references.
 analog-top:
 	./scripts/run-analog-top.sh
+
+analog-top-pvt:
+	./scripts/run-analog-top-pvt.sh
 
 # One Analog_top cell, VACASK transient noise (slow: hours; STEPS=reduce
 # re-judges the cached runs).

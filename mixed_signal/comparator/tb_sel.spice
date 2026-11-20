@@ -1,15 +1,15 @@
-* Selection bench of size_v3.py (DESIGN_RECIPE.md s.5, stage B): one
+* Selection bench of size.py (DESIGN_RECIPE.md s.5, stage B): one
 * candidate, one level. The unit cell's charge path with ideal parts around
 * the comparator, as tb_delay.spice: the 54.52 fF MIM, the top plate reset to
 * VREF = VDD/2 by an ideal S2 opening at TS, the bottom plate at VIN and then
-* moved to VR_LO at TCONN and ramped at the 8-bit slope from TR; inp = VBL.
+* moved to VR_LO at TCONN and ramped at the 8-bit slope from TR; inp = VREF.
 * dout drives CLOAD (the TSPC latch's measured input + wire).
 *
-* The DC trip point with inp = VBL comes from tb_sel_dc.spice (@VTRIP@): the
+* The DC trip point with inp = VREF comes from tb_sel_dc.spice (@VTRIP@): the
 * dynamic delay is measured from the instant the top plate crosses THAT
 * level, so a static (systematic) offset is not counted as speed.
 *
-* TEMPLATE: size_v3.py replaces @DUT@ @VIN@ @CLOAD@ @IREF@ @REFP@ @TSTOP@ @VTRIP@ and
+* TEMPLATE: size.py replaces @DUT@ @VIN@ @CLOAD@ @IREF@ @REFP@ @TSTOP@ @VTRIP@ and
 * runs it in work/sel/<id>_<level>/; the measures are printed (name = value).
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
 .lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice @CORNER@
@@ -44,7 +44,6 @@ IREFP pbias 0 {IREF}
 @REFP@
 VCLK clk 0 0
 
-VVBL vbl 0 {VDD/2}
 VVREF vref 0 {VDD/2}
 VBOT bot 0 PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+14u} {VR_LO+14u*SLOPE})
 VS2 s2 0 PWL(0 1 {TS} 1 {TS+TEDGE} 0)
@@ -53,7 +52,7 @@ S2 vref top s2 0 swideal
 XCS top bot cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
 RLKT top 0 1e15
 
-XDUT vbl top dout clk vdd 0 nbias pbias cmp
+XDUT vref top dout clk vdd 0 nbias pbias comparator_core
 CLOAD dout 0 @CLOAD@
 
 .control
@@ -73,14 +72,14 @@ meas tran armed find v(dout) at=$&cs_tr
 let t_after = t_dout + 5e-9
 meas tran t_rerise when v(dout)=$&half rise=1 td=$&t_after
 meas tran i_avg avg i(vdd_source) from=$&cs_tconn to=$&t_cross
-let delay_vbl = t_dout - t_cross
+let delay_vref = t_dout - t_cross
 let delay_dyn = t_dout - t_cs
 let fall = t_f10 - t_f90
 let ped_counts = (t_dout - $&cs_tideal) / 50e-9
 let p_avg = -$&cs_vdd * i_avg
 echo "RESULT_BEGIN"
 echo "vtrip_v = $vtrip_s"
-print delay_vbl delay_dyn fall ped_counts armed p_avg
+print delay_vref delay_dyn fall ped_counts armed p_avg
 echo "RESULT_END"
 quit
 .endc

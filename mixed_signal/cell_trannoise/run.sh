@@ -33,6 +33,9 @@ chmod -R a+rwX "$BLOCK_DIR" 2>/dev/null || true
 env_line="STEPS='${STEPS:-models schematic align ngspice kick sim reduce}' NSEED=${NSEED:-12} NREC_LO=${NREC_LO:-48} NREC_HI=${NREC_HI:-16} NSEED_G=${NSEED_G:-4} NSEED_BAND=${NSEED_BAND:-4} NSEED_TOL=${NSEED_TOL:-4} TWARM=${TWARM:-150e-6} FMAX=${FMAX:-2e9} RELTOL=${RELTOL:-1e-6} LOOSE_G='${LOOSE_G:-ramp ff sw}' RELTOL_G=${RELTOL_G:-1e-5}"
 status=0
 sh "$BLOCK_DIR/container.sh" "$env_line bash ct.sh" 2>&1 | tee "$run_dir/console.log" || status=$?
+# tee's status hides the container's: a run that printed no verdict failed
+grep -q '^\(PASS\|FAIL\)' "$run_dir/console.log" ||
+    { echo 'FAIL: no check ran (container did not start?)' | tee -a "$run_dir/console.log"; status=1; }
 
 if [ "${NO_RECORD:-0}" != 1 ]; then
     : >"$run_dir/extra-metrics.txt"

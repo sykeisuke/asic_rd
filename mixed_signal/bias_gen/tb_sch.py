@@ -25,7 +25,7 @@ sheet, simulates it and compares its figures with the hand deck's (data/xtb.csv)
 | tb_cmp.sch     | phase_cmp (tb_sel_dc + tb_sel on icmp0)        | static trip, then the plateau level 40.5 LSB    |
 | tb_xtalk.sch   | XT_DECK (phase xtalk)                          | case a, then case q by alterparam               |
 
-The midref bench (phase midref) places the frozen ref/midrail_ref_v2 cells,
+The midref bench (phase midref) places the frozen ref/midref_prev cells,
 which have no drawings here: it stays deck-only (README).
 
 Sheet text: one title, short headings, the bench's parameter values
@@ -85,7 +85,7 @@ def cards(deck, skip_includes):
 
 def mos_attrs(line):
     """xschem attributes of a PDK MOS symbol from one hand-deck device line
-    (bg.mos / size_v3.dev): the name, every parameter as written, the deck's
+    (bg.mos / size.dev): the name, every parameter as written, the deck's
     model and a format that writes the parameters back in the deck's order
     (no sa/sb/sd, spiceprefix empty: the X comes from the name)."""
     t = line.split()
@@ -111,7 +111,7 @@ class Sch:
         "nfet": {"D": (20, -30, "U"), "G": (-20, 0, "L"), "S": (20, 30, "D"), "B": (20, 0, "R")},
         "bg": {"vdd": (0, -120, "U"), "vss": (0, 120, "D"), "icmp0": (100, -80, "R"), "icmp1": (100, -55, "R"),
                "icmp2": (100, -30, "R"), "icmp3": (100, -5, "R"), "iramp": (100, 20, "R"), "ivref": (100, 45, "R"),
-               "ivbl": (100, 70, "R")},
+               "ivref2": (100, 70, "R")},
         "cmp": {"inp": (-100, -60, "L"), "inn": (-100, -30, "L"), "clk": (-100, 0, "L"), "nbias": (-100, 30, "L"),
                 "pbias": (-100, 60, "L"), "dout": (100, -45, "R"), "vdd": (0, -120, "U"), "vss": (0, 120, "D")},
     }
@@ -328,7 +328,7 @@ def tb_cmp():
     s.title("TB_CMP  -  comparator on icmp0 of bias_gen: static trip, then delay on the charge path")
     # row 1: supplies, levels, the zero ideal currents and their diodes (the bench's bias parts)
     for i, (name, val, net) in enumerate([("VDD_SOURCE", "{VDD}", "vdd"), ("VDD_BIAS", "{VDD}", "vddb"),
-                                          ("VVBL", "{VDD/2}", "vbl"), ("VVREF", "{VDD/2}", "vref"),
+                                          ("VVREF", "{VDD/2}", "vref"),
                                           ("VCLK", "0", "clk"), ("VDC", "1.65", "vdc")]):
         s.vsrc(name, 120 + 170 * i, -1180, val, net)
     s.isrc("IREFN", 120, -900, "{IREF}", "vddb", "nbias")
@@ -337,7 +337,7 @@ def tb_cmp():
     s.mos(S3.ref_line(sz, 0.0)[0], 680, -900)
     s.T("IREF 0: pbias from the generator", 60, -1010, 0.3, 4)
     s.T("STATIC TRIP", 1400, -1290, 0.4)
-    s.part("cmp", 1500, -1080, "name=XDC", {"inp": "vbl", "inn": "vdc", "clk": "clk", "nbias": "nbias",
+    s.part("cmp", 1500, -1080, "name=XDC", {"inp": "vdc", "inn": "vref", "clk": "clk", "nbias": "nbias",
                                             "pbias": "pbias", "dout": "doutdc", "vdd": "vdd", "vss": "0"})
     s.part("capa", 1760, -1080, "name=CLDC value=1e-14 m=1", {"p": "doutdc", "m": "0"})
     # row 3: the generator, icmp0 = pbias, the other consumers on diodes
@@ -352,7 +352,7 @@ def tb_cmp():
     s.part("mim", 920, 140, "name=XCS " + MIM_ATTR, {"G": "top", "B": "bot"})
     s.T("C_S 54.52 fF", 960, 200, 0.3, 4)
     s.part("res", 1080, -100, "name=RLKT value=1e15 m=1", {"p": "top", "m": "0"})
-    s.part("cmp", 1380, -100, "name=XDUT", {"inp": "vbl", "inn": "top", "clk": "clk", "nbias": "nbias",
+    s.part("cmp", 1380, -100, "name=XDUT", {"inp": "top", "inn": "vref", "clk": "clk", "nbias": "nbias",
                                             "pbias": "pbias", "dout": "dout", "vdd": "vdd", "vss": "0"})
     s.part("capa", 1620, -100, "name=CLOAD value=1e-14 m=1", {"p": "dout", "m": "0"})
     vin = S3.VR_LO + lvl * S3.LSB
@@ -366,7 +366,7 @@ def tb_cmp():
             ".csparam cs_tideal={TR+(VIN-VR_LO)/SLOPE}\n"
             ".options savecurrents reltol=1e-4 gmin=1e-15\n"
             ".control\nset num_threads=1\n"
-            "* static trip (tb_sel_dc): inn swept through inp = VBL\n"
+            "* static trip (tb_sel_dc): inp swept through inn = VREF\n"
             "dc VDC 1.6 1.7 25u\n"
             "meas dc vtrip when v(doutdc)=1.65 fall=1\n"
             "let vtr6 = floor(vtrip * 1e6 + 0.5) / 1e6\n"
@@ -387,14 +387,14 @@ def tb_cmp():
             "let t_after = t_dout + 5e-9\n"
             "meas tran t_rerise when v(dout)=$&half rise=1 td=$&t_after\n"
             "meas tran i_avg avg i(vdd_source) from=$&cs_tconn to=$&t_cross\n"
-            "let delay_vbl = t_dout - t_cross\n"
+            "let delay_vref = t_dout - t_cross\n"
             "let delay_dyn = t_dout - t_cs\n"
             "let fall = t_f10 - t_f90\n"
             "let ped_counts = (t_dout - $&cs_tideal) / 50e-9\n"
             "let p_avg = -$&cs_vdd * i_avg\n"
             "echo \"RESULT_BEGIN\"\n"
             "echo \"vtrip_v = $vtrip_s\"\n"
-            "print delay_vbl delay_dyn fall ped_counts armed p_avg\n"
+            "print delay_vref delay_dyn fall ped_counts armed p_avg\n"
             "echo \"RESULT_END\"\nquit\n.endc")
     s.code(2200, -1200, code)
     return s.write()
@@ -414,8 +414,8 @@ def tb_xtalk():
     s = Sch("xtalk")
     vvic, vagg, vq, vend = xt_levels()
     s.title("TB_XTALK  -  four comparators on bias_gen, aggressors 1..3 decide one LSB before the victim")
-    for i, (name, val, net) in enumerate([("VDD_SOURCE", "{VDD}", "vdd"), ("VVBL", "{VDD/2}", "vbl"),
-                                          ("VVREF", "{VDD/2}", "vref"), ("VCLK", "0", "clk")]):
+    for i, (name, val, net) in enumerate([("VDD_SOURCE", "{VDD}", "vdd"), ("VVREF", "{VDD/2}", "vref"),
+                                          ("VCLK", "0", "clk")]):
         s.vsrc(name, 120 + 170 * i, -1180, val, net)
     s.vsrc("VS2", 800, -1180, "PWL(0 1 300n 1 300.1n 0)", "s2")
     s.T("GENERATOR, pb0..3 = the comparators' pbias diodes", 60, -1020, 0.4)
@@ -438,7 +438,7 @@ def tb_xtalk():
         s.part("switch", 760, y0, f"name=S2_{i} model=swideal", {"P": "vref", "M": f"top{i}", "CP": "s2", "CM": "0"})
         s.part("mim", 920, y0, f"name=XCS{i} " + MIM_ATTR, {"G": f"top{i}", "B": f"bot{i}"})
         s.part("res", 1180, y0, f"name=RLK{i} value=1e15 m=1", {"p": f"top{i}", "m": "0"})
-        s.part("cmp", 1480, y0, f"name=XDUT{i}", {"inp": "vbl", "inn": f"top{i}", "clk": "clk", "nbias": "0",
+        s.part("cmp", 1480, y0, f"name=XDUT{i}", {"inp": f"top{i}", "inn": "vref", "clk": "clk", "nbias": "0",
                                                   "pbias": f"pb{i}", "dout": f"dout{i}", "vdd": "vdd", "vss": "0"})
         s.part("capa", 1720, y0, f"name=CL{i} value=10f m=1", {"p": f"dout{i}", "m": "0"})
     tstop = 400e-9 + (XT_LVL + 4) * 50e-9

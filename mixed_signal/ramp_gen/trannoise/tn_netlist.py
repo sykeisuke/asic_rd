@@ -11,7 +11,7 @@ Deliberately narrow. It reads exactly these subcircuits, by path:
   midref_b      ../ref/midrail_ref/ref_fvf_biased.spice + data/midrail_params.spice
   sw_s0/1/2     ../ref/unit_cell_bps/switches.spice
   unit_cell_bps ../ref/unit_cell_bps/unit_cell_bps.spice (unit_cell_top is not used)
-  cmp           ../ref/comparator_updt/cmp_updt.spice
+  cmp           ../ref/comparator_prev/cmp_updt.spice
 
 and accepts only: X instances of nfet_03v3 / pfet_03v3 (L W nf m ad as pd
 ps), cap_mim_2f0_m4m5_noshield (c_width c_length), ppolyf_u / ppolyf_u_3k
@@ -71,7 +71,7 @@ class Translator:
                          (os.path.join(MS, "ramp_gen", "ref", "bias_gen", "bias_gen.spice"), {"bias_gen"}),
                          (os.path.join(MS, "ramp_gen", "ref", "midrail_ref", "ref_fvf_biased.spice"), {"midref_b"}),
                          (os.path.join(MS, "ramp_gen", "ref", "unit_cell_bps", "switches.spice"), {"sw_s0", "sw_s1", "sw_s2"}),
-                         (os.path.join(MS, "ramp_gen", "ref", "comparator_updt", "cmp_updt.spice"), {"cmp"}),
+                         (os.path.join(MS, "ramp_gen", "ref", "comparator_prev", "cmp_updt.spice"), {"cmp"}),
                          (os.path.join(MS, "ramp_gen", "ref", "unit_cell_bps", "unit_cell_bps.spice"), {"unit_cell_bps"})):
             self.read(f, names)
         self.resvals = self.measure_resistors()

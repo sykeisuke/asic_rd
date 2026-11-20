@@ -1,22 +1,28 @@
 {
- "n_stage": 22,
- "delay_cell": "gf180mcu_as_sc_mcu7t3v3__dlybuff_2",
- "gap_min_ns": 5.0,
- "gap_margin_ns": 0.25,
+ "n_stage": 4,
+ "delay_cell": "gf180mcu_as_sc_mcu7t3v3__inv_2",
+ "gap_rule": "gap >= GAP_MARGIN x four-inverter delay (n1 -> a1)",
+ "gap_margin": 1.15,
  "n_probe": [
-  8,
-  24
+  2,
+  6
  ],
+ "n_min": 2,
  "binding": {
   "corner": "ff",
   "temp": 0,
   "vdd": 3.6,
-  "gap": "g20_min_ns",
-  "a_ns": 0.09206359335765923,
-  "b_ns_per_cell": 0.24407674303896995
+  "gap": "g01_min_ns",
+  "t4inv_ns": 0.12708948984806412,
+  "a_ns": 0.08677181591590404,
+  "b_ns_per_cell": 0.029028045397685824
  },
+ "t4inv_ns_range": [
+  0.12708948984806412,
+  0.25508418429026686
+ ],
  "b_ns_per_cell_range": [
-  0.24407674303896995,
-  0.4853876256917784
+  0.029028045397685824,
+  0.05785916746802648
  ]
 }

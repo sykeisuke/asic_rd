@@ -4,7 +4,7 @@
 # no tool ever runs on the host.
 #
 #   ./container.sh 'ngspice -b -o work/x.log tb_dc.spice'
-#   ./container.sh 'python3 verify_v3.py'
+#   ./container.sh 'python3 verify.py'
 #
 # The image pin and the Docker CLI come from scripts/eda-common.sh, sourced by
 # path rather than copied. That script derives PROJECT_ROOT from $0, which is

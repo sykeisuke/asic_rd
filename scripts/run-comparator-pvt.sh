@@ -1,11 +1,12 @@
 #!/bin/sh
-# comparator over PVT (45 cells, ngspice), Monte Carlo at 7 corner cells
-# (ngspice + VACASK), VACASK transient noise at typical and at the worst-noise
-# PVT cell (mixed_signal/comparator/run-pvt.sh).
+# comparator over PVT (45 cells, ngspice, the comparator and its core side by
+# side), Monte
+# Carlo at 7 corner cells (ngspice + VACASK), offset signal-independence at the
+# same 7 cells, VACASK transient noise at typical and at the worst-noise PVT
+# cell (mixed_signal/comparator/run-pvt.sh). Long: launch detached.
 #
 #   ./scripts/sim.sh comparator-pvt
 #   ./scripts/sim.sh comparator-pvt PHASES='bench mc plot'
-#   ./scripts/sim.sh comparator-pvt DUT_GEOM=1 PHASES='bench plot'   (drawn S/D geometry)
 set -eu
 
 . "$(dirname -- "$0")/eda-common.sh"

@@ -3,7 +3,7 @@ G {}
 K {type=subcircuit
 format="@name @pinlist @symname"
 template="name=XCMP"
-description="comparator_d: comparator (10 devices) with its own pbias PMOS diode XREFP, drawn flat in comparator_d.sch; ibias is a CURRENT input (bias_gen_s sinks icmp_k from it). Pins: inp inn ibias dout vdd vss. dout falls when inn rises through inp"
+description="comparator_d: comparator (12 devices) with its own pbias PMOS diode XREFP, drawn flat in comparator_d.sch; ibias is a CURRENT input (bias_gen_s sinks icmp_k from it). Pins: inp inn ibias dout vdd vss. dout falls when inp rises through inn"
 }
 V {}
 S {}
@@ -26,8 +26,8 @@ B 5 -42.5 -122.5 -37.5 -117.5 {name=ibias dir=in}
 B 5 117.5 -2.5 122.5 2.5 {name=dout dir=out}
 B 5 17.5 -122.5 22.5 -117.5 {name=vdd dir=inout}
 B 5 17.5 117.5 22.5 122.5 {name=vss dir=inout}
-T {+} -92 -62 0 0 0.6 0.6 {}
-T {-} -90 18 0 0 0.6 0.6 {}
+T {-} -90 -62 0 0 0.6 0.6 {}
+T {+} -92 18 0 0 0.6 0.6 {}
 T {inp} -170 -66 0 0 0.25 0.25 {}
 T {inn} -170 14 0 0 0.25 0.25 {}
 T {dout} 104 -26 0 0 0.25 0.25 {}
@@ -39,5 +39,5 @@ L 4 -70 -30 -38 -30 {bus=true}
 L 4 -38 -30 -38 14 {bus=true}
 L 4 -38 14 -6 14 {bus=true}
 L 8 -70 26 -2 26 {}
-T {inn} -4 22 0 0 0.14 0.14 {layer=8}
+T {inp} -4 22 0 0 0.14 0.14 {layer=8}
 T {comparator_d} -80 54 0 0 0.18 0.18 {layer=13}

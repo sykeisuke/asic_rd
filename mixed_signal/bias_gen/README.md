@@ -6,7 +6,7 @@ The bias reference of the 8-bit bottom-plate ADC, re-sized on 2026-10-08:
   fingers, every device in one PMOS row above one NMOS row.
 - **Consumers:**
   - four `comparator` comparators (`../comparator`);
-  - the two `midref_v2` buffers, VREF and VBL (`../midrail_ref_bkp/midrail_ref_v2`);
+  - the two `midref_v2` buffers, on `ivref` and `ivref2` (`../midrail_ref_bkp/midrail_ref_v2`);
   - the ramp (`../ramp_gen`).
 
 `../bias_gen_bkp/bias_gen` (the old configuration S) is unchanged. Decisions:
@@ -17,14 +17,14 @@ The bias reference of the 8-bit bottom-plate ADC, re-sized on 2026-10-08:
 
 ```spice
 .include /foss/designs/mixed_signal/bias_gen/bias_gen.spice      ; needs the res_* and mimcap_* model sections
-XBG vdd vss icmp0 icmp1 icmp2 icmp3 iramp ivref ivbl bias_gen
+XBG vdd vss icmp0 icmp1 icmp2 icmp3 iramp ivref ivref2 bias_gen
 ```
 
 | Port | Direction | Into | Typical |
 | --- | --- | --- | --- |
 | `icmp0..3` | sink | each comparator's own pbias diode, `pfet_03v3 L=0.28u W=1u nf=1` in its cell (= v3's bench `XREFP`) | 3.245 µA = 1.681 × 1.931 µA |
 | `iramp` | sink | the ramp's diode `pfet_03v3 L=1u W=20u nf=10` (its `pbias`) | 3.257 µA (+4.0 % of 3.1314) |
-| `ivref`, `ivbl` | source | `midref_buf` port `ib` (its NMOS diode XMBN) | 11.17 µA = 0.903 × 12.36 µA |
+| `ivref`, `ivref2` | source | `midref_buf` port `ib` (its NMOS diode XMBN) | 11.17 µA = 0.903 × 12.36 µA |
 
 ## Run it
 
@@ -59,7 +59,7 @@ as `bias_gen.sym` (xschem descends into `bias_gen.sch`) and the comparator as
 | `tb_cmp.sch` | phase `cmp` (`tb_sel_dc` + `tb_sel` of the comparator, generator on icmp0) | the static-trip comparator XDC and the charge-path comparator XDUT on the same sheet, the trip then the plateau-level transient in one `.control` |
 | `tb_xtalk.sch` | phase `xtalk` (`XT_DECK`) | four comparators on pb0..3, case a as drawn, case q by `alterparam` + `reset` |
 
-Phase `midref` is deck-only: it places the frozen `ref/midrail_ref_v2` cells
+Phase `midref` is deck-only: it places the frozen `ref/midref_prev` cells
 (`midref_v2`, `tb_op` / `tb_kick` of that version), which have no drawings
 in this folder, and a latest folder never draws a `_bkp` cell.
 
@@ -91,7 +91,7 @@ quotes and refuses any other quote in a code block.
 ```text
  vdd ─┬──────────┬────────────┬──────────────┬─────────────┐
    bleeder     XMP1 ─── pb ── XMP2 (diode)  XOV, XOB (pb)   MIM pb→vdd
-  4 PMOS diodes  │             │              → ivref, ivbl
+  4 PMOS diodes  │             │              → ivref, ivref2
       su        nb            pb
    XSU4 (g=nb)  XMN1 (diode)  XMN2 (K×XMN1, source on R)     XOC0..3, XOR (nb)
    XSU5 (g=su,                 │                              → icmp0..3, iramp

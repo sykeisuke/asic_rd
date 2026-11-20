@@ -165,18 +165,6 @@ text {font-family: Sans-Serif;}
 <path class="l4" d="M142.924 77.5623L142.924 80.249"/>
 <path class="l4" d="M140.238 74.8756L140.238 107.116"/>
 <circle class="l4" cx="140.238" cy="90.9957" r="8.06007" style="fill:none;" />
-<path class="l4" d="M232.929 78.9056L235.615 78.9056"/>
-<path class="l4" d="M234.272 77.5623L234.272 80.249"/>
-<path class="l4" d="M231.585 74.8756L231.585 107.116"/>
-<circle class="l4" cx="231.585" cy="90.9957" r="8.06007" style="fill:none;" />
-<path class="l4" d="M324.276 78.9056L326.963 78.9056"/>
-<path class="l4" d="M325.619 77.5623L325.619 80.249"/>
-<path class="l4" d="M322.933 74.8756L322.933 107.116"/>
-<circle class="l4" cx="322.933" cy="90.9957" r="8.06007" style="fill:none;" />
-<path class="l4" d="M415.624 78.9056L418.31 78.9056"/>
-<path class="l4" d="M416.967 77.5623L416.967 80.249"/>
-<path class="l4" d="M414.28 74.8756L414.28 107.116"/>
-<circle class="l4" cx="414.28" cy="90.9957" r="8.06007" style="fill:none;" />
 <path class="l4" d="M48.8903 225.33L48.8903 233.39"/>
 <path class="l4" d="M48.8903 249.51L48.8903 257.571"/>
 <path class="l4" d="M50.2336 229.36L52.9203 229.36"/>
@@ -206,18 +194,30 @@ text {font-family: Sans-Serif;}
 <path class="l4" d="M339.053 241.45L345.77 241.45"/>
 <path class="l4" d="M356.516 230.704L353.83 232.047L356.516 233.39L356.516 230.704"/>
 <circle class="l4" cx="348.456" cy="241.45" r="2.68669" style="fill:none;" />
+<path class="l4" d="M232.929 78.9056L235.615 78.9056"/>
+<path class="l4" d="M234.272 77.5623L234.272 80.249"/>
+<path class="l4" d="M231.585 74.8756L231.585 107.116"/>
+<circle class="l4" cx="231.585" cy="90.9957" r="8.06007" style="fill:none;" />
+<path class="l4" d="M324.276 78.9056L326.963 78.9056"/>
+<path class="l4" d="M325.619 77.5623L325.619 80.249"/>
+<path class="l4" d="M322.933 74.8756L322.933 107.116"/>
+<circle class="l4" cx="322.933" cy="90.9957" r="8.06007" style="fill:none;" />
+<path class="l4" d="M415.624 78.9056L418.31 78.9056"/>
+<path class="l4" d="M416.967 77.5623L416.967 80.249"/>
+<path class="l4" d="M414.28 74.8756L414.28 107.116"/>
+<circle class="l4" cx="414.28" cy="90.9957" r="8.06007" style="fill:none;" />
 <path class="l4" d="M639.962 133.983L725.936 133.983"/>
 <path class="l4" d="M725.936 133.983L725.936 241.45"/>
 <path class="l4" d="M639.962 241.45L725.936 241.45"/>
 <path class="l4" d="M639.962 133.983L639.962 241.45"/>
 <path class="l4" d="M629.215 155.476L639.962 155.476"/>
 <path class="l4" d="M629.215 171.596L639.962 171.596"/>
-<path class="l4" d="M629.215 187.717L639.962 187.717"/>
-<path class="l4" d="M629.215 203.837L639.962 203.837"/>
-<path class="l4" d="M629.215 219.957L639.962 219.957"/>
 <path class="l4" d="M725.936 163.536L736.683 163.536"/>
+<path class="l4" d="M629.215 187.717L639.962 187.717"/>
 <path class="l4" d="M682.949 123.236L682.949 133.983"/>
 <path class="l4" d="M682.949 241.45L682.949 252.197"/>
+<path class="l4" d="M629.215 203.837L639.962 203.837"/>
+<path class="l4" d="M629.215 219.957L639.962 219.957"/>
 <path class="l4" d="M811.91 190.403L811.91 203.837"/>
 <path class="l4" d="M811.91 171.596L811.91 185.03"/>
 <path class="l4" d="M806.537 185.03L817.284 185.03"/>
@@ -234,18 +234,6 @@ text {font-family: Sans-Serif;}
 <path class="l5" d="M138.894 105.773L141.581 105.773L141.581 108.459L138.894 108.459L138.894 105.773z"/>
 <path class="l5" d="M139.566 52.7104L140.909 52.7104L140.909 54.0537L139.566 54.0537L139.566 52.7104z"/>
 <path class="l5" d="M139.566 127.938L140.909 127.938L140.909 129.281L139.566 129.281L139.566 127.938z"/>
-<path class="l5" d="M230.242 73.5322L232.929 73.5322L232.929 76.2189L230.242 76.2189L230.242 73.5322z"/>
-<path class="l5" d="M230.242 105.773L232.929 105.773L232.929 108.459L230.242 108.459L230.242 105.773z"/>
-<path class="l5" d="M230.914 52.7104L232.257 52.7104L232.257 54.0537L230.914 54.0537L230.914 52.7104z"/>
-<path class="l5" d="M230.914 127.938L232.257 127.938L232.257 129.281L230.914 129.281L230.914 127.938z"/>
-<path class="l5" d="M321.589 73.5322L324.276 73.5322L324.276 76.2189L321.589 76.2189L321.589 73.5322z"/>
-<path class="l5" d="M321.589 105.773L324.276 105.773L324.276 108.459L321.589 108.459L321.589 105.773z"/>
-<path class="l5" d="M322.261 52.7104L323.604 52.7104L323.604 54.0537L322.261 54.0537L322.261 52.7104z"/>
-<path class="l5" d="M322.261 127.938L323.604 127.938L323.604 129.281L322.261 129.281L322.261 127.938z"/>
-<path class="l5" d="M412.937 73.5322L415.624 73.5322L415.624 76.2189L412.937 76.2189L412.937 73.5322z"/>
-<path class="l5" d="M412.937 105.773L415.624 105.773L415.624 108.459L412.937 108.459L412.937 105.773z"/>
-<path class="l5" d="M413.609 52.7104L414.952 52.7104L414.952 54.0537L413.609 54.0537L413.609 52.7104z"/>
-<path class="l5" d="M413.609 127.938L414.952 127.938L414.952 129.281L413.609 129.281L413.609 127.938z"/>
 <path class="l5" d="M47.5469 223.987L50.2336 223.987L50.2336 226.674L47.5469 226.674L47.5469 223.987z"/>
 <path class="l5" d="M47.5469 256.227L50.2336 256.227L50.2336 258.914L47.5469 258.914L47.5469 256.227z"/>
 <path class="l5" d="M48.2186 203.165L49.562 203.165L49.562 204.508L48.2186 204.508L48.2186 203.165z"/>
@@ -272,6 +260,18 @@ text {font-family: Sans-Serif;}
 <path class="l5" d="M359.875 278.392L361.218 278.392L361.218 279.736L359.875 279.736L359.875 278.392z"/>
 <path class="l5" d="M359.875 203.165L361.218 203.165L361.218 204.508L359.875 204.508L359.875 203.165z"/>
 <path class="l5" d="M381.368 240.779L382.712 240.779L382.712 242.122L381.368 242.122L381.368 240.779z"/>
+<path class="l5" d="M230.242 73.5322L232.929 73.5322L232.929 76.2189L230.242 76.2189L230.242 73.5322z"/>
+<path class="l5" d="M230.242 105.773L232.929 105.773L232.929 108.459L230.242 108.459L230.242 105.773z"/>
+<path class="l5" d="M230.914 52.7104L232.257 52.7104L232.257 54.0537L230.914 54.0537L230.914 52.7104z"/>
+<path class="l5" d="M230.914 127.938L232.257 127.938L232.257 129.281L230.914 129.281L230.914 127.938z"/>
+<path class="l5" d="M321.589 73.5322L324.276 73.5322L324.276 76.2189L321.589 76.2189L321.589 73.5322z"/>
+<path class="l5" d="M321.589 105.773L324.276 105.773L324.276 108.459L321.589 108.459L321.589 105.773z"/>
+<path class="l5" d="M322.261 52.7104L323.604 52.7104L323.604 54.0537L322.261 54.0537L322.261 52.7104z"/>
+<path class="l5" d="M322.261 127.938L323.604 127.938L323.604 129.281L322.261 129.281L322.261 127.938z"/>
+<path class="l5" d="M412.937 73.5322L415.624 73.5322L415.624 76.2189L412.937 76.2189L412.937 73.5322z"/>
+<path class="l5" d="M412.937 105.773L415.624 105.773L415.624 108.459L412.937 108.459L412.937 105.773z"/>
+<path class="l5" d="M413.609 52.7104L414.952 52.7104L414.952 54.0537L413.609 54.0537L413.609 52.7104z"/>
+<path class="l5" d="M413.609 127.938L414.952 127.938L414.952 129.281L413.609 129.281L413.609 127.938z"/>
 <path class="l5" d="M627.872 154.133L630.559 154.133L630.559 156.82L627.872 156.82L627.872 154.133z"/>
 <path class="l5" d="M627.872 170.253L630.559 170.253L630.559 172.94L627.872 172.94L627.872 170.253z"/>
 <path class="l5" d="M735.34 162.193L738.026 162.193L738.026 164.88L735.34 164.88L735.34 162.193z"/>
@@ -300,18 +300,6 @@ text {font-family: Sans-Serif;}
 <text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(150.985, 99.4283)" >{VDD}</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(113.208, 57.3886)" >vddb</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(130.208, 132.616)" >0</text>
-<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(242.332, 85.9948)" >VINP</text>
-<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(242.332, 99.4283)" >1.65</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(212.555, 57.3886)" >inp</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(221.555, 132.616)" >0</text>
-<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(333.679, 85.9948)" >VINN</text>
-<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(333.679, 99.4283)" >1.65</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(303.903, 57.3886)" >inn</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(312.903, 132.616)" >0</text>
-<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(425.027, 85.9948)" >VCLK</text>
-<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(425.027, 99.4283)" >{VDD}</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(396.25, 57.3886)" >clk</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(404.25, 132.616)" >0</text>
 <text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(59.6371, 241.151)" >IREFN</text>
 <text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(59.6371, 247.561)" >{IREF}</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(21.8603, 207.843)" >vddb</text>
@@ -344,18 +332,30 @@ text {font-family: Sans-Serif;}
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(330.516, 283.071)" >pbias</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(333.516, 207.843)" >vddb</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(386.07, 245.457)" >vddb</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(242.332, 85.9948)" >VCLK</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(242.332, 99.4283)" >{VDD}</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(213.555, 57.3886)" >clk</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(221.555, 132.616)" >0</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(333.679, 85.9948)" >VREFX</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(333.679, 99.4283)" >1.65</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(294.903, 57.3886)" >vrefx</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(312.903, 132.616)" >0</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(425.027, 85.9948)" >VSW</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(425.027, 99.4283)" >1.65</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(392.25, 57.3886)" >vsw</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(404.25, 132.616)" >0</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(643.186, 159.864)" >inp</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(643.186, 175.984)" >inn</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(706.592, 167.924)" >dout</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(643.186, 192.104)" >clk</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(643.186, 208.224)" >nbias</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(643.186, 224.344)" >pbias</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(709.816, 167.924)" >dout</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(686.173, 134.071)" >vdd</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(686.173, 251.211)" >vss</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(643.186, 208.224)" >nbias</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" transform="translate(643.186, 224.344)" >pbias</text>
 <text fill="#222222"  xml:space="preserve" font-size="11.1766" transform="translate(639.962, 124.787)" >XDUT</text>
-<text fill="#222222"  xml:space="preserve" font-size="11.1766" transform="translate(676.501, 193.566)" >comparator</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(588.692, 159.483)" >inp</text>
-<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(588.692, 175.603)" >inn</text>
+<text fill="#222222"  xml:space="preserve" font-size="11.1766" transform="translate(645.336, 236.553)" >comparator</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(585.692, 159.483)" >vsw</text>
+<text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(579.692, 175.603)" >vrefx</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(589.692, 191.723)" >clk</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(577.692, 207.843)" >nbias</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(577.692, 223.963)" >pbias</text>
@@ -365,7 +365,7 @@ text {font-family: Sans-Serif;}
 <text fill="#666600"  xml:space="preserve" font-size="5.58832" transform="translate(805.224, 178.686)" >1</text>
 <text fill="#666600"  xml:space="preserve" font-size="5.58832" transform="translate(805.224, 201.523)" >2</text>
 <text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(819.971, 182.716)" >CLOAD</text>
-<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(819.971, 189.432)" >10f</text>
+<text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(819.971, 189.432)" >1e-14</text>
 <text fill="#222222"  xml:space="preserve" font-size="5.58832" transform="translate(819.971, 196.149)" >m=1</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(785.88, 154.109)" >dout</text>
 <text fill="#0099cc"  xml:space="preserve" font-size="9.22072" transform="translate(801.88, 229.337)" >0</text>
@@ -374,22 +374,22 @@ text {font-family: Sans-Serif;}
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 438.685)" >.lib /foss/pdks/gf180mcuD/libs.tech/ngspice/sm141064.ngspice typical</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 448.299)" >.param sw_stat_mismatch=1</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 457.914)" >.param VDD=3.3</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 467.529)" >.param IREF=1.93077e-06   $ data/sizing.json iref: ideal current into one tail finger</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 477.143)" >.temp 27</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 467.529)" >.temp 27</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 477.143)" >.param IREF=1.93077e-06</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 486.758)" >.csparam cs_n=200</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 496.373)" >.control</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 505.988)" >set rndseed=20261006</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 505.988)" >set rndseed=20261117</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 515.602)" >let k = 0</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 525.217)" >alterparam sw_stat_mismatch=0</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 534.832)" >reset</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 544.446)" >dc vinn 1.58 1.72 0.0002</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 544.446)" >dc vsw 1.58 1.72 0.0002</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 554.061)" >meas dc vtrip when v(dout)=1.65 fall=1</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 563.676)" >let vos_nom = vtrip - 1.65</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 573.29)" >print vos_nom</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 582.905)" >alterparam sw_stat_mismatch=1</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 592.52)" >while k &lt; $&amp;cs_n</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 602.135)" >  reset</text>
-<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 611.749)" >  dc vinn 1.58 1.72 0.0002</text>
+<text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 611.749)" >  dc vsw 1.58 1.72 0.0002</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 621.364)" >  meas dc vtrip when v(dout)=1.65 fall=1</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 630.979)" >  let vos_k = vtrip - 1.65</text>
 <text fill="#222222"  xml:space="preserve" font-size="8.38247" style="font-family:Monospace;" transform="translate(529.808, 640.593)" >  print vos_k</text>
@@ -401,12 +401,6 @@ text {font-family: Sans-Serif;}
 <path class="l1" d="M48.8903 107.116L48.8903 128.609"/>
 <path class="l1" d="M140.238 53.3821L140.238 74.8756"/>
 <path class="l1" d="M140.238 107.116L140.238 128.609"/>
-<path class="l1" d="M231.585 53.3821L231.585 74.8756"/>
-<path class="l1" d="M231.585 107.116L231.585 128.609"/>
-<path class="l1" d="M322.933 53.3821L322.933 74.8756"/>
-<path class="l1" d="M322.933 107.116L322.933 128.609"/>
-<path class="l1" d="M414.28 53.3821L414.28 74.8756"/>
-<path class="l1" d="M414.28 107.116L414.28 128.609"/>
 <path class="l1" d="M48.8903 203.837L48.8903 225.33"/>
 <path class="l1" d="M48.8903 257.571L48.8903 279.064"/>
 <path class="l1" d="M124.118 241.45L145.611 241.45"/>
@@ -419,6 +413,12 @@ text {font-family: Sans-Serif;}
 <path class="l1" d="M360.546 257.571L360.546 279.064"/>
 <path class="l1" d="M360.546 203.837L360.546 225.33"/>
 <path class="l1" d="M360.546 241.45L382.04 241.45"/>
+<path class="l1" d="M231.585 53.3821L231.585 74.8756"/>
+<path class="l1" d="M231.585 107.116L231.585 128.609"/>
+<path class="l1" d="M322.933 53.3821L322.933 74.8756"/>
+<path class="l1" d="M322.933 107.116L322.933 128.609"/>
+<path class="l1" d="M414.28 53.3821L414.28 74.8756"/>
+<path class="l1" d="M414.28 107.116L414.28 128.609"/>
 <path class="l1" d="M607.722 155.476L629.215 155.476"/>
 <path class="l1" d="M607.722 171.596L629.215 171.596"/>
 <path class="l1" d="M607.722 187.717L629.215 187.717"/>

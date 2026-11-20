@@ -7,7 +7,7 @@
 Every tb_<name>.sch (tb_sch.py) is netlisted by xschem into work/xtb_tb_<name>/
 (the DUT from midref_div.sch / midref_buf.sch through their symbols, the
 comparator of tb_cmp from ../comparator/comparator.sch), and the hand bench
-tb_<name>.spice is filled at the same nominal case (verify_v3.py's: typical,
+tb_<name>.spice is filled at the same nominal case (verify.py's: typical,
 27 C, 3.3 V, the ideal I_F into ib) into work/xtb_tb_<name>/hand/.
 
   netlist  the drawing's top-level instances (name, nodes, model) are the bench's,
@@ -38,7 +38,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bench as S  # noqa: E402
-import verify_v3 as V  # noqa: E402  kick_subs, cmp_deck, SEED_BASE (its main() is guarded)
+import verify as V  # noqa: E402  kick_subs, cmp_deck, SEED_BASE (its main() is guarded)
 
 RC = os.path.join(S.BLOCK, "xschemrc")
 TBS = tuple(os.environ.get("XTB_TBS", "op kick cmp mc noise").split())
@@ -162,7 +162,7 @@ def step_netlist():
         differ = [k for k in exp if k in got and got[k] != exp[k]]
         subs = {"midref_div": 3, "midref_buf": 12}
         if name == "cmp":
-            subs["comparator"] = 10
+            subs["comparator"] = 12
         cnt = {s: subckt_devices(text, s) for s in subs}
         ok = not (missing or extra or differ) and all(cnt[s] == n for s, n in subs.items())
         detail = "; ".join(x for x in (
@@ -345,7 +345,7 @@ def compare(name, logs):
             figs.append((f"onoise@{f0:g}Hz", vh, vx, "1"))
         nok, worst = judge(name, "draw", figs)
         verdict(nok == len(figs) == 8, f"xtb noise: {nok} of {len(figs)} figures (output rms 10 Hz-1 GHz, the "
-                f"divider's share, VBL(decision) - VREF(TS) in LSB, the two-buffer figure, the spectrum at 10 Hz / "
+                f"divider's share, VREF(decision) - VREF(TS) in LSB, the two-buffer figure, the spectrum at 10 Hz / "
                 f"1 kHz / 1 MHz / 1 GHz) equal within 1e-6 relative; worst {worst[0]} rel {worst[1]:.2e}; "
                 f"{rx.get('nz_lsb', np.nan):.5f} LSB on the drawing, {rh.get('nz_lsb', np.nan):.5f} on the bench")
         print(f"xtb_noise_lsb = {rx.get('nz_lsb', np.nan):.5f}")

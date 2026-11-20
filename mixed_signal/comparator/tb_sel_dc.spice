@@ -1,5 +1,5 @@
-* Static trip point of one candidate (size_v3.py, stage B): inp = VBL,
-* inn swept through it, dout's crossing of VDD/2. Rendered by size_v3.py
+* Static trip point of one candidate (size.py, stage B): inp = VREF,
+* inn swept through it, dout's crossing of VDD/2. Rendered by size.py
 * (@DUT@ @IREF@ @REFP@ @CLOAD@) and run before tb_sel.spice, whose dynamic delay is
 * measured from the instant the top plate crosses this level.
 .include /foss/pdks/gf180mcuD/libs.tech/ngspice/design.ngspice
@@ -17,9 +17,9 @@ XREFN nbias nbias 0 0 nfet_03v3 L=1u W=20u nf=10 m=1
 IREFP pbias 0 {IREF}
 @REFP@
 VCLK clk 0 0
-VVBL vbl 0 {VDD/2}
+VVREF vref 0 {VDD/2}
 VDC vdc 0 @VCM@
-XDC vbl vdc doutdc clk vdd 0 nbias pbias cmp
+XDC vref vdc doutdc clk vdd 0 nbias pbias comparator_core
 CLDC doutdc 0 @CLOAD@
 
 .control

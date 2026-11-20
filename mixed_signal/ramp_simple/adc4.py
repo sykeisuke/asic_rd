@@ -1,5 +1,5 @@
 """Four cells converting on the ramp: the analog macro's own functional bench
-(the v5 macro as frozen in ref/analog_top_v5: its timeline and measures),
+(the v5 macro as frozen in ref/analog_top_prev: its timeline and measures),
 with the macro's ramp replaced by this block's ramp_simple (REAL=1) or by an
 ideal ramp (REAL=0), and optionally vrlo_ref replaced by an ideal VR_LO at the
 pre-roll level (LEVEL=ideal). The ramp's own contribution to a conversion is
@@ -24,9 +24,9 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rs_common as rs  # noqa: E402
 
-# the v5 macro and its bench, frozen (ref/analog_top_v5, 2026-10-30): the live ../Analog_top now
+# the v5 macro and its bench, frozen (ref/analog_top_prev, 2026-10-30): the live ../Analog_top now
 # carries this ramp and ../ic_source itself (ADR 0026), so the substitution needs the macro before it
-AT = "/foss/designs/mixed_signal/ramp_simple/ref/analog_top_v5"
+AT = "/foss/designs/mixed_signal/ramp_simple/ref/analog_top_prev"
 WORK = os.path.join(rs.BLOCK, "work", "adc4")
 DATA = os.path.join(rs.BLOCK, "data")
 XRAMP = "XRAMP vramp ramp_rst vrlo pbias_r avdd_ramp avss ramp_simple_d"

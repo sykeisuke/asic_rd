@@ -35,7 +35,7 @@ def main():
     print("ct_align_%s_edge = %d" % (tag, k))
     print("ct_align_%s_pos = %.6f" % (tag, pos))
     print("ct_align_%s_shift_lsb = %+.4f" % (tag, pos - pos0))
-    with open(os.path.join(HERE, "work", "align.txt"), "a") as f:
+    with open(os.path.join(os.environ.get("CT_HOME") or HERE, "work", "align.txt"), "a") as f:
         f.write("%s %.6f %d\n" % (tag, pos, k))
 
 

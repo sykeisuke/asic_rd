@@ -1,4 +1,4 @@
-"""The in-macro operating point of analog_top (v6): which devices, resistors and
+"""The in-macro operating point of analog_top: which devices, resistors and
 MIM capacitors the `op` phase records, and at which instants. One list, read by
 op_bench.py (writes the measures) and op_reduce.py (gm/Id, region, Ron, R = V/I).
 
@@ -14,14 +14,14 @@ read back as @c.xdut.<path>.c_cap[capacitance].
 
 States (instants, tb_params.inc times):
   trk   TS0 - 10 ns: every cell tracking (S0, S2 closed, S1 open), the ramp
-        held at vrlo; each comparator's inn = vref and inp = vbl, so every
+        held at vrlo; each comparator's inp = bot = vref = inn, so every
         comparator sits at its trip point (its balanced operating point)
   ramp  TR + 400 ns: the ramp running (8 counts in), all four cells armed
-        (S1 closed, bot below vbl), before cell 0 decides (code 17)
+        (S1 closed, bot below vref), before cell 0 decides (code 17)
 """
 
 STATES = {
-    "trk": ("TS0-10n", "every cell tracking; each comparator at its trip point (inn = vref, inp = vbl)"),
+    "trk": ("TS0-10n", "every cell tracking; each comparator at its trip point (inp = bot = vref = inn)"),
     "ramp": ("TR+400n", "ramp running 8 counts in, cells armed (S1 closed), before cell 0 decides"),
 }
 
@@ -62,7 +62,7 @@ MOS = [
     ("vl_xm4", "xvrlo.xm4", "vrlo_ref XVRLO", "NMOS mirror into g", "trk"),
     ("vl_xm5", "xvrlo.xm5", "vrlo_ref XVRLO", "g-node NMOS diode", "trk"),
     ("vl_xms", "xvrlo.xms", "vrlo_ref XVRLO", "NMOS shunt on vrlo", "trk"),
-    # midref_buf XVREF (v5: the one buffer, vref = vbl)
+    # midref_buf XVREF (the one VDD/2 buffer)
     ("vr_xmbn", "xvref.xmbn", "midref_buf XVREF", "ib NMOS diode", "ramp"),
     ("vr_xmbn2", "xvref.xmbn2", "midref_buf XVREF", "ib mirror -> pb", "ramp"),
     ("vr_xmbp", "xvref.xmbp", "midref_buf XVREF", "PMOS diode pb", "ramp"),
@@ -77,15 +77,17 @@ MOS = [
     # cell 0 comparator (comparator_d: comparator + its XREFP diode, flat)
     ("c0_xrefp", "xc0.xcmp.xrefp", "cell 0 comparator_d", "comparator pbias PMOS diode (icmp0 in)", "trk"),
     ("c0_xtail", "xc0.xcmp.xtail", "cell 0 comparator_d", "tail PMOS source, 11 fingers", "trk"),
-    ("c0_xinp", "xc0.xcmp.xinp", "cell 0 comparator_d", "input PMOS, gate inp = vbl", "trk"),
-    ("c0_xinn", "xc0.xcmp.xinn", "cell 0 comparator_d", "input PMOS, gate inn = bot plate", "trk"),
+    ("c0_xinp", "xc0.xcmp.xinp", "cell 0 comparator_d", "input PMOS, gate inp = bot plate", "trk"),
+    ("c0_xinn", "xc0.xcmp.xinn", "cell 0 comparator_d", "input PMOS, gate inn = vref", "trk"),
     ("c0_xloadd", "xc0.xcmp.xloadd", "cell 0 comparator_d", "NMOS load diode (left)", "trk"),
     ("c0_xloadm", "xc0.xcmp.xloadm", "cell 0 comparator_d", "NMOS load mirror (outa)", "trk"),
     ("c0_xbst", "xc0.xcmp.xbst", "cell 0 comparator_d", "boost PMOS source (starved inverter)", "trk"),
     ("c0_xbuf2", "xc0.xcmp.xbuf2", "cell 0 comparator_d", "starved inverter PMOS", "trk"),
     ("c0_xbuf1", "xc0.xcmp.xbuf1", "cell 0 comparator_d", "starved inverter NMOS", "trk"),
-    ("c0_xbuf4", "xc0.xcmp.xbuf4", "cell 0 comparator_d", "output inverter PMOS (dout)", "trk"),
-    ("c0_xbuf3", "xc0.xcmp.xbuf3", "cell 0 comparator_d", "output inverter NMOS (dout)", "trk"),
+    ("c0_xbuf4", "xc0.xcmp.xbuf4", "cell 0 comparator_d", "first output inverter PMOS (outc)", "trk"),
+    ("c0_xbuf3", "xc0.xcmp.xbuf3", "cell 0 comparator_d", "first output inverter NMOS (outc)", "trk"),
+    ("c0_xbuf6", "xc0.xcmp.xbuf6", "cell 0 comparator_d", "added output inverter PMOS (dout)", "trk"),
+    ("c0_xbuf5", "xc0.xcmp.xbuf5", "cell 0 comparator_d", "added output inverter NMOS (dout)", "trk"),
     # cells 1..3: the bias devices only
     ("c1_xrefp", "xc1.xcmp.xrefp", "cell 1 comparator_d", "comparator pbias diode (icmp1 in)", "trk"),
     ("c1_xtail", "xc1.xcmp.xtail", "cell 1 comparator_d", "tail PMOS source", "trk"),

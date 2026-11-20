@@ -1,14 +1,14 @@
 #!/bin/sh
 # midref: the VDD/2 reference of the 8-bit bottom-plate cell with ONE
 # output -- midref_v2's divider and one midref_buf (device for device), its
-# output both VREF and VBL (README.md). The second buffer of midref_v2 is gone.
+# output VREF is both the S2 level and the comparator reference (README.md). The second buffer of midref_v2 is gone.
 # Ideal bias current.
 #
 #   ./run.sh                              phases verify schematic (~10 min)
 #   PHASES='verify' VPHASES='op cmp' ./run.sh
 #
 # Phases:
-#   verify     verify_v3.py: PVT operating point and S2 kick (45 cells + bias
+#   verify     verify.py: PVT operating point and S2 kick (45 cells + bias
 #              span), noise on the one node, decision with comparator on the
 #              shared node (incl. a neighbour's kick during the hold), Monte
 #              Carlo of the output (VDD/2 offset)
@@ -41,14 +41,14 @@ chmod a+rwX "$BLOCK_DIR"; chmod a+rw "$BLOCK_DIR"/*.sch "$BLOCK_DIR"/*.sym 2>/de
 status=0
 sh "$BLOCK_DIR/container.sh" "
     has() { case ' $PHASES ' in *\" \$1 \"*) return 0;; *) return 1;; esac; }
-    if has verify; then JOBS=$JOBS PHASES='$VPHASES' python3 -u verify_v3.py || true; fi
+    if has verify; then JOBS=$JOBS PHASES='$VPHASES' python3 -u verify.py || true; fi
     if has schematic; then sh schematic.sh || echo 'FAIL: schematic.sh'; fi
 " >"$run_dir/console.log" 2>&1 || status=$?
 
 if grep -q '^FAIL:' "$run_dir/console.log"; then status=1; fi
 {
     printf '%s\n' "Netlist: $BLOCK_DIR/midref.spice"
-    printf '%s\n' "Sizing: $BLOCK_DIR/data/sizing_v2.json"
+    printf '%s\n' "Sizing: $BLOCK_DIR/data/sizing.json"
     printf '%s\n' "Kick: $BLOCK_DIR/data/verify_kick.json"
     printf '%s\n' "Report: $BLOCK_DIR/README.md"
 } >"$run_dir/extra-metrics.txt"

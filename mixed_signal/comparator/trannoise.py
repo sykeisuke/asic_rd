@@ -3,7 +3,7 @@
 The small-signal noise analysis integrates a stationary PSD over an
 assumed band (the OTA's own band). The comparator does not see a stationary
 small signal: under the attenuated ramp its output rests near the tail, is
-pulled down as the top plate approaches VBL, and slews through the starved
+pulled down as the top plate approaches VREF, and slews through the starved
 inverter's trip about 90 ns after the ideal crossing. What the conversion
 actually suffers is the spread of the instant at which dout falls. This
 script measures that directly, with every device noise source injecting in
@@ -15,7 +15,7 @@ small-signal noise analysis at the same bias.
     python3 trannoise.py reduce    measurements on stdout, data/trannoise_summary.json,
                                    assets/comparator_trannoise*.png
 
-Cases (typical, 27 C, 3.3 V, comparator.spice at inp = VBL = VCM_DEC; the ramp
+Cases (typical, 27 C, 3.3 V, comparator.spice at inp = VREF = VCM_DEC; the ramp
 on inn at alpha x the 117.19 kV/s conversion slope):
 
     psd_hi       the AC-noise bias point in the time domain, noisefmax 200 MHz:
@@ -105,12 +105,12 @@ INK, INK2, MUTED, GRID, SURF = "#1f2328", "#57606a", "#8c959f", "#d8dee4", "#fff
 BLUE, ORANGE, GREEN, AMBER, PINK = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4"
 
 
-# comparator.spice (data/sizing.json) decides at ONE common mode, inp = VBL = VCM_DEC, and the ramp
+# comparator.spice (data/sizing.json) decides at ONE common mode, inp = VREF = VCM_DEC, and the ramp
 # reaches inn through the top-plate attenuation alpha = C_S/(C_S + C_top), so
 # the slope at the pins is alpha x SLOPE and a pin-referred sigma is divided
 # by alpha at the ADC input. The level set is that one common mode.
 SIZING_JSON = os.environ.get("SIZING_JSON", "data/sizing.json")
-DUT_NAME = "comparator"
+DUT_NAME = "comparator (plate on inp)"
 
 
 def sizing():

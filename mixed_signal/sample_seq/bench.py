@@ -1,8 +1,9 @@
 """Benches of sample_seq, the sampling sequencer (SPEC.md Q1-Q8).
 
-    python3 bench.py size     fit each PVT cell's gaps to a + b N (N = N_PROBE), pick
-                              the smallest N with every gap >= GAP_MIN + GAP_MARGIN,
-                              write data/sizing.json and sample_seq.spice
+    python3 bench.py size     fit each PVT cell's gaps to a + b N (N = N_PROBE inv_2),
+                              pick the smallest even N with every gap >= GAP_MARGIN x
+                              that cell's four-inverter delay, write data/sizing.json
+                              and sample_seq.spice
     python3 bench.py typ      the deck at typical: data/typ.csv
     python3 bench.py pvt      45 PVT cells: data/pvt.csv
     python3 bench.py duty     clock duty 30 / 70 % at three cells: data/duty.csv
@@ -21,15 +22,18 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 
 import size_seq
-from seq_common import (BLOCK, CBLOCK, VDD, TCOUNT, NCELLS, GAP_MIN, GAP_MARGIN, N_PROBE, C_ROUTE,
+from seq_common import (BLOCK, CBLOCK, VDD, TCOUNT, NCELLS, GAP_MARGIN, N_PROBE, N_MIN, DLY_CELL, C_ROUTE,
                         PVT, DUTY_CELLS, DUTIES, SPICEINIT)
 
 WORK = os.path.join(BLOCK, "work")
 DATA = os.path.join(BLOCK, "data")
 JOBS = int(os.environ.get("JOBS", "16"))
-R0 = 400e-9
+R0 = 600e-9
 T_STATIC = R0 - 60e-9           # every cell tracking, acq not yet seen
-T_IDLE = (220e-9, 330e-9)       # power while tracking, the clock running (gated off)
+# power while tracking, the clock running; starts well after the cold start:
+# the shift register needs four edges after the supply ramp (t3 at ~250 ns)
+# and the last clock generator then settles (up to ~330 ns at ss/85)
+T_IDLE = (R0 - 180e-9, R0 - 70e-9)
 T_HOLD = (R0 + 250e-9, R0 + 400e-9)
 
 
@@ -56,14 +60,20 @@ def render(tag, corner, temp, vdd, duty=0.5, netlist=CBLOCK + "/sample_seq.spice
     return d
 
 
-def ngspice(d, timeout=1800):
+def ngspice(d, timeout=3600):
+    """Run ngspice in d; return '' on success, else why it did not finish
+    ('timeout', 'rc <n>' (negative = killed by that signal), 'no out.csv')."""
     env = dict(os.environ, OMP_NUM_THREADS="1")
     try:
         r = subprocess.run(["ngspice", "-b", "-o", "run.log", "tb.spice"], cwd=d, env=env, timeout=timeout,
                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
-        return False
-    return r.returncode == 0 and os.path.exists(os.path.join(d, "out.csv"))
+        return "timeout %d s" % timeout
+    if r.returncode != 0:
+        return "rc %d" % r.returncode
+    if not os.path.exists(os.path.join(d, "out.csv")):
+        return "no out.csv"
+    return ""
 
 
 def load(d):
@@ -104,10 +114,32 @@ def reduce(d, vdd):
     nglitch = 0
     static_ok = 1
     g20, g01, gre, ap, sp, s0open, s21 = [], [], [], [], [], [], []
+    c20, c01, cre, t4 = [], [], [], []
+    lo_, hi_ = 0.1 * vdd, 0.9 * vdd
     prev = None
     for k in range(NCELLS):
         s2, s0, s1 = w["v(s2_%d)" % k], w["v(s0_%d)" % k], w["v(s1_%d)" % k]
-        s0b = w["v(s0b_%d)" % k]
+        s0b, s1b = w["v(s0b_%d)" % k], w["v(s1b_%d)" % k]
+        # the template's own four-inverter chain (n1 -> m1 -> m2 -> m3 -> a1, inv_4)
+        # at this cell's entry: the Q2 yardstick of the same PVT cell
+        tn1 = first_after(crossings(t, w["v(xseq.xg%d.n1)" % k], h, +1), t_start)
+        ta1 = first_after(crossings(t, w["v(xseq.xg%d.a1)" % k], h, +1), t_start)
+        t4.append(ta1 - tn1)
+        # Q2b non-overlap at 10 % / 90 %: the earlier switch fully off (both of its
+        # gates: the control and the cell's complement) before the later one
+        # starts to move (either gate)
+        def fa(v_, lvl, d, t0=t_start):
+            return first_after(crossings(t, v_, lvl, d), t0)
+        t2_off = fa(s2, lo_, -1)
+        t0_start = min(fa(s0, hi_, -1), fa(s0b, lo_, +1))
+        t0_off = max(fa(s0, lo_, -1), fa(s0b, hi_, +1))
+        t1_start = min(fa(s1, lo_, +1), fa(s1b, hi_, -1))
+        t1_on = max(fa(s1, hi_, +1), fa(s1b, lo_, -1))
+        t1_off = max(fa(s1, lo_, -1, t1_on), fa(s1b, hi_, +1, t1_on))
+        t0_on_start = min(fa(s0, lo_, +1, t1_on), fa(s0b, hi_, -1, t1_on))
+        c20.append(t0_start - t2_off); c01.append(t1_start - t0_off); cre.append(t0_on_start - t1_off)
+        row.update({"clr20_%d_ns" % k: (t0_start - t2_off) * 1e9, "clr01_%d_ns" % k: (t1_start - t0_off) * 1e9,
+                    "clrre_%d_ns" % k: (t0_on_start - t1_off) * 1e9, "t4inv_%d_ns" % k: (ta1 - tn1) * 1e9})
         # static state before the record: tracking (s2 = s0 = 1, s1 = 0)
         if not (at(t, s2, T_STATIC) > 0.9 * vdd and at(t, s0, T_STATIC) > 0.9 * vdd
                 and at(t, s1, T_STATIC) < 0.1 * vdd):
@@ -138,7 +170,11 @@ def reduce(d, vdd):
     row["n_glitch"] = nglitch
     row["g20_min_ns"] = min(g20) * 1e9; row["g20_max_ns"] = max(g20) * 1e9
     row["g01_min_ns"] = min(g01) * 1e9; row["g01_max_ns"] = max(g01) * 1e9
-    row["gre_min_ns"] = min(gre) * 1e9
+    row["gre_min_ns"] = min(gre) * 1e9; row["gre_max_ns"] = max(gre) * 1e9
+    row["t4inv_max_ns"] = max(t4) * 1e9; row["t4inv_min_ns"] = min(t4) * 1e9
+    # every gap in units of this run's four-inverter delay (its slowest cell)
+    row["gap_t4_min"] = min(min(g20), min(g01), min(gre)) / max(t4)
+    row["clr20_min_ns"] = min(c20) * 1e9; row["clr01_min_ns"] = min(c01) * 1e9; row["clrre_min_ns"] = min(cre) * 1e9
     row["aperture_max_ns"] = max(ap) * 1e9; row["aperture_min_ns"] = min(ap) * 1e9
     row["s0open_max_ns"] = max(s0open) * 1e9
     row["s2s1_max_ns"] = max(s21) * 1e9
@@ -152,21 +188,26 @@ def reduce(d, vdd):
     for name, (a, b) in (("e_entry_pj", (R0 - 50e-9, R0 + 250e-9)), ("e_reentry_pj", (R0 + 400e-9, R0 + 700e-9))):
         m = (t >= a) & (t <= b)
         row[name] = float(trapz(i[m], t[m])) * vdd * 1e12
-    # Q7 the gated line: no edge of c0 while tracking or holding, one per active cycle
-    c0r = crossings(t, w["v(xseq.c0)"], h, +1)
-    row["c0_edges_track"] = int(np.sum((c0r > T_IDLE[0]) & (c0r < T_IDLE[1])))
-    row["c0_edges_hold"] = int(np.sum((c0r > T_HOLD[0]) & (c0r < T_HOLD[1])))
-    row["c0_edges_entry"] = int(np.sum((c0r > R0 - 50e-9) & (c0r < R0 + 300e-9)))
-    row["c0_edges_reentry"] = int(np.sum((c0r > R0 + 400e-9) & (c0r < R0 + 750e-9)))
+    # Q7 the clock generators are static while settled: no edge of any cell's
+    # b1 / b2 (the delay-stage outputs) while tracking or holding; the shift
+    # register's clock pins are the only clocked load (power reported)
+    def edges(node, a, b):
+        x = np.concatenate((crossings(t, w[node], h, +1), crossings(t, w[node], h, -1)))
+        return int(np.sum((x > a) & (x < b)))
+    nodes = ["v(xseq.xg%d.%s)" % (k, n) for k in range(NCELLS) for n in ("b1", "b2")]
+    row["chain_edges_track"] = sum(edges(n, *T_IDLE) for n in nodes)
+    row["chain_edges_hold"] = sum(edges(n, *T_HOLD) for n in nodes)
+    row["chain_edges_entry"] = sum(edges(n, R0 - 50e-9, R0 + 300e-9) for n in nodes)
     return row
 
 
 def case(tag, corner, temp, vdd, duty=0.5, netlist=CBLOCK + "/sample_seq.spice"):
     d = render(tag, corner, temp, vdd, duty, netlist)
     row = {"tag": tag, "corner": corner, "temp": temp, "vdd": vdd, "duty": duty}
-    if not ngspice(d):
+    why = ngspice(d)
+    if why:
         row["sim_ok"] = 0
-        print("FAIL: ngspice %s did not finish" % tag)
+        print("FAIL: ngspice %s did not finish (%s)" % (tag, why))
         return row
     row["sim_ok"] = 1
     try:
@@ -218,42 +259,49 @@ def size():
     for (n, p), r in zip(jobs, rows):
         by.setdefault(p, {})[n] = r
     na, nb = N_PROBE
-    need, fits = 0, []
-    target = (GAP_MIN + GAP_MARGIN) * 1e9
+    need, fits = N_MIN, []
     for p, rr in by.items():
+        t4 = max(rr[na].get("t4inv_max_ns", float("nan")), rr[nb].get("t4inv_max_ns", float("nan")))
+        if math.isnan(t4):
+            raise SystemExit("FAIL: size: four-inverter delay missing at %s" % (p,))
+        target = GAP_MARGIN * t4
         for g in ("g20_min_ns", "g01_min_ns", "gre_min_ns"):
             ya, yb = rr[na].get(g, float("nan")), rr[nb].get(g, float("nan"))
             if math.isnan(ya) or math.isnan(yb):
                 raise SystemExit("FAIL: size: %s missing at %s" % (g, p))
             b = (yb - ya) / (nb - na)
             a = ya - b * na
-            n_req = math.ceil((target - a) / b)
+            n_req = max(N_MIN, 2 * math.ceil((target - a) / b / 2))     # even: the stage is non-inverting
             need = max(need, n_req)
-            fits.append({"corner": p[0], "temp": p[1], "vdd": p[2], "gap": g, "a_ns": a, "b_ns_per_cell": b,
-                         "n_req": n_req})
+            fits.append({"corner": p[0], "temp": p[1], "vdd": p[2], "gap": g, "t4inv_ns": t4, "target_ns": target,
+                         "a_ns": a, "b_ns_per_cell": b, "n_req": n_req})
     write_csv(os.path.join(DATA, "size_fit.csv"), fits)
-    worst = max(fits, key=lambda f: f["n_req"])
-    rec = {"n_stage": need, "delay_cell": "gf180mcu_as_sc_mcu7t3v3__dlybuff_2",
-           "gap_min_ns": GAP_MIN * 1e9, "gap_margin_ns": GAP_MARGIN * 1e9, "n_probe": list(N_PROBE),
-           "binding": {k: worst[k] for k in ("corner", "temp", "vdd", "gap", "a_ns", "b_ns_per_cell")},
+    worst = max(fits, key=lambda f: (f["n_req"], f["target_ns"] - (f["a_ns"] + f["b_ns_per_cell"] * f["n_req"])))
+    rec = {"n_stage": need, "delay_cell": DLY_CELL, "gap_rule": "gap >= GAP_MARGIN x four-inverter delay (n1 -> a1)",
+           "gap_margin": GAP_MARGIN, "n_probe": list(N_PROBE), "n_min": N_MIN,
+           "binding": {k: worst[k] for k in ("corner", "temp", "vdd", "gap", "t4inv_ns", "a_ns", "b_ns_per_cell")},
+           "t4inv_ns_range": [min(f["t4inv_ns"] for f in fits), max(f["t4inv_ns"] for f in fits)],
            "b_ns_per_cell_range": [min(f["b_ns_per_cell"] for f in fits), max(f["b_ns_per_cell"] for f in fits)]}
     with open(os.path.join(DATA, "sizing.json"), "w") as h:
         json.dump(rec, h, indent=1)
     size_seq.write(need)
-    print("REPORT: size N = %d dlybuff_2 per stage, binding %s/%d/%g %s (a %.3f ns + %.4f ns/cell), "
-          "delay cell %.3f-%.3f ns over PVT" % (need, worst["corner"], worst["temp"], worst["vdd"], worst["gap"],
-                                                worst["a_ns"], worst["b_ns_per_cell"], *rec["b_ns_per_cell_range"]))
+    print("REPORT: size N = %d inv_2 per stage, binding %s/%d/%g %s (a %.3f ns + %.4f ns/inverter against "
+          "%.2f x %.3f ns four-inverter delay), inv_2 %.3f-%.3f ns, four-inverter delay %.3f-%.3f ns over PVT"
+          % (need, worst["corner"], worst["temp"], worst["vdd"], worst["gap"], worst["a_ns"], worst["b_ns_per_cell"],
+             GAP_MARGIN, worst["t4inv_ns"], *rec["b_ns_per_cell_range"], *rec["t4inv_ns_range"]))
 
 
 def typ():
     r = case("typ", "typical", 27, VDD)
     write_csv(os.path.join(DATA, "typ.csv"), [r])
-    print("REPORT: typ gaps S2->S0 %.3f-%.3f ns, S0->S1 %.3f-%.3f ns, re-entry S1->S0 %.3f ns, sampling "
+    print("REPORT: typ gaps S2->S0 %.3f-%.3f ns, S0->S1 %.3f-%.3f ns, re-entry S1->S0 %.3f ns, four-inverter "
+          "delay %.3f ns (min gap %.2f x), 10/90 clearance %.3f / %.3f / %.3f ns, sampling "
           "%.3f-%.3f ns after clk, spacing err %.4f ns, power %.2f uW tracking / %.2f uW holding, "
-          "%.1f pJ per entry / %.1f pJ per re-entry, gated clock edges %d entry / %d re-entry"
+          "%.1f pJ per entry / %.1f pJ per re-entry, delay-stage output edges %d per entry"
           % (r["g20_min_ns"], r["g20_max_ns"], r["g01_min_ns"], r["g01_max_ns"], r["gre_min_ns"],
+             r["t4inv_max_ns"], r["gap_t4_min"], r["clr20_min_ns"], r["clr01_min_ns"], r["clrre_min_ns"],
              r["aperture_min_ns"], r["aperture_max_ns"], r["spacing_err_max_ns"], r["p_track_uw"], r["p_hold_uw"],
-             r["e_entry_pj"], r["e_reentry_pj"], r["c0_edges_entry"], r["c0_edges_reentry"]))
+             r["e_entry_pj"], r["e_reentry_pj"], r["chain_edges_entry"]))
 
 
 def pvt():

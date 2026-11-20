@@ -15,10 +15,12 @@ else
     echo "FAIL: xschem produced no netlist for sample_seq.sch"
 fi
 mkdir -p work/render
-for n in sample_seq seq_cell seq_dly; do
+for n in sample_seq seq_clkgen seq_dly; do
     rm -f "assets/$n.png"
+    H=2000
+    [ "$n" = seq_clkgen ] && H=1000     # a wide two-row sheet: no empty band above it
     timeout 240 xvfb-run -a -s "-screen 0 3200x2000x24" xschem --rcfile "$RC" --tcl "set dark_colorscheme 0" \
-        --command "xschem zoom_full; xschem print png assets/$n.png 3200 2000; xschem exit closewindow force" \
+        --command "xschem zoom_full; xschem print png assets/$n.png 3200 $H; xschem exit closewindow force" \
         "$n.sch" > "work/render/$n.txt" 2>&1
     if [ -s "assets/$n.png" ]; then
         printf 'Figure: /foss/designs/mixed_signal/sample_seq/assets/%s.png\n' "$n"

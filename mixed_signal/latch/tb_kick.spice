@@ -5,8 +5,9 @@
 * The charge path is ../latch_bkp/cmp_tspc/tb_kick.spice's: the 54.52 fF MIM, the top
 * plate reset to VREF = VDD/2 by an ideal S2 that opens at TS, the bottom
 * plate held at VIN, moved to VR_LO at TCONN and ramped at the 8-bit slope
-* from TR; inp = VBL = VDD/2, ideal. The comparator is the one Analog_top uses,
-* ../comparator/comparator.spice (by path), on its own pbias diode
+* from TR; the sensed plate top on inp, inn = VREF = VDD/2, ideal. The
+* comparator is the one Analog_top uses, ../comparator/comparator.spice
+* (cell comparator, 12 devices, by path), on its own pbias diode
 * XREFP (L 0.28 / W 1 um, as in atop_cell) fed by an ideal 1.681 x 1.931 uA
 * (bias_gen's comparator output, ADR 0017). The comparator is on vdd =
 * AVDD; the latch and its clock are on dvdd (L7). Both supplies are ideal.
@@ -54,7 +55,6 @@ IREFP pbias 0 {IBIAS}
 XREFP pbias pbias vdd vdd pfet_03v3 L=0.28u W=1u nf=1 m=1
 VCLK clk 0 @CLK@
 
-VVBL vbl 0 {VDD/2}
 VVREF vref 0 {VDD/2}
 VBOT bot 0 PWL(0 {VIN} {TCONN} {VIN} {TCONN+TEDGE} {VR_LO} {TR} {VR_LO} {TR+TRAMP} {VR_HI+OVR})
 VS2 s2 0 PWL(0 1 {TS} 1 {TS+TEDGE} 0)
@@ -63,14 +63,14 @@ S2 vref top s2 0 swideal
 XCS top bot cap_mim_2f0_m4m5_noshield c_width=5u c_length=5u
 RLKT top 0 1e15
 
-XDUT vbl top dout 0 vdd 0 0 pbias cmp
+XDUT top vref dout 0 vdd 0 0 pbias comparator
 @LOAD@
 
 .tran 1n {TSTOP} 0 2n
 
 .control
 run
-meas tran t_cross when v(top)=v(vbl) rise=1 td=$&cs_tr
+meas tran t_cross when v(top)=v(vref) rise=1 td=$&cs_tr
 meas tran t_dout when v(dout)=1.65 fall=1 td=$&cs_tr
 meas tran t_f90 when v(dout)=2.97 fall=1 td=$&cs_tr
 meas tran t_f10 when v(dout)=0.33 fall=1 td=$&cs_tr

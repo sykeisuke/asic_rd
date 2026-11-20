@@ -1,4 +1,4 @@
-* Device noise characterisation for the short-L gm/Id search (size_v3.py).
+* Device noise characterisation for the short-L gm/Id search (size.py).
 * The pygmid tables carry no noise (../../../simulations/gf180_gmid_lut/README.md,
 * "Known limitations"), so the flicker and thermal densities come from here:
 * one nfet_03v3 and one pfet_03v3, W = 2 um nf = 1 (the table's reference

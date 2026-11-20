@@ -1,11 +1,11 @@
-# midrail_ref: one VDD/2 buffer for VREF and VBL
+# midrail_ref: one VDD/2 buffer for VREF
 
-On 2026-10-13 the user asked for **one output** to drive both VREF and the
-comparators' other input (VBL), with the extra branch removed and the cell
+On 2026-10-13 the user asked for **one output** to drive both the S2 level and the
+comparators' other input (VREF), with the extra branch removed and the cell
 recharacterized.
 
 `../midrail_ref_bkp/midrail_ref_v2` (ADR 0016) had one divider and two `midref_buf`: one buffer
-for VREF and one for VBL. `midref` keeps the divider and **one** buffer,
+for the S2 level and one for the comparator reference. `midref` keeps the divider and **one** buffer,
 device for device. `../midrail_ref_bkp/midrail_ref_v2` is untouched.
 
 ```sh
@@ -24,7 +24,7 @@ Labels: **U** user, **C** contract, **B** noise budget, **M** measured,
 | Item | v2 | v3 |
 | --- | --- | --- |
 | Buffers | 2 × `midref_buf` on one shared tap | **1** × `midref_buf` |
-| Outputs | VREF, VBL (two nodes) | **one** node: VREF = VBL |
+| Outputs | S2 level, comparator reference (two nodes) | **one** node: VREF |
 | Bias | 2 × 12.36 uA (ideal) | 1 × 12.36 uA |
 | Devices | `midref_div` + `midref_buf` | the same subcircuits, every device and size unchanged |
 | Power (typical, whole reference, ideal ib) | 494 uW | **260.3 uW** [M] |
@@ -42,12 +42,12 @@ driving both. A smaller buffer would not be cheaper.
 
 | Effect | v2 | v3 check |
 | --- | --- | --- |
-| VBL − VREF offset (pedestal) | σ = √2 × one buffer = 1.35 LSB | **0 by construction**. The buffer offset only moves VDD/2, the common level of plate and comparator: gated on \|mean\| + 3σ ≤ 50 mV |
-| VBL crosstalk from VREF's S2 kick | separate node, ≤ 0.5 µV at 250 ns | no object (one node). Replaced by the held-cell check below |
-| Noise VBL(decision) − VREF(TS) | device noise independent in the two buffers | one node: the noise below ~1/T_DEC is common to sample and decision and cancels |
-| A neighbour's S2 event while a cell holds | landed on VREF only | lands on that cell's comparator inp: `tb_cmp.spice` |
+| Comparator reference − S2 level offset (pedestal) | σ = √2 × one buffer = 1.35 LSB | **0 by construction**. The buffer offset only moves VDD/2, the common level of plate and comparator: gated on \|mean\| + 3σ ≤ 50 mV |
+| Comparator-reference crosstalk from the S2 kick | separate node, ≤ 0.5 µV at 250 ns | no object (one node). Replaced by the held-cell check below |
+| Noise VREF(decision) − VREF(TS) | device noise independent in the two buffers | one node: the noise below ~1/T_DEC is common to sample and decision and cancels |
+| A neighbour's S2 event while a cell holds | landed on VREF only | lands on that cell's comparator inn: `tb_cmp.spice` |
 
-## 3. Verification (verify_v3.py, schematic.sh)
+## 3. Verification (verify.py, schematic.sh)
 
 Record: `runs/midref-v3/20261013T213457Z/metrics.json`, **pass**. Typical
 unless named; ideal bias current 12.36 uA.
@@ -58,7 +58,7 @@ unless named; ideal bias current 12.36 uA.
 | IB sources / output diodes headroom | +1.033 V / +0.591 V | ≥ 0 |
 | VDD/2 error, 45 cells | worst −8.58 mV (fs/85 °C/3.6 V) | ≤ 50 mV |
 | S2 kick, 47 cells × 2 cases | back within ½ LSB in ≤ 16 ns; residual ≤ 0.001 mV at 250/300 ns; peak up to 199 mV | ≤ 250 ns, ≤ 2.93 mV |
-| Noise VBL(decision) − VREF(TS), typical / ss85 3.0 / ff0 3.6 | 0.0369 / 0.0369 / 0.0375 LSB | ≤ 0.080 LSB |
+| Noise VREF(decision) − VREF(TS), typical / ss85 3.0 / ff0 3.6 | 0.0369 / 0.0369 / 0.0375 LSB | ≤ 0.080 LSB |
 | Decision with `comparator` on the shared node | trip shift +0.0004 LSB against an ideal node | ≤ 0.05 LSB |
 | Node in the 200 ns before the trip | within 0.3 µV | ≤ ¼ LSB |
 | A neighbour's S2 **closing** 50 ns into the hold (both directions), mid code 33.6 LSB / low code 2 LSB | trip moves ≤ 0.0019 / ≤ 0.0000 LSB | ≤ ¼ LSB (v2's crosstalk bound, carried over) [C] |
@@ -78,7 +78,7 @@ on one tap) reads 0.0386 LSB. That is v2's recorded figure.
   - At a **low code (2 LSB)** the sourcing case makes the held cell's dout
     **fall falsely during the hold**. The trip after TR is unchanged. At 33.6
     LSB dout stays high.
-  - With two buffers, VBL only saw ~20 mV of such an event (through the tap).
+  - With two buffers, the comparator reference only saw ~20 mV of such an event (through the tap).
   - **The frozen timeline never does this.** All four cells enter track
     together, before any sample. During a hold the only S2 events are the
     later cells' S2 *openings* (charge injection). `../Analog_top`'s record
@@ -131,11 +131,11 @@ mismatch draws land on the same devices in both netlists. Table:
 | --- | --- |
 | `midref.spice` | `midref_div`, `midref_buf` (= midref_v2's), `midref` wrapper |
 | `bench.py` | constants and bench helpers (midref_v2's values; one-node noise) |
-| `verify_v3.py` | op, opdev, kick, noise, cmp, mc, mchr |
+| `verify.py` | op, opdev, kick, noise, cmp, mc, mchr |
 | `tb_op`, `tb_kick`, `tb_noise`, `tb_cmp`, `tb_mc`, `tb_mchr` `.spice` | bench templates (one buffer) |
 | `midref_sch.py`, `schematic.sh`, `check-schematic.awk` | drawings from the netlist and their netlist check |
 | `midref_buf.sch/.sym`, `midref_div.sch/.sym` | the xschem views; `assets/*.png` |
 | `tb_sch.py`, `xtb.py`, `xschemrc` | testbench drawings `tb_op/kick/cmp/mc/noise.sch`, their netlist check and simulation against the hand benches (`data/xtb.csv`) |
-| `data/sizing_v2.json` | midref_v2's sizing record (the bias current is read from it) |
+| `data/sizing.json` | midref_v2's sizing record (the bias current is read from it) |
 | `data/` | `op_devices.csv`, `op_passives.csv`, `verify_kick.json`, `mc_typ.csv` |
 | `run.sh`, `container.sh` | entry point |

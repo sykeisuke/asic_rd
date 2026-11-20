@@ -30,7 +30,7 @@ PIN = {
     "res": {"M": (0, 30), "P": (0, -30), "B": (-20, 0)},
     "mim": {"B": (0, 30), "G": (0, -30)},
 }
-PORTS = ["vdd", "vss", "icmp0", "icmp1", "icmp2", "icmp3", "iramp", "ivref", "ivbl"]
+PORTS = ["vdd", "vss", "icmp0", "icmp1", "icmp2", "icmp3", "iramp", "ivref", "ivref2"]
 
 
 def subckts(path):

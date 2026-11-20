@@ -1,5 +1,5 @@
 * Operating point of midref (divider + its one buffer) at one corner and temperature, the
-* supply looped over 3.0 / 3.3 / 3.6 V. TEMPLATE: verify_v3.py replaces corner
+* supply looped over 3.0 / 3.3 / 3.6 V. TEMPLATE: verify.py replaces corner
 * mimcorner temp if tag; dut.spice is midref.spice.
 *
 * One line per supply:
