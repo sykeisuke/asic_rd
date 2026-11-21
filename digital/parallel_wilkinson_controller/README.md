@@ -9,7 +9,8 @@ The digital side of the 8-bit true bottom-plate ADC of
   ([`mixed_signal/sample_seq`](../../mixed_signal/sample_seq/README.md),
   ADR 0027) then opens cell k's S2 at the k-th rising edge after the edge
   that first sees `acq` low (TS_k = TS_0 + k x 50 ns, the sampling instant),
-  and orders S0 and S1 after it with at least 5 ns between phases over PVT.
+  and orders S0 and S1 after it with non-overlapping phases (gaps of a few
+  hundred ps, ADR 0031).
   The controller drives no switch control itself.
 - **Ramp and count**: `ramp_rst` falls at TR = TS_3 + 6 clocks (300 ns, the
   reference's recovery requirement), on a rising edge; the 8-bit counter

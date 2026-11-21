@@ -64,3 +64,14 @@ capture rule and the codes are unchanged. The open point above on the PVT
 spread of the digital delay lines is closed; the sequencer's own spread is
 recorded in `mixed_signal/sample_seq`. `delay_line.v` is retired to
 `digital/legacy/`.
+
+## Addendum 2026-11-19: Analog_top v8, sequencer gaps (ADR 0029 / 0031)
+
+Analog_top v8 (merged 2026-11-20) keeps the port list and the `q` polarity
+(the comparator inputs are swapped inside the cell and an output inverter
+added, so `dout` and `q` still fall once at the decision): the digital block
+is unchanged. The sequencer is now a shift register on `cnt_clk` plus one
+non-overlap clock generator per cell; its gaps are the generator's own
+four-inverter delay (0.20-0.96 ns over PVT, no 10/90 overlap), which
+supersedes the 5 ns figure quoted in the addendum above. Cell k still
+samples at the k-th rising edge after the edge that first sees `acq` low.

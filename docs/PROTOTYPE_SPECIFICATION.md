@@ -136,7 +136,7 @@ formally revised.
 | Counter and storage | [x] | Shared 8-bit counter, synchronous sampling of the four `q` flags, four 8-bit result registers, per-cell timeout flag (Gray capture removed 2026-10-28) |
 | Readout | [x] | 32-bit slow synchronous CMOS serial output `{cell3, cell2, cell1, cell0}` |
 | Ramp | [x] redefined | Internal ramp applied to the storage capacitors (load 4 x ~60 fF in Tape-out 1) plus external debug/bypass path. Keep it simple for Tape-out 1 (review 2026-10-02): a current source into a capacitor, possibly external, rather than a precision integrator; the first draft (integrator, 4 pF, 0.5-2.0 V in a few us) is a starting point only |
-| Clocking | [x] revised 2026-11-03 | One 20 MHz clock. From a board `start` the digital top drives the acquire level `acq` (HIGH = track) and `ramp_rst`; the Analog_top macro's own sequencer (`mixed_signal/sample_seq`, ADR 0027) derives the per-cell switch sequence `s2`/`s0`/`s1` (one cell per clock, at least 5 ns between phases over PVT) from `acq` and the clock, which is forwarded to the macro as `cnt_clk` |
+| Clocking | [x] revised 2026-11-03 | One 20 MHz clock. From a board `start` the digital top drives the acquire level `acq` (HIGH = track) and `ramp_rst`; the Analog_top macro's own sequencer (`mixed_signal/sample_seq`, ADR 0027) derives the per-cell switch sequence `s2`/`s0`/`s1` (one cell per clock, non-overlapping phases a few hundred ps apart over PVT; 5 ns until 2026-11-15) from `acq` and the clock, which is forwarded to the macro as `cnt_clk` |
 | Test access | [x] | Block isolation and observable internal nodes, subject to pad budget |
 
 Cell count, ADC width, payload format, clock-domain boundary, and analog/digital
@@ -155,8 +155,8 @@ per cell:
 | --- | --- | --- |
 | `VIN` | Analog voltage | Continuous input shared by four cells |
 | `s0[i]` | Control inside the macro, HIGH = closed | Input transmission gate `VIN` -> `VTOP[i]` (Analog_top name `S0`) |
-| `s2[i]` | Control inside the macro, HIGH = closed | Switch `VBOT[i]` -> `VREF`. **Its falling edge is the sampling instant; it opens at least 5 ns before `s0[i]`** (Analog_top `S2`) |
-| `s1[i]` | Control inside the macro, HIGH = closed | Switch `VTOP[i]` -> `VRAMP`; closes at least 5 ns after `s0[i]` opens and stays closed through the conversion (Analog_top `S1`) |
+| `s2[i]` | Control inside the macro, HIGH = closed | Switch `VBOT[i]` -> `VREF`. **Its falling edge is the sampling instant; it opens before `s0[i]`, by a few hundred ps (the sequencer's own four-inverter delay, no 10/90 overlap; `mixed_signal/sample_seq`, ADR 0031)** (Analog_top `S2`) |
+| `s1[i]` | Control inside the macro, HIGH = closed | Switch `VTOP[i]` -> `VRAMP`; closes after `s0[i]` opens (same rule) and stays closed through the conversion (Analog_top `S1`) |
 | `acq` | Digital control, HIGH = track | The one control that crosses from the digital macro: the macro's sequencer makes `s2`/`s0`/`s1` of the four cells from it and `cnt_clk` (ADR 0027) |
 | `VREF` | Analog reference | Constant potential of the reference plate; also the comparator trip reference |
 | `VRAMP` | Analog voltage | Broadcast ramp, starts at 0 V |
@@ -188,8 +188,8 @@ flowchart LR
 | --- | --- | --- | --- | --- |
 | Track | 1 | 1 | 0 | `VTOP[i]` follows `VIN`, `VBOT[i] = VREF` |
 | Freeze (TS_i) | 1 | 0 | 0 | Reference plate opened first: its charge is frozen with a **signal-independent** injection (the switch always sits at `VREF`) |
-| Hold (TS_i + >= 5 ns) | 0 | 0 | 0 | Input gate opened; its signal-dependent injection lands on `VTOP[i]`, which is re-driven later and does not enter the result |
-| Convert (from TS_i + >= 10 ns; ramp from TR) | 0 | 0 | 1 | `VTOP[i]` driven by `VRAMP` (held at `VR_LO` until TR); `VBOT[i] = VREF - (VIN - VRAMP) * C/(C+Cp)` rises toward `VREF` |
+| Hold (shortly after TS_i) | 0 | 0 | 0 | Input gate opened; its signal-dependent injection lands on `VTOP[i]`, which is re-driven later and does not enter the result |
+| Convert (once `s1[i]` has closed; ramp from TR) | 0 | 0 | 1 | `VTOP[i]` driven by `VRAMP` (held at `VR_LO` until TR); `VBOT[i] = VREF - (VIN - VRAMP) * C/(C+Cp)` rises toward `VREF` |
 
 Why the sensed plate matters (transistor-level method study on the exploration branch `keisuke/analog-explore`,
 2026-09-18): sensing the frozen plate gives a constant -7.8 mV pedestal
@@ -205,8 +205,9 @@ Must requirements:
 
 - Four cells capture distinguishable input values in the intended order.
 - The `s2`-before-`s0`-before-`s1` order is generated on chip inside the
-  Analog_top macro (`mixed_signal/sample_seq`: at least 5 ns between
-  phases at every PVT cell, 5.5-10.9 ns typical to slow) from the digital
+  Analog_top macro (`mixed_signal/sample_seq`, ADR 0031: every gap at least the
+  generator's four-inverter delay with no 10/90 overlap at every PVT cell,
+  0.20-0.96 ns; the 5 ns rule of ADR 0027 is superseded) from the digital
   top's `acq`; the digital self-test checks `acq` and the ramp timing
   against it.
 - Acquisition error, pedestal (mean and input dependence), hold droop, and
@@ -291,8 +292,8 @@ The four cells are sampled one conversion-clock period apart (TS_k = TS_0 +
 k x 50 ns, i.e. 20 MSa/s aggregate): on a board `start` the digital top
 drops `acq`, and the macro's sequencer opens cell k's reference-plate switch
 at the k-th clock edge after the edge that first sees `acq` low. Inside
-each cell the reference-plate switch opens at least 5 ns before the input
-gate and the ramp gate closes at least 5 ns after that (Analog_top
+each cell the reference-plate switch opens before the input gate and the
+ramp gate closes after that, a few hundred ps apart (Analog_top
 `tb_params.inc`, `sample_seq`).
 The ramp is released at TR = TS_3 + 300 ns (6 clocks) so the ramp gates'
 charge drains into `VR_LO` first.
